@@ -47,6 +47,49 @@ CREATE TABLE membership_requests (
 );
 
 
+--- memberships approved members only 
+CREATE TABLE memberships (
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    society_id INT NOT NULL REFERENCES societies(society_id) ON DELETE CASCADE,
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, society_id)
+);
+
+---events table to store event information for each society
+CREATE TABLE events (
+    event_id SERIAL PRIMARY KEY,
+    society_id INT NOT NULL REFERENCES societies(society_id) ON DELETE CASCADE,
+    title VARCHAR(100) NOT NULL,
+    description TEXT,
+    location VARCHAR(255),
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
+    capacity_limit INT CHECK (capacity_limit IS NULL OR capacity_limit > 0),
+    created_by INT REFERENCES users(user_id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) NOT NULL DEFAULT 'upcoming'
+        CHECK (status IN ('upcoming','cancelled','completed')),
+    CHECK (end_time > start_time)
+);
+
+--- events RSVPs and attendance tracking for users attending events
+CREATE TABLE event_rsvps (
+    event_id INT NOT NULL REFERENCES events(event_id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    rsvp_status VARCHAR(20) NOT NULL DEFAULT 'attending'
+        CHECK (rsvp_status IN ('attending', 'not_attending')),
+    rsvp_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (event_id, user_id)
+);
+
+--- Notification preferences for users to receive updates about their societies and events
+CREATE TABLE notification_preferences (
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    society_id INT NOT NULL REFERENCES societies(society_id) ON DELETE CASCADE,
+    notify BOOLEAN DEFAULT TRUE,
+    PRIMARY KEY (user_id, society_id)
+);
+
 
 
 -
