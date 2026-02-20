@@ -90,6 +90,29 @@ CREATE TABLE notification_preferences (
     PRIMARY KEY (user_id, society_id)
 );
 
+--- messages user to admin vice versa for communication regarding society management and event coordination
+CREATE TABLE messages (
+    message_id SERIAL PRIMARY KEY,
+    society_id INT NOT NULL REFERENCES societies(society_id) ON DELETE CASCADE,
+    sender_id INT REFERENCES users(user_id) ON DELETE SET NULL,
+    content TEXT NOT NULL,
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+--- audit logs to track user actions for security and accountability
+CREATE TABLE audit_logs (
+    log_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(user_id) ON DELETE SET NULL,
+    action VARCHAR(100) NOT NULL,
+    description TEXT,
+    logged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+--- indexes to optimize query performance
+CREATE INDEX idx_events_society ON events(society_id);
+CREATE INDEX idx_memberships_user ON memberships(user_id);
+CREATE INDEX idx_event_rsvp_user ON event_rsvps(user_id);
+
 
 
 -
