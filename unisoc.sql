@@ -24,5 +24,30 @@ CREATE TABLE societies (
     is_active BOOLEAN DEFAULT TRUE
 );
 
+-- many-many society_admins table to link societies and their admins
+--- multiple admins can manage a society, and an admin can manage multiple societies
+CREATE TABLE society_admins (
+    society_id INT REFERENCES societies(society_id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    role VARCHAR(50) NOT NULL
+        CHECK (role IN ('president','vice_president','treasurer','moderator')),
+    PRIMARY KEY (society_id, user_id)
+);
+
+---membership requests to join --- approval 
+CREATE TABLE membership_requests (
+    request_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    society_id INT NOT NULL REFERENCES societies(society_id) ON DELETE CASCADE,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending', 'approved', 'rejected')),
+    request_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    approval_timestamp TIMESTAMP,
+    UNIQUE (user_id, society_id)
+);
+
+
+
+
 -
 
