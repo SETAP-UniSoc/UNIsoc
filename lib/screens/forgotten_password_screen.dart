@@ -22,7 +22,10 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Reset Password")),
+      appBar: AppBar(
+        title: const Text("Reset Password"),
+        automaticallyImplyLeading: false,
+        ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

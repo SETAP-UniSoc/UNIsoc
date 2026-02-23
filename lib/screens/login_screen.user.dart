@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login_screen.admin.dart';
 import 'forgotten_password_screen.dart';
+import 'signup_user_page.dart';
 
 
 class LoginScreenUser extends StatefulWidget {
@@ -106,7 +107,19 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
               ),
             ),
             
-            //adding a button bottom with an arrow icon to go back to the loginuser page
+            //adding a button bottom left to go to signup page
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SignupUserPage()),
+                  );
+                },
+                child: const Text("Signup"),
+              ),
+            ),
 
           ],    
         ),
