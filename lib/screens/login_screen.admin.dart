@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'forgotten_password_screen.dart';
 
 class LoginScreenAdmin extends StatefulWidget {
   const LoginScreenAdmin({super.key});
@@ -52,13 +53,20 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
               ),
             ),
             const SizedBox(height: 30),
+            
             Align(
-              alignment: Alignment.centerRight,
+              alignment: Alignment.center,
               child: TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ForgottenPasswordScreen()),
+                  );
+                },
                 child: const Text("Forgot Password?"),
               ),
             ),
+
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(

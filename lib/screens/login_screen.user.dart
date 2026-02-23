@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login_screen.admin.dart';
+import 'forgotten_password_screen.dart';
+
 
 class LoginScreenUser extends StatefulWidget {
   const LoginScreenUser({super.key});
@@ -51,7 +53,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
             TextField(
               controller: emailController,
               decoration: const InputDecoration(
-                labelText: "email",
+                labelText: "UP number",
                 border: UnderlineInputBorder(),
               ),
             ),
@@ -72,33 +74,16 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
               alignment: Alignment.center,
               child: TextButton(
                 onPressed: () {
-                   // Navigator.push(
-            //         //context,
-            //         //MaterialPageRoute(
-            //          // builder: (context) => const ForgotPasswordPage(),
-            //          // ),
-            //        //   );
-            //     },
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ForgottenPasswordScreen()),
+                  );
                 },
                 child: const Text("Forgot Password?"),
               ),
             ),
 
-            // Align(
-            //   alignment: Alignment.center,
-            //   child: ElevatedButton(
-            //     onPressed: () {
-            //       // Handle forgot password
-            //      // Navigator.push(
-            //         //context,
-            //         //MaterialPageRoute(
-            //          // builder: (context) => const ForgotPasswordPage(),
-            //          // ),
-            //        //   );
-            //     },
-            //     child: const Text("Forgot Password?"),
-            //   ),
-            // ),
+          
 
             SizedBox(
               width: double.infinity,
@@ -108,7 +93,6 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
               ),
             ),
 
-          //adding button for admin login page at bottom right of the screen
             Align(
               alignment: Alignment.bottomRight,
               child: TextButton(
