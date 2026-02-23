@@ -24,5 +24,6 @@ CREATE TABLE societies (
     is_active BOOLEAN DEFAULT TRUE
 );
 
--
 
+
+ 
