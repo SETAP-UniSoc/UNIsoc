@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'forgotten_password_screen.dart';
+import 'admin_signup_screen.dart';
 
 class LoginScreenAdmin extends StatefulWidget {
   const LoginScreenAdmin({super.key});
@@ -23,8 +24,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Admin Login"),
-        automaticallyImplyLeading: false, 
+        title: const Text("Admin Login"), //putting back the arrow back to the login screen
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -75,15 +75,30 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
               ),
             ),
             const SizedBox(height: 20),
+            // Align(
+            //   alignment: Alignment.bottomLeft,
+            //   child: IconButton(
+            //     icon: const Icon(Icons.arrow_back),
+            //     onPressed: () {
+            //       Navigator.pop(context);
+
+            //     },
+
+            //   ),
+            // ),
+          //adding a sign up button
             Align(
-              alignment: Alignment.bottomLeft,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                alignment: Alignment.bottomRight,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AdminSignupScreen()),
+                    );
+                  },
+                  child: const Text("Sign up"),
+                ),
               ),
-            ),
           ],
         ),
       ),

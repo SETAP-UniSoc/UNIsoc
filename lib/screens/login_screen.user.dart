@@ -39,17 +39,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
             
             const SizedBox(height: 30),
 
-           
-
-            // TextField(
-            //   controller: usernameController,
-            //   decoration: const InputDecoration(
-            //     labelText: "name",
-            //     border: UnderlineInputBorder(),
-            //   ),
-            // ),
-            // const SizedBox(height: 20),
-
+        
 
             TextField(
               controller: emailController,
@@ -86,19 +76,30 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
 
           
 
-            SizedBox(
-              width: double.infinity,
+            // SizedBox(
+            //   width: double.infinity,
+            //   child: ElevatedButton(
+            //     onPressed: loginUser,
+            //     child: const Text("Login"),
+            //   ),
+            // ),
+
+            Align(
+              alignment: Alignment.center,
               child: ElevatedButton(
                 onPressed: loginUser,
                 child: const Text("Login"),
               ),
             ),
-
-            Align(
-              alignment: Alignment.bottomRight,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.push(
+            const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Align(
+                alignment: Alignment.bottomRight,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const LoginScreenAdmin()),
                   );
@@ -108,22 +109,25 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
             ),
             
             //adding a button bottom left to go to signup page
-            Align(
-              alignment: Alignment.bottomLeft,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SignupUserPage()),
-                  );
-                },
-                child: const Text("Signup"),
-              ),
+            // Align(
+            //       alignment: Alignment.bottomLeft,
+            //       child: TextButton(
+            //         onPressed: () {
+            //           Navigator.push(
+            //             context,
+            //             MaterialPageRoute(
+            //               builder: (context) => const SignupUserPage(),
+            //             ),
+            //           );
+            //         },
+            //         child: const Text("Signup"),
+            //       ),
+            //     ),
+              ],
             ),
-
-          ],    
+          ],
         ),
       ),
     );
-  } 
+  }
 }

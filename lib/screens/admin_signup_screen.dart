@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'login_screen.admin.dart';
 
-class SignupUserPage extends StatefulWidget {
-  const SignupUserPage({super.key});
+
+class AdminSignupScreen extends StatefulWidget {
+  const AdminSignupScreen({super.key});
 
   @override
-  State<SignupUserPage> createState() => _SignupUserPageState();
+  State<AdminSignupScreen> createState() => _AdminSignupScreenState();
 }
 
-class _SignupUserPageState extends State<SignupUserPage> {
-  final TextEditingController nameController = TextEditingController();
+class _AdminSignupScreenState extends State<AdminSignupScreen> {
+  final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  void signupUser() {
-    print(nameController.text);
+  void signupAdmin() {
+    print(usernameController.text);
     print(emailController.text);
     print(passwordController.text);
   }
@@ -21,7 +23,7 @@ class _SignupUserPageState extends State<SignupUserPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("User Signup")), //theres an automaticly generated back arrow 
+      appBar: AppBar(title: const Text("Admin Signup")),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -33,9 +35,9 @@ class _SignupUserPageState extends State<SignupUserPage> {
             ),
             const SizedBox(height: 30),
             TextField(
-              controller: nameController,
+              controller: usernameController,
               decoration: const InputDecoration(
-                labelText: "UP number",
+                labelText: "name",
                 border: UnderlineInputBorder(),
               ),
             ),
@@ -57,34 +59,12 @@ class _SignupUserPageState extends State<SignupUserPage> {
               ),
             ),
             const SizedBox(height: 30),
-
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: "confirm password",
-                border: UnderlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 30),
-
             ElevatedButton(
-              onPressed: signupUser,
+              onPressed: signupAdmin,
               child: const Text("Signup"),
-            ),
-
-            //back arrow to go to prevoius screen
-            // Align(
-            //   alignment: Alignment.bottomLeft,
-            //   child: IconButton(
-            //     icon: const Icon(Icons.arrow_back),
-            //     onPressed: () {
-            //       Navigator.pop(context);
-            //     },
-            //   ),
-            // ),
+            ),  
           ],
-        ),  
+        ),
       ),
     );
   }

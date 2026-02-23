@@ -24,7 +24,6 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Reset Password"),
-        automaticallyImplyLeading: false,
         ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -49,15 +48,15 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
               child: const Text("Verify"),
             ),
             //back arrow to go to prevoius screen
-            Align(
-              alignment: Alignment.bottomLeft,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
+            // Align(
+            //   alignment: Alignment.bottomLeft,
+            //   child: IconButton(
+            //     icon: const Icon(Icons.arrow_back),
+            //     onPressed: () {
+            //       Navigator.pop(context);
+            //     },
+            //   ),
+            // ),
           ],
         ),
       ),
