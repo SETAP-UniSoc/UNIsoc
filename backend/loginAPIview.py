@@ -30,4 +30,3 @@ class LoginView(APIView):
             status=status.HTTP_401_UNAUTHORIZED
         )
     
-    
