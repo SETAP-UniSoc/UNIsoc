@@ -264,5 +264,5 @@ class AuditLog(models.Model):
 AUTH_USER_MODEL = 'Unisoc.User'
 
 #run in terminal 
-python manage.py makemigrations
-python manage.py migrate
+#python manage.py makemigrations
+#python manage.py migrate
