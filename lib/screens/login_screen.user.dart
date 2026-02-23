@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'login_screen.admin.dart';
+import 'forgotten_password_screen.dart';
+import 'signup_user_page.dart';
+
 
 class LoginScreenUser extends StatefulWidget {
   const LoginScreenUser({super.key});
@@ -13,7 +17,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
   final TextEditingController passwordController = TextEditingController();
 
   void loginUser() {
-    print(usernameController.text);
+
     print(emailController.text);
     print(passwordController.text);
   }
@@ -35,21 +39,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
             
             const SizedBox(height: 30),
 
-            Image.asset(
-              "assets/images/logo.png", 
-              height: 120,
-              ),
-              const SizedBox(height: 20),
-
-            // TextField(
-            //   controller: usernameController,
-            //   decoration: const InputDecoration(
-            //     labelText: "name",
-            //     border: UnderlineInputBorder(),
-            //   ),
-            // ),
-            // const SizedBox(height: 20),
-
+        
 
             TextField(
               controller: emailController,
@@ -70,49 +60,74 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
             ),
             const SizedBox(height: 30),
 
+
             Align(
               alignment: Alignment.center,
-              child: ElevatedButton(
+              child: TextButton(
                 onPressed: () {
-                  // Handle forgot password
-                 // Navigator.push(
-                    //context,
-                    //MaterialPageRoute(
-                     // builder: (context) => const ForgotPasswordPage(),
-                     // ),
-                   //   );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ForgottenPasswordScreen()),
+                  );
                 },
                 child: const Text("Forgot Password?"),
               ),
             ),
-            SizedBox(
-              width: double.infinity,
+
+          
+
+            // SizedBox(
+            //   width: double.infinity,
+            //   child: ElevatedButton(
+            //     onPressed: loginUser,
+            //     child: const Text("Login"),
+            //   ),
+            // ),
+
+            Align(
+              alignment: Alignment.center,
               child: ElevatedButton(
                 onPressed: loginUser,
                 child: const Text("Login"),
               ),
             ),
-
-            
-            //adding a button bottom right
-            Align(
+            const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Align(
                 alignment: Alignment.bottomRight,
-                child: ElevatedButton(
+                child: TextButton(
                   onPressed: () {
-                    // Handle sign up
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                      builder: (context) => const LoginScreenAdmin(),
-                      ),
-                      );
-                  },
-                  child: const Text("admin"),
-                ),   
+                    Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreenAdmin()),
+                  );
+                },
+                child: const Text("Admin"),
               ),
-          ],    
+            ),
+            
+            //adding a button bottom left to go to signup page
+            // Align(
+            //       alignment: Alignment.bottomLeft,
+            //       child: TextButton(
+            //         onPressed: () {
+            //           Navigator.push(
+            //             context,
+            //             MaterialPageRoute(
+            //               builder: (context) => const SignupUserPage(),
+            //             ),
+            //           );
+            //         },
+            //         child: const Text("Signup"),
+            //       ),
+            //     ),
+              ],
+            ),
+          ],
         ),
       ),
     );
-  } 
+  }
 }
