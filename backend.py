@@ -105,3 +105,74 @@ class MembershipRequest(models.Model):
     def __str__(self):
         return f"{self.user} -> {self.society} ({self.status})"
 
+class Membership(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='memberships'
+    )
+
+    society = models.ForeignKey(
+        Society,
+        on_delete=models.CASCADE,
+        related_name='members'
+    )
+
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'society')
+
+    def __str__(self):
+        return f"{self.user} in {self.society}"
+
+class Event(models.Model):
+    STATUS_CHOICES = [
+        ('upcoming', 'Upcoming'),
+        ('cancelled', 'Cancelled'),
+        ('completed', 'Completed'),
+    ]
+
+    society = models.ForeignKey(
+        Society,
+        on_delete=models.CASCADE,
+        related_name='events'
+    )
+
+    title = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    location = models.CharField(max_length=255, blank=True)
+
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+
+    capacity_limit = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1)]
+    )
+
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='created_events'
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='upcoming'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.end_time <= self.start_time:
+            raise ValidationError("End time must be after start time.")
+
+    def __str__(self):
+        return self.title
+
+
