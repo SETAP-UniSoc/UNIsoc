@@ -7,7 +7,6 @@ class LoginScreenAdmin extends StatefulWidget {
   State<LoginScreenAdmin> createState() => _LoginScreenAdminState();
 }
 
-
 class _LoginScreenAdminState extends State<LoginScreenAdmin> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -22,31 +21,64 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Admin Login")),
+      appBar: AppBar(
+        title: const Text("Admin Login"),
+        automaticallyImplyLeading: false, 
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             const Text(
               "Login",
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
-            
             const SizedBox(height: 30),
-
-            Image.asset(
-              "assets/images/logo.png", 
-              height: 120,
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(
+                labelText: "email",
+                border: UnderlineInputBorder(),
               ),
-              const SizedBox(height: 20),
-
-            // TextField(
-            //   controller: usernameController,
-            //   decoration: const InputDecoration(
-            //     labelText: "name",
-            //     border: UnderlineInputBorder(),
-            //   ),
-            // ),
-            // const SizedBox(height: 20),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: "password",
+                border: UnderlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 30),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {},
+                child: const Text("Forgot Password?"),
+              ),
+            ),
+            Align(
+              alignment: Alignment.center,
+              child: ElevatedButton(
+                onPressed: loginAdmin,
+                child: const Text("Login"),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

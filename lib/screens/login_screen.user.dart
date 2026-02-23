@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'login_screen.admin.dart';
 
 class LoginScreenUser extends StatefulWidget {
   const LoginScreenUser({super.key});
@@ -13,7 +14,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
   final TextEditingController passwordController = TextEditingController();
 
   void loginUser() {
-    print(usernameController.text);
+
     print(emailController.text);
     print(passwordController.text);
   }
@@ -35,11 +36,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
             
             const SizedBox(height: 30),
 
-            Image.asset(
-              "assets/images/logo.png", 
-              height: 120,
-              ),
-              const SizedBox(height: 20),
+           
 
             // TextField(
             //   controller: usernameController,
@@ -54,7 +51,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
             TextField(
               controller: emailController,
               decoration: const InputDecoration(
-                labelText: "UP number",
+                labelText: "email",
                 border: UnderlineInputBorder(),
               ),
             ),
@@ -70,21 +67,39 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
             ),
             const SizedBox(height: 30),
 
+
             Align(
               alignment: Alignment.center,
-              child: ElevatedButton(
+              child: TextButton(
                 onPressed: () {
-                  // Handle forgot password
-                 // Navigator.push(
-                    //context,
-                    //MaterialPageRoute(
-                     // builder: (context) => const ForgotPasswordPage(),
-                     // ),
-                   //   );
+                   // Navigator.push(
+            //         //context,
+            //         //MaterialPageRoute(
+            //          // builder: (context) => const ForgotPasswordPage(),
+            //          // ),
+            //        //   );
+            //     },
                 },
                 child: const Text("Forgot Password?"),
               ),
             ),
+
+            // Align(
+            //   alignment: Alignment.center,
+            //   child: ElevatedButton(
+            //     onPressed: () {
+            //       // Handle forgot password
+            //      // Navigator.push(
+            //         //context,
+            //         //MaterialPageRoute(
+            //          // builder: (context) => const ForgotPasswordPage(),
+            //          // ),
+            //        //   );
+            //     },
+            //     child: const Text("Forgot Password?"),
+            //   ),
+            // ),
+
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -93,23 +108,22 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
               ),
             ),
 
-            
-            //adding a button bottom right
+          //adding button for admin login page at bottom right of the screen
             Align(
-                alignment: Alignment.bottomRight,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Handle sign up
+              alignment: Alignment.bottomRight,
+              child: TextButton(
+                onPressed: () {
                   Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                      builder: (context) => const LoginScreenAdmin(),
-                      ),
-                      );
-                  },
-                  child: const Text("admin"),
-                ),   
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreenAdmin()),
+                  );
+                },
+                child: const Text("Admin"),
               ),
+            ),
+            
+            //adding a button bottom with an arrow icon to go back to the loginuser page
+
           ],    
         ),
       ),
