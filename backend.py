@@ -174,3 +174,95 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class EventRSVP(models.Model):
+    RSVP_CHOICES = [
+        ('attending', 'Attending'),
+        ('not_attending', 'Not Attending'),
+    ]
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name='rsvps'
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='event_rsvps'
+    )
+
+    rsvp_status = models.CharField(
+        max_length=20,
+        choices=RSVP_CHOICES,
+        default='attending'
+    )
+
+    rsvp_time = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('event', 'user')
+
+    def __str__(self):
+        return f"{self.user} - {self.event}"
+
+class NotificationPreference(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='notification_preferences'
+    )
+
+    society = models.ForeignKey(
+        Society,
+        on_delete=models.CASCADE
+    )
+
+    notify = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('user', 'society')
+
+class Message(models.Model):
+    society = models.ForeignKey(
+        Society,
+        on_delete=models.CASCADE,
+        related_name='messages'
+    )
+
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True
+    )
+
+    content = models.TextField()
+
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message from {self.sender}"
+
+class AuditLog(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    action = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+
+    logged_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.action
+
+AUTH_USER_MODEL = 'Unisoc.User'
+
+#run in terminal 
+python manage.py makemigrations
+python manage.py migrate
