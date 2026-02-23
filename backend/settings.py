@@ -8,6 +8,8 @@ INSTALLED_APPS = [
     'rest_framework',
 ]
 
+AUTH_USER_MODEL = 'yourapp.CustomUser'
+
 
 
 
