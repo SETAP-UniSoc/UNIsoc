@@ -29,7 +29,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
           children: [
 
             const Text(
-              "Unisoc",
+              "Login",
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             
@@ -41,20 +41,20 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
               ),
               const SizedBox(height: 20),
 
-            TextField(
-              controller: usernameController,
-              decoration: const InputDecoration(
-                labelText: "Username",
-                border: UnderlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 20),
+            // TextField(
+            //   controller: usernameController,
+            //   decoration: const InputDecoration(
+            //     labelText: "name",
+            //     border: UnderlineInputBorder(),
+            //   ),
+            // ),
+            // const SizedBox(height: 20),
 
 
             TextField(
               controller: emailController,
               decoration: const InputDecoration(
-                labelText: "Email",
+                labelText: "UP number",
                 border: UnderlineInputBorder(),
               ),
             ),
@@ -69,13 +69,6 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
               ),
             ),
             const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: loginUser,
-                child: const Text("Login"),
-              ),
-            ),
 
             Align(
               alignment: Alignment.center,
@@ -92,25 +85,34 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
                 child: const Text("Forgot Password?"),
               ),
             ),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: loginUser,
+                child: const Text("Login"),
+              ),
+            ),
+
+            
             //adding a button bottom right
             Align(
                 alignment: Alignment.bottomRight,
                 child: ElevatedButton(
                   onPressed: () {
                     // Handle sign up
-                  // Navigator.push(
-                      //context,
-                      //MaterialPageRoute(
-                      // builder: (context) => const SignUpPage(),
-                      // ),
-                    //   );
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                      builder: (context) => const LoginScreenAdmin(),
+                      ),
+                      );
                   },
-                  child: const Text("Sign Up"),
-                ),
+                  child: const Text("admin"),
+                ),   
               ),
-          ],
+          ],    
         ),
       ),
     );
-  }
+  } 
 }
