@@ -27,7 +27,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
   final response = await http.post(
     url,
     headers: {"Content-Type": "application/json", "Accept": "application/json"},
-    body: jsonEncode({"UP number": upnumber, "password": password}),
+    body: jsonEncode({"up_number": upnumber, "password": password}),
   );
 
     print("Response Status: ${response.statusCode}");
@@ -108,25 +108,13 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
               ),
             ),
             const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+          //Row(
+           // mainAxisAlignment: MainAxisAlignment.bottomLeft,
+            //children: [
+
+
               Align(
-                alignment: Alignment.bottomRight,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreenAdmin()),
-                  );
-                },
-                child: const Text("Admin"),
-              ),
-            ),
-            
-            //adding a button bottom left to go to signup page
-            Align(
-                  alignment: Alignment.bottomLeft,
+                  alignment: Alignment.bottomCenter,
                   child: TextButton(
                     onPressed: () {
                       Navigator.push(
@@ -139,11 +127,28 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
                     child: const Text("Signup"),
                   ),
                 ),
+
+
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreenAdmin()),
+                  );
+                },
+                child: const Text("Admin"),
+              ),
+            ),
+            
+            //adding a button bottom left to go to signup page
+            
               ],
             ),
-          ],
+         // ],
         ),
-      ),
+    //  ),
     );
   }
 }
