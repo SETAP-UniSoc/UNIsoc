@@ -1,3 +1,11 @@
+CREATE USER unisoc_user WITH PASSWORD 'strongpassword';
+ALTER ROLE unisoc_user SET client_encoding TO 'utf8';
+ALTER ROLE unisoc_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE unisoc_user SET timezone TO 'UTC';
+
+GRANT ALL PRIVILEGES ON DATABASE unisoc_db TO unisoc_user;
+
+
 --- users table to store user information
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
