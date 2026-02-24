@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'login_screen.admin.dart';
 import 'forgotten_password_screen.dart';
@@ -12,12 +14,26 @@ class LoginScreenUser extends StatefulWidget {
 }
 
 class _LoginScreenUserState extends State<LoginScreenUser> {
-  final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  void loginUser() {
+  Future<void> loginUser() async {
+   
+    final email = emailController.text; 
+    final password = passwordController.text;
 
+    final url = Uri.parse("http://127.0.0.1:8000/api/login");
+
+  final response = await http.post(
+    url,
+    headers: {"Content-Type": "apAplication/json", "Accept": "application/json"},
+    body: jsonEncode({"email": email, "password": password}),
+  );
+
+    print("Response Status: ${response.statusCode}");
+    print("Response Body: ${response.body}");
+
+    
     print(emailController.text);
     print(passwordController.text);
   }
