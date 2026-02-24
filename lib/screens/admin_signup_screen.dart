@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'login_screen.admin.dart';
+//import 'login_screen.admin.dart';
+
 
 
 class AdminSignupScreen extends StatefulWidget {
@@ -69,3 +70,4 @@ class _AdminSignupScreenState extends State<AdminSignupScreen> {
     );
   }
 }
+//admin page created
