@@ -32,6 +32,8 @@ class LoginView(APIView):
                     user = None
             except User.DoesNotExist:
                 user = None
+            if user and user.role != 'admin':
+                user = None 
 
         if user:
             token = Token.objects.get_or_create(user=user)[0]
