@@ -86,6 +86,10 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
 } 
     }  catch(e) {
       print("Error:$e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Network error: $e')),
+      );
+      
     } 
     finally {
       if (mounted) setState (()=> _isLoading = false);
