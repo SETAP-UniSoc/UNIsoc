@@ -177,7 +177,7 @@ class Event(models.Model):
 
 
 class EventRSVP(models.Model):
-    RSVP_CHOICES = [
+    RSVP_CHOICES = [ 
         ('attending', 'Attending'),
         ('not_attending', 'Not Attending'),
     ]
