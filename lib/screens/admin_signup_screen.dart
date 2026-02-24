@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'login_screen.admin.dart';
 
 
 class AdminSignupScreen extends StatefulWidget {
@@ -15,9 +14,6 @@ class _AdminSignupScreenState extends State<AdminSignupScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   void signupAdmin() {
-    print(usernameController.text);
-    print(emailController.text);
-    print(passwordController.text);
   }
 
   @override

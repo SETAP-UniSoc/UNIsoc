@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login_screen.admin.dart';
 import 'forgotten_password_screen.dart';
-import 'signup_user_page.dart';
 
 
 class LoginScreenUser extends StatefulWidget {
@@ -18,8 +17,6 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
 
   void loginUser() {
 
-    print(emailController.text);
-    print(passwordController.text);
   }
 
   @override

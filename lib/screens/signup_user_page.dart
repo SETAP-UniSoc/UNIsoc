@@ -13,9 +13,6 @@ class _SignupUserPageState extends State<SignupUserPage> {
   final TextEditingController passwordController = TextEditingController();
 
   void signupUser() {
-    print(nameController.text);
-    print(emailController.text);
-    print(passwordController.text);
   }
 
   @override

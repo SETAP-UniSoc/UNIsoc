@@ -15,9 +15,6 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
   final TextEditingController passwordController = TextEditingController();
 
   void loginAdmin() {
-    print(usernameController.text);
-    print(emailController.text);
-    print(passwordController.text);
   }
 
   @override
