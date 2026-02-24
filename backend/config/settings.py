@@ -121,7 +121,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'unisoc_db',
         'USER': 'unisoc_user',
-        'PASSWORD': 'strongpassword',
+        'PASSWORD': 'S552346p*123',
         'HOST': 'localhost',   
         'PORT': '5432', 
     }
