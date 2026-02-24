@@ -14,6 +14,6 @@ def authenticate_user(identifier, password):
     if user.check_password(password):
         return user
 
-    return None 
+    return None
 
 
