@@ -12,12 +12,24 @@ class LoginScreenUser extends StatefulWidget {
 }
 
 class _LoginScreenUserState extends State<LoginScreenUser> {
-  final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  void loginUser() {
+  Future<void> loginUser() async {
+   
+    final email = emailController.text; 
+    final password = passwordController.text;
 
+    final url = Uri.parse("http://127.0.0.1:8000/api/login");
+
+  final response = await http.post(
+    url,
+    headers: {
+      "Content-Type": "application/json"},
+    body: jsonEncode({"email": email, "password": password}),
+  );
+
+    
     print(emailController.text);
     print(passwordController.text);
   }
