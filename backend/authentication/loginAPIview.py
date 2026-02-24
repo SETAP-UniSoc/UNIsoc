@@ -1,4 +1,3 @@
-from django.contrib.auth import authenticate
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -8,43 +7,33 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class LoginView(APIView):
-
     def post(self, request):
-        up_number = request.data.get("up_number")
         email = request.data.get("email")
         password = request.data.get("password")
+        
+        print(f"DEBUG: Email='{email}', Password='{password}'")  
+        
+        if not email or not password:
+            return Response({"error": "Email and password required"}, 
+                          status=status.HTTP_400_BAD_REQUEST)
 
-        user = None
+        try:
+            user = User.objects.get(email=email)
+            print(f"DEBUG: Found user: {user.email}")
+            
+            if user.check_password(password):
+                print("DEBUG: Password correct!")
+                token, _ = Token.objects.get_or_create(user=user)
+                return Response({
+                    "token": token.key,
+                    "role": getattr(user, "role", "user"),  
+                    "email": user.email,
+                })
+            else:
+                print("DEBUG: Password WRONG")
+                
+        except User.DoesNotExist:
+            print("DEBUG: User not found")
 
-        # If up_number provided (students)
-        if up_number:
-            try:
-                user = User.objects.get(up_number=up_number)
-                if not user.check_password(password):
-                    user = None
-            except User.DoesNotExist:
-                user = None
-
-        # If email provided (admins)
-        elif email:
-            try:
-                user = User.objects.get(email=email)
-                if not user.check_password(password):
-                    user = None
-            except User.DoesNotExist:
-                user = None
-
-        if user:
-            token, created = Token.objects.get_or_create(user=user)
-
-            return Response({
-                "token": token.key,
-                "role": user.role,
-                "up_number": user.up_number,
-                "email": user.email
-            })
-
-        return Response(
-            {"error": "Invalid credentials"},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+        return Response({"error": "Invalid credentials"}, 
+                       status=status.HTTP_401_UNAUTHORIZED)
