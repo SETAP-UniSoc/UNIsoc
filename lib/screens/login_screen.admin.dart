@@ -20,7 +20,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     final email = emailController.text;
     final password = passwordController.text;
 
-    final url = Uri.parse("http://127.0.0.1:8000/api/admin/login");
+    final url = Uri.parse("http://192.168.1.105:8000/api/login/");
   final response = await http.post(
     url,
     headers: {"Content-Type": "application/json", "Accept": "application/json"},
