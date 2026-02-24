@@ -1,3 +1,6 @@
+CREATE USER unisoc_user WITH PASSWORD 'strongpassword';
+GRANT ALL PRIVILEGES ON DATABASE unisoc_db TO unisoc_user;
+
 --- users table to store user information
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
@@ -115,6 +118,10 @@ CREATE INDEX idx_event_rsvp_user ON event_rsvps(user_id);
 
 
 
+<<<<<<< HEAD
+-
+=======
 
 
  
+>>>>>>> origin/main

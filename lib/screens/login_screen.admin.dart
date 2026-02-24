@@ -11,14 +11,18 @@ class LoginScreenAdmin extends StatefulWidget {
   State<LoginScreenAdmin> createState() => _LoginScreenAdminState();
 }
 
+
+
 class _LoginScreenAdminState extends State<LoginScreenAdmin> {
-  final TextEditingController usernameController = TextEditingController();
+  //final TextEditingController usernameController = TextEditingController();
+
+  bool _isLoading = false;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   Future<void> loginAdmin() async {
-    final email = emailController.text;
-    final password = passwordController.text;
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
 
     final url = Uri.parse("http://192.168.1.105:8000/api/login/");
   final response = await http.post(
@@ -26,9 +30,38 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     headers: {"Content-Type": "application/json", "Accept": "application/json"},
     body: jsonEncode({"email": email, "password": password}),
   );
-    print("Response Status: ${response.statusCode}");
-    print("Response Body: ${response.body}");
+} 
+    }  catch(e) {
+      print("Error:$e");
+    } 
+    finally {
+      if (mounted) setState (()=> _isLoading = false);
+    }
   }
+//        } else {
+//       String message = 'Login failed: ${response.statusCode}';
+//       try {
+//         final err = jsonDecode(response.body);
+//         if (err is Map && err['detail'] != null) {
+//           message = err['detail'] as String;
+//         }
+//       } catch (_) {}
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(content: Text(message)),
+//       );
+//     }
+//   } catch (e) {
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       SnackBar(content: Text('Network error: $e')),
+//     );
+//   }
+// }
+
+      
+
+ //   print("Response Status: ${response.statusCode}");
+   // print("Response Body: ${response.body}");
+  
 
   @override
   Widget build(BuildContext context) {
@@ -80,11 +113,15 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(
-                onPressed: loginAdmin,
-                child: const Text("Login"),
+                onPressed: _isLoading ? null : loginAdmin,
+                child: _isLoading
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text("Login"),
               ),
             ),
             const SizedBox(height: 20),
+
+
             // Align(
             //   alignment: Alignment.bottomLeft,
             //   child: IconButton(
@@ -115,3 +152,4 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     );
   }
 }
+  
