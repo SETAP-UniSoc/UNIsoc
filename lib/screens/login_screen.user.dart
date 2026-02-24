@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'login_screen.admin.dart';
 import 'forgotten_password_screen.dart';
@@ -24,8 +26,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
 
   final response = await http.post(
     url,
-    headers: {
-      "Content-Type": "application/json"},
+    headers: {"Content-Type": "application/json", "Accept": "application/json"},
     body: jsonEncode({"email": email, "password": password}),
   );
 
