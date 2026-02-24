@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'login_screen.admin.dart';
 import 'forgotten_password_screen.dart';
 import 'signup_user_page.dart';
+//kfnd
 
 
 class LoginScreenUser extends StatefulWidget {
@@ -14,27 +15,27 @@ class LoginScreenUser extends StatefulWidget {
 }
 
 class _LoginScreenUserState extends State<LoginScreenUser> {
-  final TextEditingController emailController = TextEditingController();
+  final TextEditingController upnumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   Future<void> loginUser() async {
    
-    final email = emailController.text; 
+    final upnumber = upnumberController.text; 
     final password = passwordController.text;
 
     final url = Uri.parse("http://127.0.0.1:8000/api/login");
 
   final response = await http.post(
     url,
-    headers: {"Content-Type": "apAplication/json", "Accept": "application/json"},
-    body: jsonEncode({"email": email, "password": password}),
+    headers: {"Content-Type": "application/json", "Accept": "application/json"},
+    body: jsonEncode({"up_number": upnumber, "password": password}),
   );
 
     print("Response Status: ${response.statusCode}");
     print("Response Body: ${response.body}");
 
     
-    print(emailController.text);
+    print(upnumberController.text);
     print(passwordController.text);
   }
 
@@ -58,7 +59,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
         
 
             TextField(
-              controller: emailController,
+              controller: upnumberController,
               decoration: const InputDecoration(
                 labelText: "UP number",
                 border: UnderlineInputBorder(),
@@ -108,25 +109,13 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
               ),
             ),
             const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+          //Row(
+           // mainAxisAlignment: MainAxisAlignment.bottomLeft,
+            //children: [
+
+
               Align(
-                alignment: Alignment.bottomRight,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreenAdmin()),
-                  );
-                },
-                child: const Text("Admin"),
-              ),
-            ),
-            
-            //adding a button bottom left to go to signup page
-            Align(
-                  alignment: Alignment.bottomLeft,
+                  alignment: Alignment.bottomCenter,
                   child: TextButton(
                     onPressed: () {
                       Navigator.push(
@@ -139,11 +128,28 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
                     child: const Text("Signup"),
                   ),
                 ),
+
+
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreenAdmin()),
+                  );
+                },
+                child: const Text("Admin"),
+              ),
+            ),
+            
+            //adding a button bottom left to go to signup page
+            
               ],
             ),
-          ],
+         // ],
         ),
-      ),
+    //  ),
     );
   }
 }

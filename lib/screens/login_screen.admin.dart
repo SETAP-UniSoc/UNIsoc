@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'forgotten_password_screen.dart';
 import 'admin_signup_screen.dart';
@@ -14,10 +16,18 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  void loginAdmin() {
-    print(usernameController.text);
-    print(emailController.text);
-    print(passwordController.text);
+  Future<void> loginAdmin() async {
+    final email = emailController.text;
+    final password = passwordController.text;
+
+    final url = Uri.parse("http://127.0.0.1:8000/api/admin/login");
+  final response = await http.post(
+    url,
+    headers: {"Content-Type": "application/json", "Accept": "application/json"},
+    body: jsonEncode({"email": email, "password": password}),
+  );
+    print("Response Status: ${response.statusCode}");
+    print("Response Body: ${response.body}");
   }
 
   @override

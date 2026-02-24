@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 class SignupUserPage extends StatefulWidget {
@@ -11,8 +13,25 @@ class _SignupUserPageState extends State<SignupUserPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
 
-  void signupUser() {
+  Future<void> signupUser() async {
+    final name = nameController.text;
+    final email = emailController.text;
+    final password = passwordController.text;
+
+    final url = Uri.parse("http://127.0.0.1:8000/api/user/signup");
+
+  final response = await http.post(
+    url,
+    headers: {"Content-Type": "application/json", "Accept": "application/json"},
+    body: jsonEncode({"name": name, "email": email, "password": password}),
+  );
+  
+    print("Response Status: ${response.statusCode}");
+    print("Response Body: ${response.body}");
+
+
     print(nameController.text);
     print(emailController.text);
     print(passwordController.text);
