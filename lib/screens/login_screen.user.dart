@@ -109,20 +109,20 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
             ),
             
             //adding a button bottom left to go to signup page
-            // Align(
-            //       alignment: Alignment.bottomLeft,
-            //       child: TextButton(
-            //         onPressed: () {
-            //           Navigator.push(
-            //             context,
-            //             MaterialPageRoute(
-            //               builder: (context) => const SignupUserPage(),
-            //             ),
-            //           );
-            //         },
-            //         child: const Text("Signup"),
-            //       ),
-            //     ),
+            Align(
+                  alignment: Alignment.bottomLeft,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SignupUserPage(),
+                        ),
+                      );
+                    },
+                    child: const Text("Signup"),
+                  ),
+                ),
               ],
             ),
           ],
