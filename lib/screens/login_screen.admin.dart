@@ -24,11 +24,64 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter both email and password")),
+      );
+      return;
+    }
+    
+    setState(() {
+      _isLoading = true;
+    });
+
     final url = Uri.parse("http://192.168.1.105:8000/api/login/");
-  final response = await http.post(
-    url,
-    headers: {"Content-Type": "application/json", "Accept": "application/json"},
-    body: jsonEncode({"email": email, "password": password}),
+//http://10.0.2.2:8000/api/login/
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json", "Accept": "application/json"},
+        body: jsonEncode({"email": email, "password": password}),
+      );
+
+      print("Response Status: ${response.statusCode}");
+      print("Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final token = data['token'] as String;
+        final role = data['role'] as String? ?? 'admin';
+  // final response = await http.post(
+  //   url,
+  //   headers: {"Content-Type": "application/json", "Accept": "application/json"},
+  //   body: jsonEncode({"email": email, "password": password}),
+  // );
+     Navigator.pushReplacement(
+    context, 
+    MaterialPageRoute(
+      builder: (context) => Scaffold(
+        appBar: AppBar(title: const Text("Admin Login Success")),
+        body: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.admin_panel_settings, size: 80, color: Colors.green),
+              const SizedBox(height: 20),
+              const Text("Admin login successful!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
+              Text("Token: $token", style: const TextStyle(fontSize: 14, fontFamily: 'monospace')),
+              Text("Role: $role"),
+              const SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
+                child: const Text("Back to Login"),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
   );
 } 
     }  catch(e) {
