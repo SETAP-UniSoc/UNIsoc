@@ -27,7 +27,12 @@ class LoginView(APIView):
 
         # If email provided (admins)
         elif email:
-            user = authenticate(request, username=email, password=password)
+            try:
+                user = User.objects.get(email=email)
+                if not user.check_password(password):
+                    user = None
+            except User.DoesNotExist:
+                user = None
 
         if user:
             token, created = Token.objects.get_or_create(user=user)
