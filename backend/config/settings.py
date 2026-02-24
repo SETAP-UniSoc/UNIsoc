@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-$@sa%u&rclbt8@^91bkvo434e9f)ep+c!a*xzrzllqm9c&5%q0'
+SECRET_KEY = 'django-insecure-5qg1k1+-nhdb3$784lw&+$+)ud*f@8&g(on(6fac6qx2^*dz1v'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -116,30 +116,14 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
-    'rest_framework',
-    'rest_framework.authtoken',
-
-    'backend',
-]
-
-AUTH_USER_MODEL = 'backend.CustomUser'
-
-
-
-
-
-
-
-
-
-
-
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'unisoc_db',
+        'USER': 'unisoc_user',
+        'PASSWORD': 'strongpassword',
+        'HOST': 'localhost',   
+        'PORT': '5432', 
+    }
+}
 

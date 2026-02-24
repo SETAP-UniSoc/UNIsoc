@@ -1,8 +1,7 @@
 from django.urls import path
-from backend.authentication.loginAPIview import LoginView
+from .loginAPIview import LoginView
 
 urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
 ]
-
 
