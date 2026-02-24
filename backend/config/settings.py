@@ -130,7 +130,8 @@ INSTALLED_APPS = [
     'backend',
 ]
 
-AUTH_USER_MODEL = 'backend.CustomUser'
+
+AUTH_USER_MODEL = 'authentication.User'
 
 
 

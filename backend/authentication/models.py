@@ -22,7 +22,9 @@ class User(AbstractUser):
         choices=ROLE_CHOICES,
         default='user'
     )
-
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+    
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -261,7 +263,7 @@ class AuditLog(models.Model):
     def __str__(self):
         return self.action
 
-AUTH_USER_MODEL = 'Unisoc.User'
+
 
 #run in terminal 
 #python manage.py makemigrations
