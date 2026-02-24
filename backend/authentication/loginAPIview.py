@@ -1,4 +1,3 @@
-from django.contrib.auth import authenticate
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -16,7 +15,7 @@ class LoginView(APIView):
 
         user = None
 
-        # If up_number provided (students)
+        # Student login
         if up_number:
             try:
                 user = User.objects.get(up_number=up_number)
@@ -25,7 +24,7 @@ class LoginView(APIView):
             except User.DoesNotExist:
                 user = None
 
-        # If email provided (admins)
+        # Admin login
         elif email:
             try:
                 user = User.objects.get(email=email)
@@ -39,9 +38,8 @@ class LoginView(APIView):
 
             return Response({
                 "token": token.key,
-                "role": user.role,
-                "up_number": user.up_number,
-                "email": user.email
+                "role": getattr(user, "role", "admin"),
+                "email": user.email,
             })
 
         return Response(
