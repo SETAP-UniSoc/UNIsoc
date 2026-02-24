@@ -26,9 +26,12 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
 
   final response = await http.post(
     url,
-    headers: {"Content-Type": "application/json", "Accept": "application/json"},
+    headers: {"Content-Type": "apAplication/json", "Accept": "application/json"},
     body: jsonEncode({"email": email, "password": password}),
   );
+
+    print("Response Status: ${response.statusCode}");
+    print("Response Body: ${response.body}");
 
     
     print(emailController.text);
