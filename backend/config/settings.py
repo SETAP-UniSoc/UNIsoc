@@ -120,8 +120,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'unisoc_db',
-        'USER': 'postgres',
-        'PASSWORD': 'password',
+        'USER': 'unisoc_user',
+        'PASSWORD': 'strongpassword',
         'HOST': 'localhost',   
         'PORT': '5432', 
     }
