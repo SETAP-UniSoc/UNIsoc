@@ -35,7 +35,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
       _isLoading = true;
     });
 
-    final url = Uri.parse("http://127.0.0.1:8000/api/login/");
+    final url = Uri.parse("http://10.128.5.47:8000/api/login/");
 //http://10.0.2.2:8000/api/login/
     try {
       final response = await http.post(
