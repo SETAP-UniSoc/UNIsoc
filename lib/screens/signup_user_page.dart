@@ -23,6 +23,7 @@ class _SignupUserPageState extends State<SignupUserPage> {
     );
   }
 
+//signup function that sends a post request to the backend with the user input data and checks for errors in the input data before sending the request
   Future<void> signupUser() async {
     final name = nameController.text;
     final upnumberDigits = upnumberController.text.trim();
