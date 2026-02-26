@@ -29,6 +29,13 @@ void main() {
     expect(find.text('admin@example.com'), findsOneWidget);
   });
 
-  
+//testing if password field accepts an input
+  testWidgets('Admin Login Screen password input', (WidgetTester tester) async {
+    await tester.pumpWidget(const MaterialApp(home: LoginScreenAdmin()));
+
+    final passwordField = find.byType(TextField).last;
+    await tester.enterText(passwordField, 'password123');
+    expect(find.text('password123'), findsOneWidget);
+  });  
 
 }
