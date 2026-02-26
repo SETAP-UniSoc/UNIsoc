@@ -85,6 +85,3 @@ class RegisterView(APIView):
             status=status.HTTP_201_CREATED
         )
 
-from authentication.RegisterView import loginAPIview
-
-path("login/", loginAPIview, name="login")
