@@ -35,7 +35,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
       _isLoading = true;
     });
 
-    final url = Uri.parse("http://10.0.2.2:8000/api/login/");
+    final url = Uri.parse("http://10.128.5.47:8000/api/login/");
 //http://10.0.2.2:8000/api/login/
     try {
       final response = await http.post(
@@ -55,7 +55,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
   //   url,
   //   headers: {"Content-Type": "application/json", "Accept": "application/json"},
   //   body: jsonEncode({"email": email, "password": password}),
-  // );
+  //);
      Navigator.pushReplacement(
     context, 
     MaterialPageRoute(
