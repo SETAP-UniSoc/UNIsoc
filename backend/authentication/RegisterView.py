@@ -7,29 +7,53 @@ User = get_user_model()
 
 class RegisterView(APIView):
     def post(self, request):
+        first_name = request.data.get("first_name")
+        last_name = request.data.get("last_name")
         email = request.data.get("email")
+        up_number = request.data.get("up_number")
         password = request.data.get("password")
+        confirm_password = request.data.get("confirm_password")
 
-        if not email or not password:
+        if not all([first_name, last_name, email, up_number, password, confirm_password]):
             return Response(
-                {"error": "Email and password required"},
+                {"error": "All fields are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if password != confirm_password:
+            return Response(
+                {"error": "Passwords do not match"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         if User.objects.filter(email=email).exists():
             return Response(
-                {"error": "User already exists"},
+                {"error": "Email already exists"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if User.objects.filter(up_number=up_number).exists():
+            return Response(
+                {"error": "UP number already exists"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         user = User.objects.create_user(
             email=email,
             password=password,
-            role="user"   
+            up_number=up_number,
+            first_name=first_name,
+            last_name=last_name,
+            role="user"
         )
 
         return Response(
-            {"message": "User created successfully"},
+            {"message": "User registered successfully", "user": {
+                "email": user.email,
+                "up_number": user.up_number,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "role": user.role
+            }},
             status=status.HTTP_201_CREATED
         )
-    
