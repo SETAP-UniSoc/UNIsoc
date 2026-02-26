@@ -18,6 +18,15 @@ class _SignupUserPageState extends State<SignupUserPage> {
   final TextEditingController confirmPasswordController = TextEditingController();
   
 
+<<<<<<< HEAD
+=======
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+>>>>>>> e9a8fa6dea8b7dd64bff5c251f3621a08438521d
   Future<void> signupUser() async {
     final name = nameController.text;
     final upnumberDigits = upnumberController.text.trim();
