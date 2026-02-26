@@ -23,7 +23,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
     final upnumber = upnumberController.text; 
     final password = passwordController.text;
 
-    final url = Uri.parse("http://10.128.5.47:8000/api/user/login/");
+    final url = Uri.parse("http://10.128.5.47:8000/user/login/");
 
   final response = await http.post(
     url,
