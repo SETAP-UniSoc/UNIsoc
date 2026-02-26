@@ -18,7 +18,6 @@ void main() {
     expect(find.text('Login'), findsOneWidget);
   });
 
-
 //testing if email field accepts an input
 
   testWidgets('Admin Login Screen email input', (WidgetTester tester) async {
@@ -38,4 +37,14 @@ void main() {
     expect(find.text('password123'), findsOneWidget);
   });  
 
+//testing incorrect login credentials empty fields
+  testWidgets('Admin Login Screen empty credentials', (WidgetTester tester) async {
+    await tester.pumpWidget(const MaterialApp(home: LoginScreenAdmin()));
+
+    final loginButton = find.text('Login');
+    await tester.tap(loginButton);
+    await tester.pump();
+
+    expect(find.text('Please enter both email and password'), findsOneWidget);
+  });
 }
