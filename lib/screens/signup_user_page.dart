@@ -14,7 +14,8 @@ class _SignupUserPageState extends State<SignupUserPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
-
+  
+//   final TextEditingController confirmPasswordController = TextEditingController();
   Future<void> signupUser() async {
     final name = nameController.text;
     final email = emailController.text;
