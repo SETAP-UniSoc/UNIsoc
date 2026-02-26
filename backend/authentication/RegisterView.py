@@ -26,6 +26,31 @@ class RegisterView(APIView):
                 {"error": "Passwords do not match"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+        # Password strength validation
+        if len(password) < 8:
+            return Response(
+                {"error": "Password must be at least 8 characters long"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not re.search(r"[A-Z]", password):
+            return Response(
+                {"error": "Password must contain at least one uppercase letter"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not re.search(r"[0-9]", password):
+            return Response(
+                {"error": "Password must contain at least one number"},
+                status=status.HTTP_400_BAD_REQUEST
+            )   
+
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+            return Response(
+                {"error": "Password must contain at least one special character"},
+                status=status.HTTP_400_BAD_REQUEST
+         )
 
         if User.objects.filter(email=email).exists():
             return Response(
