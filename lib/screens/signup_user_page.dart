@@ -16,17 +16,13 @@ class _SignupUserPageState extends State<SignupUserPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
-  
 
-<<<<<<< HEAD
-=======
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
 
->>>>>>> e9a8fa6dea8b7dd64bff5c251f3621a08438521d
   Future<void> signupUser() async {
     final name = nameController.text;
     final upnumberDigits = upnumberController.text.trim();
@@ -88,28 +84,62 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
 }
     final url = Uri.parse("http://10.128.5.47:8000/api/user/signup");
 
-  final response = await http.post(
-    url,
-    headers: {"Content-Type": "application/json", "Accept": "application/json"},
-    body: jsonEncode({"name": name, "up_number": upnumber, "email": email, "password": password, "confirm_password": confirmPassword}),
-  );
-
-  final data = jsonDecode(response.body) as Map<String, dynamic>;
-  
-    print("Response Status: ${response.statusCode}");
-    print("Response Body: ${response.body}");
-
-    print(nameController.text);
-    print(upnumberController.text);
-    print(emailController.text);
-    print(passwordController.text);
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      if (!mounted) return;
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const BlankPage()),
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json", "Accept": "application/json"},
+        body: jsonEncode({"name": name, "up_number": upnumber, "email": email, "password": password, "confirm_password": confirmPassword}),
       );
+
+      if (!mounted) return;
+
+      print("Response Status: ${response.statusCode}");
+      print("Response Body: ${response.body}");
+
+      print(nameController.text);
+      print(upnumberController.text);
+      print(emailController.text);
+      print(passwordController.text);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (response.body.isNotEmpty) {
+          try {
+            final data = jsonDecode(response.body);
+            if (data is Map<String, dynamic>) {
+              final token = data['token'] as String?;
+              final role = data['role'] as String? ?? 'user';
+              print("Token: $token");
+              print("Role: $role");
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Signup successful ($role)')),
+              );
+            }
+          } catch (_) {}
+        }
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const BlankPage()),
+        );
+        return;
+      }
+
+      String errorMessage = 'Signup failed (${response.statusCode})';
+      if (response.body.isNotEmpty) {
+        try {
+          final data = jsonDecode(response.body);
+          if (data is Map<String, dynamic>) {
+            final serverMessage = data['error'] ?? data['message'] ?? data['detail'];
+            if (serverMessage is String && serverMessage.isNotEmpty) {
+              errorMessage = serverMessage;
+            }
+          }
+        } catch (_) {}
+      }
+      _showError(errorMessage);
+    } catch (e) {
+      if (!mounted) return;
+      _showError('Network error: $e');
     }
   }
 
