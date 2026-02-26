@@ -1,8 +1,8 @@
-import re
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import get_user_model
+import re
 
 User = get_user_model()
 
@@ -83,3 +83,4 @@ class RegisterView(APIView):
             }},
             status=status.HTTP_201_CREATED
         )
+
