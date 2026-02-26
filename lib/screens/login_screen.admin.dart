@@ -51,11 +51,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         final token = data['token'] as String;
         final role = data['role'] as String? ?? 'admin';
-  // final response = await http.post(
-  //   url,
-  //   headers: {"Content-Type": "application/json", "Accept": "application/json"},
-  //   body: jsonEncode({"email": email, "password": password}),
-  // );
+
      Navigator.pushReplacement(
     context, 
     MaterialPageRoute(

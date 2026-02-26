@@ -17,9 +17,18 @@ void main() {
     // Check for login button
     expect(find.text('Login'), findsOneWidget);
   });
+
+
+//testing if email field accepts an input
+
+  testWidgets('Admin Login Screen email input', (WidgetTester tester) async {
+    await tester.pumpWidget(const MaterialApp(home: LoginScreenAdmin()));
+
+    final emailField = find.byType(TextField).first;
+    await tester.enterText(emailField, 'admin@example.com');
+    expect(find.text('admin@example.com'), findsOneWidget);
+  });
+
+  
+
 }
-
-//testing if email field accepts input
-
-
-
