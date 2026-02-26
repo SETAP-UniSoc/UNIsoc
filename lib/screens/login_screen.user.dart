@@ -23,7 +23,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
     final upnumber = upnumberController.text; 
     final password = passwordController.text;
 
-    final url = Uri.parse("http://127.0.0.1:8000/api/login");
+    final url = Uri.parse("http://10.128.5.47:8000/api/login");
 
   final response = await http.post(
     url,
@@ -91,15 +91,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
               ),
             ),
 
-          
-
-            // SizedBox(
-            //   width: double.infinity,
-            //   child: ElevatedButton(
-            //     onPressed: loginUser,
-            //     child: const Text("Login"),
-            //   ),
-            // ),
+        
 
             Align(
               alignment: Alignment.center,

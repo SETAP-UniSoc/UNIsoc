@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SignupUserPage extends StatefulWidget {
   const SignupUserPage({super.key});
@@ -11,30 +12,101 @@ class SignupUserPage extends StatefulWidget {
 
 class _SignupUserPageState extends State<SignupUserPage> {
   final TextEditingController nameController = TextEditingController();
+  final TextEditingController upnumberController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   Future<void> signupUser() async {
     final name = nameController.text;
+    final upnumberDigits = upnumberController.text.trim();
     final email = emailController.text;
     final password = passwordController.text;
+    final confirmPassword = confirmPasswordController.text;
 
-    final url = Uri.parse("http://127.0.0.1:8000/api/user/signup");
+    if (upnumberDigits.length != 7) {
+      _showError("UP number must be 7 digits");
+      return;
+    }
+
+    final upnumber = 'UP$upnumberDigits';
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Passwords do not match")),
+      );
+      return;
+    }
+
+    if (name.isEmpty || upnumber.isEmpty || email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill in all fields")),
+      );
+      return;
+    }
+
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a valid email address")),
+      );
+      return;
+    }
+
+  //password validation checks password is at least 8 characters at least one  specicial character , a number , one uppercase letter
+    // Password must be at least 8 characters
+if (password.length < 8) {
+  _showError("Password must be at least 8 characters long");
+  return;
+}
+
+// Must contain uppercase letter
+if (!RegExp(r'[A-Z]').hasMatch(password)) {
+  _showError("Password must contain at least one uppercase letter");
+  return;
+}
+
+// Must contain number
+if (!RegExp(r'\d').hasMatch(password)) {
+  _showError("Password must contain at least one number");
+  return;
+}
+
+// Must contain special character
+if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
+  _showError("Password must contain at least one special character");
+  return;
+}
+    final url = Uri.parse("http://10.128.5.47:8000/api/user/signup");
 
   final response = await http.post(
     url,
     headers: {"Content-Type": "application/json", "Accept": "application/json"},
-    body: jsonEncode({"name": name, "email": email, "password": password}),
+    body: jsonEncode({"name": name, "up_number": upnumber, "email": email, "password": password, "confirm_password": confirmPassword}),
   );
+
+  final data = jsonDecode(response.body) as Map<String, dynamic>;
   
     print("Response Status: ${response.statusCode}");
     print("Response Body: ${response.body}");
 
-
     print(nameController.text);
+    print(upnumberController.text);
     print(emailController.text);
     print(passwordController.text);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const BlankPage()),
+      );
+    }
   }
 
   @override
@@ -51,14 +123,30 @@ class _SignupUserPageState extends State<SignupUserPage> {
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
+            
             TextField(
               controller: nameController,
               decoration: const InputDecoration(
-                labelText: "UP number",
+                labelText: "Name",
                 border: UnderlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
+            TextField(
+              controller: upnumberController,
+              keyboardType: TextInputType.number,
+              inputFormatters:[
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(7),
+              ],
+              decoration: const InputDecoration(
+                labelText: "UP number",
+                prefixText: "UP",
+                border: UnderlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            //email input that checks email format and shows error message if email is not valid
             TextField(
               controller: emailController,
               decoration: const InputDecoration(
@@ -78,7 +166,7 @@ class _SignupUserPageState extends State<SignupUserPage> {
             const SizedBox(height: 30),
 
             TextField(
-              controller: passwordController,
+              controller: confirmPasswordController,
               obscureText: true,
               decoration: const InputDecoration(
                 labelText: "confirm password",
@@ -91,20 +179,20 @@ class _SignupUserPageState extends State<SignupUserPage> {
               onPressed: signupUser,
               child: const Text("Signup"),
             ),
-
-            //back arrow to go to prevoius screen
-            // Align(
-            //   alignment: Alignment.bottomLeft,
-            //   child: IconButton(
-            //     icon: const Icon(Icons.arrow_back),
-            //     onPressed: () {
-            //       Navigator.pop(context);
-            //     },
-            //   ),
-            // ),
           ],
         ),  
       ),
+    );
+  }
+}
+
+class BlankPage extends StatelessWidget {
+  const BlankPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: SizedBox.expand(),
     );
   }
 }
