@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import get_user_model
 import re
+from rest_framework.authtoken.models import Token
 
 User = get_user_model()
 
