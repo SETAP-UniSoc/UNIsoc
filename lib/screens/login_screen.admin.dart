@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'forgotten_password_screen.dart';
-import 'admin_signup_screen.dart';
+import 'signup_user_page.dart';
 
 class LoginScreenAdmin extends StatefulWidget {
   const LoginScreenAdmin({super.key});
@@ -35,7 +35,11 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
       _isLoading = true;
     });
 
+<<<<<<< HEAD
     final url = Uri.parse("http://10.128.5.47:8000/api/login/");
+=======
+    final url = Uri.parse("http://10.128.5.47:8000/api/admin/login");
+>>>>>>> Maya-up2266552
 //http://10.0.2.2:8000/api/login/
     try {
       final response = await http.post(
@@ -95,30 +99,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
       if (mounted) setState (()=> _isLoading = false);
     }
   }
-//        } else {
-//       String message = 'Login failed: ${response.statusCode}';
-//       try {
-//         final err = jsonDecode(response.body);
-//         if (err is Map && err['detail'] != null) {
-//           message = err['detail'] as String;
-//         }
-//       } catch (_) {}
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text(message)),
-//       );
-//     }
-//   } catch (e) {
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       SnackBar(content: Text('Network error: $e')),
-//     );
-//   }
-// }
 
-      
-
- //   print("Response Status: ${response.statusCode}");
-   // print("Response Body: ${response.body}");
-  
 
   @override
   Widget build(BuildContext context) {
@@ -177,27 +158,14 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
               ),
             ),
             const SizedBox(height: 20),
-
-
-            // Align(
-            //   alignment: Alignment.bottomLeft,
-            //   child: IconButton(
-            //     icon: const Icon(Icons.arrow_back),
-            //     onPressed: () {
-            //       Navigator.pop(context);
-
-            //     },
-
-            //   ),
-            // ),
-          //adding a sign up button
+            
             Align(
                 alignment: Alignment.bottomRight,
                 child: TextButton(
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const AdminSignupScreen()),
+                      MaterialPageRoute(builder: (context) => const SignupUserPage()),
                     );
                   },
                   child: const Text("Sign up"),
