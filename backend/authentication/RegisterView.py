@@ -8,8 +8,8 @@ User = get_user_model()
 
 class RegisterView(APIView):
     def post(self, request):
-        first_name = request.data.get("firstname")
-        last_name = request.data.get("lastname")
+        first_name = request.data.get("first_name")
+        last_name = request.data.get("last_name")
         email = request.data.get("email")
         up_number = request.data.get("up_number")
         password = request.data.get("password")
