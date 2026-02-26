@@ -82,7 +82,7 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
   _showError("Password must contain at least one special character");
   return;
 }
-    final url = Uri.parse("http://10.128.5.47:8000/api/user/signup");
+    final url = Uri.parse("http://10.128.5.47:8000/api/user/signup/");
 
     try {
       final response = await http.post(
