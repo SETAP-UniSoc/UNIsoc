@@ -1,39 +1,47 @@
+from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
 class LoginView(APIView):
     def post(self, request):
         email = request.data.get("email")
+        up_number = request.data.get("up_number")
         password = request.data.get("password")
-        
-        print(f"DEBUG: Email='{email}', Password='{password}'")  
-        
-        if not email or not password:
-            return Response({"error": "Email and password required"}, 
-                          status=status.HTTP_400_BAD_REQUEST)
+
+        if not password:
+            return Response(
+                {"error": "Password required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
-            user = User.objects.get(email=email)
-            print(f"DEBUG: Found user: {user.email}")
-            
+            if email:
+                user = User.objects.get(email=email)
+            elif up_number:
+                user = User.objects.get(up_number=up_number)
+            else:
+                return Response(
+                    {"error": "Email or UP number required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
             if user.check_password(password):
-                print("DEBUG: Password correct!")
                 token, _ = Token.objects.get_or_create(user=user)
                 return Response({
                     "token": token.key,
-                    "role": getattr(user, "role", "user"),  
+                    "role": user.role,
                     "email": user.email,
+                    "up_number": user.up_number
                 })
-            else:
-                print("DEBUG: Password WRONG")
-                
-        except User.DoesNotExist:
-            print("DEBUG: User not found")
 
-        return Response({"error": "Invalid credentials"}, 
-                       status=status.HTTP_401_UNAUTHORIZED)
+        except User.DoesNotExist:
+            pass
+
+        return Response(
+            {"error": "Invalid credentials"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
