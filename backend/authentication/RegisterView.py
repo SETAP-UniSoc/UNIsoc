@@ -8,14 +8,13 @@ User = get_user_model()
 
 class RegisterView(APIView):
     def post(self, request):
-        first_name = request.data.get("first_name")
-        last_name = request.data.get("last_name")
+        name = request.data.get("name")
         email = request.data.get("email")
         up_number = request.data.get("up_number")
         password = request.data.get("password")
         confirm_password = request.data.get("confirm_password")
 
-        if not all([first_name, last_name, email, up_number, password, confirm_password]):
+        if not all([name, email, up_number, password, confirm_password]):
             return Response(
                 {"error": "All fields are required"},
                 status=status.HTTP_400_BAD_REQUEST
@@ -68,8 +67,7 @@ class RegisterView(APIView):
             email=email,
             password=password,
             up_number=up_number,
-            first_name=first_name,
-            last_name=last_name,
+            name = name,
             role="user"
         )
 
@@ -77,8 +75,7 @@ class RegisterView(APIView):
             {"message": "User registered successfully", "user": {
                 "email": user.email,
                 "up_number": user.up_number,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
+                "name": user.name,
                 "role": user.role
             }},
             status=status.HTTP_201_CREATED
