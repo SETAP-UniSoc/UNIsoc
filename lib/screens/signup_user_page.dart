@@ -11,7 +11,8 @@ class SignupUserPage extends StatefulWidget {
 }
 
 class _SignupUserPageState extends State<SignupUserPage> {
-  final TextEditingController nameController = TextEditingController();
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
   final TextEditingController upnumberController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -24,7 +25,8 @@ class _SignupUserPageState extends State<SignupUserPage> {
   }
 
   Future<void> signupUser() async {
-    final name = nameController.text;
+    final firstName = firstNameController.text;
+    final lastName = lastNameController.text;
     final upnumberDigits = upnumberController.text.trim();
     final email = emailController.text;
     final password = passwordController.text;
@@ -44,7 +46,7 @@ class _SignupUserPageState extends State<SignupUserPage> {
       return;
     }
 
-    if (name.isEmpty || upnumber.isEmpty || email.isEmpty || password.isEmpty) {
+    if (firstName.isEmpty || lastName.isEmpty || upnumber.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill in all fields")),
       );
@@ -88,15 +90,16 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json", "Accept": "application/json"},
-        body: jsonEncode({"name": name, "up_number": upnumber, "email": email, "password": password, "confirm_password": confirmPassword}),
+        body: jsonEncode({"first_name": firstNameController.text,"last_name": lastNameController.text, "up_number": upnumber, "email": email, "password": password, "confirm_password": confirmPassword}),
       );
 
       if (!mounted) return;
 
       print("Response Status: ${response.statusCode}");
       print("Response Body: ${response.body}");
-
-      print(nameController.text);
+//adding a first and last name field to the signup page and printing them to the console to check if they are being sent to the backend correctly
+      print(firstNameController.text);
+      print(lastNameController.text);
       print(upnumberController.text);
       print(emailController.text);
       print(passwordController.text);
@@ -159,13 +162,23 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
             const SizedBox(height: 30),
             
             TextField(
-              controller: nameController,
+              controller: firstNameController,
               decoration: const InputDecoration(
-                labelText: "Name",
+                labelText: "First Name",
                 border: UnderlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
+
+            TextField(
+              controller: lastNameController,
+              decoration: const InputDecoration(
+                labelText: "Last Name",
+                border: UnderlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+
             TextField(
               controller: upnumberController,
               keyboardType: TextInputType.number,
@@ -179,7 +192,7 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
                 border: UnderlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
             //email input that checks email format and shows error message if email is not valid
             TextField(
               controller: emailController,
@@ -188,7 +201,7 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
                 border: UnderlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
             TextField(
               controller: passwordController,
               obscureText: true,
@@ -197,7 +210,7 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
                 border: UnderlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 10),
 
             TextField(
               controller: confirmPasswordController,
@@ -207,7 +220,7 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
                 border: UnderlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 10),
 
             ElevatedButton(
               onPressed: signupUser,
