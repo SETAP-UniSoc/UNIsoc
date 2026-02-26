@@ -35,11 +35,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
       _isLoading = true;
     });
 
-<<<<<<< HEAD
     final url = Uri.parse("http://10.128.5.47:8000/api/login/");
-=======
-    final url = Uri.parse("http://10.128.5.47:8000/api/admin/login");
->>>>>>> Maya-up2266552
 //http://10.0.2.2:8000/api/login/
     try {
       final response = await http.post(
