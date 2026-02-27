@@ -26,46 +26,48 @@ class AnalyticsView(APIView):
 
         now = timezone.now()
 
+        # Decide grouping & range
         if period == "week":
-            start_date = now - timedelta(days=7)
-            trunc_function = TruncDay
-
+            days_range = 7
+            delta = timedelta(days=1)
+            label_format = "%a"  # Mon Tue Wed
         elif period == "month":
-            start_date = now - timedelta(days=30)
-            trunc_function = TruncDay
-
+            days_range = 30
+            delta = timedelta(days=1)
+            label_format = "%d %b"
         elif period == "6months":
-            start_date = now - timedelta(days=180)
-            trunc_function = TruncWeek
-
+            days_range = 26
+            delta = timedelta(weeks=1)
+            label_format = "Week %W"
         elif period == "year":
-            start_date = now - timedelta(days=365)
-            trunc_function = TruncMonth
-
+            days_range = 12
+            delta = timedelta(days=30)
+            label_format = "%b"
         else:
             return Response({"error": "Invalid period"}, status=400)
 
-        # Get joins grouped properly
-        joins = (
-            Membership.objects
-            .filter(society=society, joined_at__gte=start_date)
-            .annotate(period=trunc_function('joined_at'))
-            .values('period')
-            .annotate(count=Count('id'))
-            .order_by('period')
-        )
+        start_date = now - (delta * days_range)
 
-        # Get leaves grouped properly
-        leaves = (
-            Membership.objects
-            .filter(society=society, left_at__gte=start_date)
-            .annotate(period=trunc_function('left_at'))
-            .values('period')
-            .annotate(count=Count('id'))
-            .order_by('period')
-        )
+        labels = []
+        totals = []
+
+        current_date = start_date
+
+        for _ in range(days_range):
+
+            total = Membership.objects.filter(
+                society=society,
+                joined_at__lte=current_date
+            ).exclude(
+                left_at__lte=current_date
+            ).count()
+
+            labels.append(current_date.strftime(label_format))
+            totals.append(total)
+
+            current_date += delta
 
         return Response({
-            "joins": list(joins),
-            "leaves": list(leaves)
+            "labels": labels,
+            "totals": totals
         })
