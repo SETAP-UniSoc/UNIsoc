@@ -35,7 +35,7 @@ class AdminHomepage extends StatelessWidget {
                onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const AdminHomepage()),
+                    MaterialPageRoute(builder: (context) => const AdminEventsPage()),
                   );
                 },
               child: const Row(
@@ -43,23 +43,7 @@ class AdminHomepage extends StatelessWidget {
                 children: [
                   Icon(Icons.calendar_today),
                   SizedBox(width: 6),
-                  //Text("Events"),
-                ],
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AdminEventsPage()),
-                  );
-                },
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.analytics),
-                  SizedBox(width: 6),
-                  //Text("Analytics"),
+                  Text("Events"),
                 ],
               ),
             ),
@@ -70,8 +54,15 @@ class AdminHomepage extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const AdminAnalyticsPage()),
                   );
                 },
-              child: const SizedBox.shrink(),
-           ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.analytics),
+                  SizedBox(width: 6),
+                  Text("Analytics"),
+                ],
+              ),
+            ),
           ],
         ),
       ),
