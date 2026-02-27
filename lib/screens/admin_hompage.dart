@@ -1,37 +1,79 @@
-//import 'dart:convert';
-//import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'login_screen.admin.dart';
+import 'admin_events_page.dart';
+import 'admin_analytics_page.dart';
 
-// admin homepage with navigation bar in thenavigation banner
 class AdminHomepage extends StatelessWidget {
   const AdminHomepage({super.key});
 
-//creating bannaer at top with three line navugation button and title of page
-//adding a navigation bar three lines in right corner of navigation banner and adding a title of page in center of navigation banner
   @override
+  
+
+  
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Admin Homepage"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              // Handle navigation menu tap
-
-            },
-          ),
-        ],
-      ),
-      body: const Center(
-        child: Text(
-          //displays admin name in the center of the page with a welcome message
-          
-          "Welcome",
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      body: const SizedBox.shrink(),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            TextButton(
+              onPressed: () {},
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.home),
+                  SizedBox(width: 6),
+                  //Text("Home"),
+                ],
+              ),
+            ),
+            TextButton(
+               onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AdminHomepage()),
+                  );
+                },
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.calendar_today),
+                  SizedBox(width: 6),
+                  //Text("Events"),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AdminEventsPage()),
+                  );
+                },
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.analytics),
+                  SizedBox(width: 6),
+                  //Text("Analytics"),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AdminAnalyticsPage()),
+                  );
+                },
+              child: const SizedBox.shrink(),
+           ),
+          ],
         ),
       ),
     );
   }
 }
+
+              
+        
