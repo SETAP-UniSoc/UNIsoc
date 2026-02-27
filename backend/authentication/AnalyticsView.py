@@ -22,6 +22,12 @@ class AnalyticsView(APIView):
                 {"error": "Society not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
+        
+        if request.user.role != "admin":
+            return Response(
+                {"error": "Admins only"},
+                status=status.HTTP_403_FORBIDDEN
+    )
 
         now = timezone.now()
 
