@@ -4,10 +4,33 @@ import 'package:flutter/material.dart';
 class AdminAnalyticsPage extends StatelessWidget {
   const AdminAnalyticsPage({super.key});
 
+//add title to the page called My anlytics 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: const SizedBox.shrink(),
+      appBar: AppBar(
+        title: const Text("My Analytics"),
+        centerTitle: true,
+      ),
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          ElevatedButton(
+            onPressed: () {},
+            child: const Text("Yes"),
+          ),
+          ElevatedButton(
+            onPressed: () {},
+            child: const Text("No"),
+          ),
+          ElevatedButton(
+            onPressed: () {},
+            child: const Text("Maybe"),
+          ),
+        ],
+      ),
     );
   }
 }
+
