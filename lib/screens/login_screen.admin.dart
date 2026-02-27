@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:unisoc/screens/admin_hompage.dart';
 import 'forgotten_password_screen.dart';
-import 'signup_user_page.dart';
 
 class LoginScreenAdmin extends StatefulWidget {
   const LoginScreenAdmin({super.key});
@@ -161,7 +161,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const SignupUserPage()),
+                      MaterialPageRoute(builder: (context) => const AdminHomepage()),
                     );
                   },
                   child: const Text("Sign up"),
