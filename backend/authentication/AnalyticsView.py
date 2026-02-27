@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from datetime import timedelta
 from django.utils import timezone
 from django.db.models import Count
-from django.db.models.functions import TruncDay
+from django.db.models.functions import (TruncDay, TruncWeek, TruncMonth)
 from .models import Society, Membership
 
 
@@ -17,43 +17,57 @@ class AnalyticsView(APIView):
         if request.user.role != "admin":
             return Response({"error": "Admins only"}, status=403)
 
+        period = request.query_params.get("period", "week")
+
         try:
             society = Society.objects.get(id=society_id)
         except Society.DoesNotExist:
             return Response({"error": "Society not found"}, status=404)
 
         now = timezone.now()
-        start_week = now - timedelta(days=7)
 
-        days = []
+        # Decide grouping & range
+        if period == "week":
+            days_range = 7
+            delta = timedelta(days=1)
+            label_format = "%a"  # Mon Tue Wed
+        elif period == "month":
+            days_range = 30
+            delta = timedelta(days=1)
+            label_format = "%d %b"
+        elif period == "6months":
+            days_range = 26
+            delta = timedelta(weeks=1)
+            label_format = "Week %W"
+        elif period == "year":
+            days_range = 12
+            delta = timedelta(days=30)
+            label_format = "%b"
+        else:
+            return Response({"error": "Invalid period"}, status=400)
+
+        start_date = now - (delta * days_range)
+
+        labels = []
         totals = []
 
-        current_total = Membership.objects.filter(
-            society=society,
-            joined_at__lte=start_week
-        ).exclude(
-            left_at__lte=start_week
-        ).count()
+        current_date = start_date
 
-        for i in range(7):
-            day = start_week + timedelta(days=i)
+        for _ in range(days_range):
 
-            joins = Membership.objects.filter(
+            total = Membership.objects.filter(
                 society=society,
-                joined_at__date=day.date()
+                joined_at__lte=current_date
+            ).exclude(
+                left_at__lte=current_date
             ).count()
 
-            leaves = Membership.objects.filter(
-                society=society,
-                left_at__date=day.date()
-            ).count()
+            labels.append(current_date.strftime(label_format))
+            totals.append(total)
 
-            current_total = current_total + joins - leaves
-
-            days.append(day.strftime("%a"))  # Mon, Tue, etc
-            totals.append(current_total)
+            current_date += delta
 
         return Response({
-            "days": days,
+            "labels": labels,
             "totals": totals
         })
