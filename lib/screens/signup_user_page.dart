@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'login_screen.user.dart';
 
 class SignupUserPage extends StatefulWidget {
   const SignupUserPage({super.key});
@@ -120,9 +121,9 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
           } catch (_) {}
         }
 
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const BlankPage()),
+          MaterialPageRoute(builder: (context) => const LoginScreenUser()),
         );
         return;
       }
@@ -222,6 +223,7 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
             ),
             const SizedBox(height: 10),
 
+//sign up button goes back to login screen user page 
             ElevatedButton(
               onPressed: signupUser,
               child: const Text("Signup"),
@@ -233,13 +235,13 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
   }
 }
 
-class BlankPage extends StatelessWidget {
-  const BlankPage({super.key});
+// class BlankPage extends StatelessWidget {
+//   const BlankPage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: SizedBox.expand(),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return const Scaffold(
+//       body: SizedBox.expand(),
+//     );
+//   }
+// }
