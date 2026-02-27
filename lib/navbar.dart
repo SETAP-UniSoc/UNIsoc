@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'screens/settings_user_page.dart';
+import 'screens/my_account_page.dart';
+import 'screens/my_events_page.dart';
+import 'screens/user_mysoc_page.dart';
+
 
 // A reusable navbar for the logged-in home page
 class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
@@ -17,13 +22,28 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
           onSelected: (action) {
             switch (action) {
               case _MenuAction.myEvents:
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MyEventsPage()),
+                );
                 break;
               case _MenuAction.mySocs:
-                ;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MySocietyPage()),
+                  );
                 break;
               case _MenuAction.settings:
+               Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsPage()),
+                );
                 break;
               case _MenuAction.myAccount:
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MyAccountPage()),
+                );
                 break;
               case _MenuAction.logout:
                 break;
