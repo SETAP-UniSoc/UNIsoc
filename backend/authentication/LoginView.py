@@ -18,12 +18,11 @@ class LoginView(APIView):
                 {"error": "Password required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
         try:
             if email:
-                user = User.objects.get(email=email)
+                user = User.objects.get(email_iexact=email)
             elif up_number:
-                user = User.objects.get(up_number=up_number)
+                user = User.objects.get(up_number_iexact=up_number)
             else:
                 return Response(
                     {"error": "Email or UP number required"},
