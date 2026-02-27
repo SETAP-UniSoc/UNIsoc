@@ -2,10 +2,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import get_user_model
-import re
 from rest_framework.authtoken.models import Token
 
 User = get_user_model()
+
 
 class LoginView(APIView):
     def post(self, request):
@@ -18,11 +18,12 @@ class LoginView(APIView):
                 {"error": "Password required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
         try:
             if email:
-                user = User.objects.get(email_iexact=email)
+                user = User.objects.get(email__iexact=email)
             elif up_number:
-                user = User.objects.get(up_number_iexact=up_number)
+                user = User.objects.get(up_number__iexact=up_number)
             else:
                 return Response(
                     {"error": "Email or UP number required"},
