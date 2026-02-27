@@ -92,11 +92,16 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
             ),
 
         
-
+// making it direct to blank page for now but will change it to user homepage late
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(
-                onPressed: loginUser,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreenAdmin()),
+                  );
+                },
                 child: const Text("Login"),
               ),
             ),
