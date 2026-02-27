@@ -13,47 +13,47 @@ class AnalyticsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, society_id):
-        period = request.query_params.get("period", "year")
+
+        if request.user.role != "admin":
+            return Response({"error": "Admins only"}, status=403)
 
         try:
             society = Society.objects.get(id=society_id)
         except Society.DoesNotExist:
-            return Response(
-                {"error": "Society not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        
-        if request.user.role != "admin":
-            return Response(
-                {"error": "Admins only"},
-                status=status.HTTP_403_FORBIDDEN
-    )
+            return Response({"error": "Society not found"}, status=404)
 
         now = timezone.now()
+        start_week = now - timedelta(days=7)
 
-        period_map = {
-            "year": 365,
-            "6months": 180,
-            "month": 30,
-            "week": 7,
-            "day": 1,
-        }
+        days = []
+        totals = []
 
-        if period not in period_map:
-            return Response(
-                {"error": "Invalid period"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        current_total = Membership.objects.filter(
+            society=society,
+            joined_at__lte=start_week
+        ).exclude(
+            left_at__lte=start_week
+        ).count()
 
-        start_date = now - timedelta(days=period_map[period])
+        for i in range(7):
+            day = start_week + timedelta(days=i)
 
-        data = (
-            Membership.objects
-            .filter(society=society, joined_at__gte=start_date)
-            .annotate(day=TruncDay('joined_at'))
-            .values('day')
-            .annotate(count=Count('id'))
-            .order_by('day')
-        )
+            joins = Membership.objects.filter(
+                society=society,
+                joined_at__date=day.date()
+            ).count()
 
-        return Response(data)
+            leaves = Membership.objects.filter(
+                society=society,
+                left_at__date=day.date()
+            ).count()
+
+            current_total = current_total + joins - leaves
+
+            days.append(day.strftime("%a"))  # Mon, Tue, etc
+            totals.append(current_total)
+
+        return Response({
+            "days": days,
+            "totals": totals
+        })
