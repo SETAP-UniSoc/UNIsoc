@@ -21,9 +21,9 @@ class AnalyticsView(APIView):
         period = request.query_params.get("period", "week")
 
         try:
-            society = Society.objects.get(id=society_id, admin=request.user)
+            society = Society.objects.get(admin=request.user)
         except Society.DoesNotExist:
-            return Response({"error": "Society not found"}, status=403)
+            return Response({"error": "Society not found"}, status=404)
 
         now = timezone.now()
 

@@ -10,7 +10,7 @@ urlpatterns = [
     path("user/register/", RegisterView.as_view(), name="register"),
     path("society/<int:society_id>/join/", JoinSocietyView.as_view(), name="join-society"),
     path("society/<int:society_id>/leave/", LeaveSocietyView.as_view(), name="leave-society"),
-    path("analytics/society/<int:society_id>/", AnalyticsView.as_view(), name="society-analytics"),
+    path('my-analytics/', AnalyticsView.as_view(), name="society-analytics")
 
 ]
 
