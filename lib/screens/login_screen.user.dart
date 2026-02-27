@@ -113,7 +113,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const SignupUserPage(),
+                          builder: (context) => const SignupUserPage(), //for now the sign up button goes to the signup page but it should go to the admin homepage after signing up and then the user can go to the signup page from the admin homepage
                         ),
                       );
                     },
