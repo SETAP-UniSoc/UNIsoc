@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:unisoc/home_page.dart';
 import 'login_screen.admin.dart';
 import 'forgotten_password_screen.dart';
 import 'signup_user_page.dart';
 //kfnd
-
 
 class LoginScreenUser extends StatefulWidget {
   const LoginScreenUser({super.key});
@@ -19,22 +19,23 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
   final TextEditingController passwordController = TextEditingController();
 
   Future<void> loginUser() async {
-   
-    final up_number = upnumberController.text; 
+    final up_number = upnumberController.text;
     final password = passwordController.text;
 
     final url = Uri.parse("http://10.128.5.47:8000/api/user/login/");
 
-  final response = await http.post(
-    url,
-    headers: {"Content-Type": "application/json", "Accept": "application/json"},
-    body: jsonEncode({"up_number": up_number, "password": password}),
-  );
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: jsonEncode({"up_number": up_number, "password": password}),
+    );
 
     print("Response Status: ${response.statusCode}");
     print("Response Body: ${response.body}");
 
-    
     print(upnumberController.text);
     print(passwordController.text);
   }
@@ -48,15 +49,12 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             const Text(
               "Login",
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
-            
-            const SizedBox(height: 30),
 
-        
+            const SizedBox(height: 30),
 
             TextField(
               controller: upnumberController,
@@ -66,7 +64,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
               ),
             ),
             const SizedBox(height: 20),
-        
+
             TextField(
               controller: passwordController,
               obscureText: true,
@@ -77,76 +75,76 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
             ),
             const SizedBox(height: 30),
 
-
             Align(
               alignment: Alignment.center,
               child: TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const ForgottenPasswordScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const ForgottenPasswordScreen(),
+                    ),
                   );
                 },
                 child: const Text("Forgot Password?"),
               ),
             ),
 
-        
-// making it direct to blank page for now but will change it to user homepage late
+            // making it direct to blank page for now but will change it to user homepage late
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const LoginScreenAdmin()),
+                    MaterialPageRoute(builder: (context) => const HomePage()),
                   );
                 },
                 child: const Text("Login"),
               ),
             ),
             const SizedBox(height: 20),
-          //Row(
-           // mainAxisAlignment: MainAxisAlignment.bottomLeft,
+
+            //Row(
+            // mainAxisAlignment: MainAxisAlignment.bottomLeft,
             //children: [
-
-
-              Align(
-                  alignment: Alignment.bottomCenter,
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SignupUserPage(), //for now the sign up button goes to the signup page but it should go to the admin homepage after signing up and then the user can go to the signup page from the admin homepage
-                        ),
-                      );
-                    },
-                    child: const Text("Signup"),
-                  ),
-                ),
-
-
-              Align(
-                alignment: Alignment.bottomLeft,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: TextButton(
+                onPressed: () {
+                  Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const LoginScreenAdmin()),
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const SignupUserPage(), //for now the sign up button goes to the signup page but it should go to the admin homepage after signing up and then the user can go to the signup page from the admin homepage
+                    ),
+                  );
+                },
+                child: const Text("Signup"),
+              ),
+            ),
+
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreenAdmin(),
+                    ),
                   );
                 },
                 child: const Text("Admin"),
               ),
             ),
-            
+
             //adding a button bottom left to go to signup page
-            
-              ],
-            ),
-         // ],
+          ],
         ),
-    //  ),
+        // ],
+      ),
+      //  ),
     );
   }
 }
