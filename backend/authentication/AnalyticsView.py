@@ -9,6 +9,7 @@ from django.db.models.functions import (TruncDay, TruncWeek, TruncMonth)
 from .models import Society, Membership
 
 
+
 class AnalyticsView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -20,9 +21,9 @@ class AnalyticsView(APIView):
         period = request.query_params.get("period", "week")
 
         try:
-            society = Society.objects.get(id=society_id)
+            society = Society.objects.get(id=society_id, admin=request.user)
         except Society.DoesNotExist:
-            return Response({"error": "Society not found"}, status=404)
+            return Response({"error": "Society not found"}, status=403)
 
         now = timezone.now()
 
