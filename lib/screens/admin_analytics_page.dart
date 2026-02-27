@@ -22,17 +22,17 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   @override
   void initState() {
     super.initState();
-    fetchTrend(1, selectedPeriod); // Default society ID is 1
+    fetchTrend(selectedPeriod); // Default period is "year"
   }
 
-Future<void> fetchTrend(int societyId, String period) async {
+Future<void> fetchTrend( String week) async {
   setState(() {
     isLoading = true;
     statusMessage = "Loading analytics...";
   });
 
   final url = Uri.parse(
-    "http://10.128.5.47:8000/api/analytics/society/$societyId/?period=$period",
+    "http://10.128.5.47:8000/api/my-analytics/society/?period=$week",
   );
 
   try {
@@ -192,7 +192,7 @@ Future<void> fetchTrend(int societyId, String period) async {
         setState(() {
           selectedPeriod = value;
         });
-        fetchTrend(1, value); // Fetch new data for the selected period
+        fetchTrend(selectedPeriod); // Fetch new data for the selected period
       },
       child: Text(label),
     );
