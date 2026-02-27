@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:unisoc/screens/admin_hompage.dart';
 import 'forgotten_password_screen.dart';
+import 'login_screen.user.dart';
 
 class LoginScreenAdmin extends StatefulWidget {
   const LoginScreenAdmin({super.key});
@@ -139,16 +140,20 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
                 child: const Text("Forgot Password?"),
               ),
             ),
-
+//should go to admin homepage when login sbutton is pressed and the login is successful, otherwise show a snackbar with the error message
+            const SizedBox(height: 20),
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : loginAdmin,
-                child: _isLoading
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text("Login"),
+                onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AdminHomepage()),
+                    );
+                  },
+                  child: const Text("Login"),
+                ),
               ),
-            ),
             const SizedBox(height: 20),
             
             Align(
@@ -157,7 +162,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const AdminHomepage()),
+                      MaterialPageRoute(builder: (context) => const LoginScreenUser()),
                     );
                   },
                   child: const Text("Sign up"),

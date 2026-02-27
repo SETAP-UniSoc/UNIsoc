@@ -10,7 +10,7 @@ class AdminHomepage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("UNISO"),
+        title: const Text("UNISOC"),
         centerTitle: true,
       ),
 
