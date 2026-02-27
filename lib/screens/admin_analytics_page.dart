@@ -99,6 +99,12 @@ Future<void> fetchTrend(int societyId, String period) async {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         title: const Text("My Analytics"),
       ),
       body: Column(
