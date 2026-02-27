@@ -13,6 +13,7 @@ class AdminAnalyticsPage extends StatefulWidget {
 
 class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   String selectedPeriod = "year";
+  String statusMessage = "Loading analytics...";
 
   List<String> labels = [];
   List<double> values = [];
@@ -27,6 +28,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
 Future<void> fetchTrend(int societyId, String period) async {
   setState(() {
     isLoading = true;
+    statusMessage = "Loading analytics...";
   });
 
   final url = Uri.parse(
@@ -38,7 +40,7 @@ Future<void> fetchTrend(int societyId, String period) async {
       url,
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "67a80ebb9c0f939fe04164f66ed5165f65d3e66", // Add your token here
+        "Authorization": "Token 67a80ebb9c0f939fe04164f66ed5165f65d3e66", // Add your token here
         // Add your token here
         // "Authorization": "Token YOUR_TOKEN",
       },
@@ -47,21 +49,44 @@ Future<void> fetchTrend(int societyId, String period) async {
     if (response.statusCode != 200) {
       print("Server error: ${response.statusCode}");
       if (!mounted) return;
+      setState(() {
+        labels = [];
+        values = [];
+        statusMessage = "Server error ${response.statusCode}";
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Server error ${response.statusCode}")),
       );
     } else {
       final data = jsonDecode(response.body);
 
-      setState(() {
-        labels = List<String>.from(data["labels"] ?? []);
-        values = List<dynamic>.from(data["totals"] ?? [])
-            .map((e) => (e as num).toDouble())
-            .toList();
-      });
+      if (data is Map<String, dynamic>) {
+        final dynamic rawLabels = data["labels"] ?? [];
+        final dynamic rawValues = data["totals"] ?? data["data"] ?? [];
+
+        setState(() {
+          labels = List<String>.from(rawLabels);
+          values = List<dynamic>.from(rawValues)
+              .map((e) => (e as num).toDouble())
+              .toList();
+          statusMessage = values.isEmpty ? "No data available" : "";
+        });
+      } else {
+        setState(() {
+          labels = [];
+          values = [];
+          statusMessage = "Invalid server response";
+        });
+      }
     }
   } catch (e) {
     print("Error fetching trend: $e");
+    if (!mounted) return;
+    setState(() {
+      labels = [];
+      values = [];
+      statusMessage = "Failed to load analytics";
+    });
   } finally {
     if (!mounted) return;
     setState(() {
@@ -75,12 +100,10 @@ Future<void> fetchTrend(int societyId, String period) async {
     return Scaffold(
       appBar: AppBar(
         title: const Text("My Analytics"),
-        centerTitle: true,
       ),
       body: Column(
         children: [
           const SizedBox(height: 20),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -88,47 +111,53 @@ Future<void> fetchTrend(int societyId, String period) async {
               _buildPeriodButton("6months", "6 Months"),
               _buildPeriodButton("month", "1 Month"),
               _buildPeriodButton("week", "1 Week"),
-              
             ],
           ),
-
           const SizedBox(height: 40),
-
           Expanded(
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : values.isEmpty
-                    ? const Center(child: Text("No data available"))
                 : Padding(
                     padding: const EdgeInsets.all(16),
-                    child: LineChart(
-                      LineChartData(
-                        lineBarsData: [
-                          LineChartBarData(
-                            isCurved: true,
-                            spots: List.generate(
-                              values.length,
-                              (index) => FlSpot(index.toDouble(), values[index]),
-                            ),
-                            barWidth: 4,
-                            color: Colors.purple,
-                          ),
-                        ],
-                        titlesData: FlTitlesData(
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (value, meta) {
-                                int index = value.toInt();
-                                if (index >= 0 && index < labels.length) {
-                                  return Text(labels[index]);
-                                }
-                                return const Text("");
-                              },
+                    child: Stack(
+                      children: [
+                        LineChart(
+                          LineChartData(
+                            lineBarsData: [
+                              LineChartBarData(
+                                isCurved: true,
+                                spots: List.generate(
+                                  values.length,
+                                  (index) => FlSpot(index.toDouble(), values[index]),
+                                ),
+                                barWidth: 4,
+                                color: Colors.purple,
+                              ),
+                            ],
+                            titlesData: FlTitlesData(
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget: (value, meta) {
+                                    final index = value.toInt();
+                                    if (index >= 0 && index < labels.length) {
+                                      return Text(labels[index]);
+                                    }
+                                    return const Text("");
+                                  },
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                        if (values.isEmpty)
+                          Center(
+                            child: Text(
+                              statusMessage,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
           ),
