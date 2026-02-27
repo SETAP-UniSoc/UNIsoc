@@ -9,6 +9,7 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+//keep entry poin the same
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
