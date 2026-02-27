@@ -38,7 +38,7 @@ Future<void> fetchTrend(int societyId, String period) async {
       url,
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Token YOUR_TOKEN", // Add your token here
+        "Authorization": "67a80ebb9c0f939fe04164f66ed5165f65d3e66", // Add your token here
         // Add your token here
         // "Authorization": "Token YOUR_TOKEN",
       },
