@@ -6,12 +6,16 @@ class AdminHomepage extends StatelessWidget {
   const AdminHomepage({super.key});
 
   @override
-  
-
-  
+// add top banner that says uniso in the center then say welcome then the name of admin from sign up gae in the database 
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("UNISO"),
+        centerTitle: true,
+      ),
+
       body: const SizedBox.shrink(),
+
       bottomNavigationBar: BottomAppBar(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
