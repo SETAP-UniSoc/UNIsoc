@@ -19,7 +19,6 @@ class _SignupUserPageState extends State<SignupUserPage> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
-<<<<<<< HEAD
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
@@ -146,9 +145,6 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
       if (!mounted) return;
       _showError('Network error: $e');
     }
-=======
-  void signupUser() {
->>>>>>> Timi-up2215360
   }
 
   @override

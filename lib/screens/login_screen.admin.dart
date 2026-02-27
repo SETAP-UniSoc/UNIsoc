@@ -20,7 +20,6 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-<<<<<<< HEAD
   Future<void> loginAdmin() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
@@ -95,9 +94,6 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     finally {
       if (mounted) setState (()=> _isLoading = false);
     }
-=======
-  void loginAdmin() {
->>>>>>> Timi-up2215360
   }
 
 

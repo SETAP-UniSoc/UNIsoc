@@ -3,11 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'login_screen.admin.dart';
 import 'forgotten_password_screen.dart';
-<<<<<<< HEAD
 import 'signup_user_page.dart';
 //kfnd
-=======
->>>>>>> Timi-up2215360
 
 
 class LoginScreenUser extends StatefulWidget {
@@ -26,7 +23,6 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
     final up_number = upnumberController.text; 
     final password = passwordController.text;
 
-<<<<<<< HEAD
     final url = Uri.parse("http://10.128.5.47:8000/api/user/login/");
 
   final response = await http.post(
@@ -41,8 +37,6 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
     
     print(upnumberController.text);
     print(passwordController.text);
-=======
->>>>>>> Timi-up2215360
   }
 
   @override
