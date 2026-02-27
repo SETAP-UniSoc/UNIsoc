@@ -116,6 +116,7 @@ class Membership(models.Model):
     )
 
     joined_at = models.DateTimeField(auto_now_add=True)
+    left_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = ('user', 'society')
