@@ -104,36 +104,10 @@ class SocietyAdmin(models.Model):
         return f"{self.user.email} - {self.role}"
 
 
-class MembershipRequest(models.Model):
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
-    ]
-
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE
-    )
-
-    society = models.ForeignKey(
-        Society,
-        on_delete=models.CASCADE
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='pending'
-    )
-
-    request_timestamp = models.DateTimeField(auto_now_add=True)
-    approval_timestamp = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
+class Meta:
         unique_together = ('user', 'society')
 
-    def __str__(self):
+def __str__(self):
         return f"{self.user} -> {self.society} ({self.status})"
 
 class Membership(models.Model):
