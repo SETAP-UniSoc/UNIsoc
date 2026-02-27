@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 from django.contrib.auth.base_user import BaseUserManager
+from django.conf import settings
 
 
 class CustomUserManager(BaseUserManager):
@@ -104,23 +105,14 @@ class SocietyAdmin(models.Model):
         return f"{self.user.email} - {self.role}"
 
 
-class Meta:
-        unique_together = ('user', 'society')
-
-def __str__(self):
-        return f"{self.user} -> {self.society} ({self.status})"
-
 class Membership(models.Model):
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='memberships'
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
     )
-
     society = models.ForeignKey(
         Society,
-        on_delete=models.CASCADE,
-        related_name='members'
+        on_delete=models.CASCADE
     )
 
     joined_at = models.DateTimeField(auto_now_add=True)
@@ -129,7 +121,7 @@ class Membership(models.Model):
         unique_together = ('user', 'society')
 
     def __str__(self):
-        return f"{self.user} in {self.society}"
+        return f"{self.user} -> {self.society}"
 
 class Event(models.Model):
     STATUS_CHOICES = [
