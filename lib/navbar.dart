@@ -60,22 +60,44 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
 
 enum _MenuAction { myEvents, mySocs, settings, myAccount, logout }
 
-
 // ...existing code...
-/* import 'package:flutter/material.dart';
-import 'navbar.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+/// Header section that shows the navbar and a greeting.
+/// [studentName] will later be replaced with the actual logged-in user's name.
+class HomeHeader extends StatelessWidget {
+  final String studentName;
+
+  const HomeHeader({
+    super.key,
+    this.studentName = 'Student', // default for now
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const HomeNavbar(),
-      body: const Center(
-        child: Text('Home content here'),
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const HomeNavbar(),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          color: Colors.white,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'UniSoc',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Welcome $studentName',
+                style: const TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
-} */
-// ...existing code...
+}
