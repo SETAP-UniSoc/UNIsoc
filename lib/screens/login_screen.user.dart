@@ -62,6 +62,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
               controller: upnumberController,
               decoration: const InputDecoration(
                 labelText: "UP number",
+                prefixText: "UP",
                 border: UnderlineInputBorder(),
               ),
             ),
