@@ -9,6 +9,7 @@ from django.db.models.functions import (TruncDay, TruncWeek, TruncMonth)
 from .models import Society, Membership
 
 
+
 class AnalyticsView(APIView):
     permission_classes = [IsAuthenticated]
 
