@@ -129,15 +129,30 @@ Future<void> fetchTrend( String week) async {
                       children: [
                         LineChart(
                           LineChartData(
+                            minX: 0,
+                            maxX: labels.isNotEmpty ? (labels.length - 1).toDouble() : 3,
+                            minY: 0,
+                            maxY: values.isNotEmpty
+                                ? values.reduce((a, b) => a > b ? a : b) + 1
+                                : 10,
+                            borderData: FlBorderData(show: true),
+                            gridData: const FlGridData(show: true),
                             lineBarsData: [
                               LineChartBarData(
                                 isCurved: true,
-                                spots: List.generate(
-                                  values.length,
-                                  (index) => FlSpot(index.toDouble(), values[index]),
-                                ),
+                                spots: values.isNotEmpty
+                                    ? List.generate(
+                                        values.length,
+                                        (index) => FlSpot(index.toDouble(), values[index]),
+                                      )
+                                    : const [
+                                        FlSpot(0, 0),
+                                        FlSpot(1, 0),
+                                        FlSpot(2, 0),
+                                        FlSpot(3, 0),
+                                      ],
                                 barWidth: 4,
-                                color: Colors.purple,
+                                color: values.isNotEmpty ? Colors.purple : Colors.grey,
                               ),
                             ],
                             titlesData: FlTitlesData(
