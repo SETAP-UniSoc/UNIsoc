@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from datetime import timedelta
 from django.utils import timezone
 from django.db.models import Count
-from django.db.models.functions import TruncDay
+from django.db.models.functions import (TruncDay, TruncWeek, TruncMonth)
 from .models import Society, Membership
 
 
@@ -17,43 +17,55 @@ class AnalyticsView(APIView):
         if request.user.role != "admin":
             return Response({"error": "Admins only"}, status=403)
 
+        period = request.query_params.get("period", "week")
+
         try:
             society = Society.objects.get(id=society_id)
         except Society.DoesNotExist:
             return Response({"error": "Society not found"}, status=404)
 
         now = timezone.now()
-        start_week = now - timedelta(days=7)
 
-        days = []
-        totals = []
+        if period == "week":
+            start_date = now - timedelta(days=7)
+            trunc_function = TruncDay
 
-        current_total = Membership.objects.filter(
-            society=society,
-            joined_at__lte=start_week
-        ).exclude(
-            left_at__lte=start_week
-        ).count()
+        elif period == "month":
+            start_date = now - timedelta(days=30)
+            trunc_function = TruncDay
 
-        for i in range(7):
-            day = start_week + timedelta(days=i)
+        elif period == "6months":
+            start_date = now - timedelta(days=180)
+            trunc_function = TruncWeek
 
-            joins = Membership.objects.filter(
-                society=society,
-                joined_at__date=day.date()
-            ).count()
+        elif period == "year":
+            start_date = now - timedelta(days=365)
+            trunc_function = TruncMonth
 
-            leaves = Membership.objects.filter(
-                society=society,
-                left_at__date=day.date()
-            ).count()
+        else:
+            return Response({"error": "Invalid period"}, status=400)
 
-            current_total = current_total + joins - leaves
+        # Get joins grouped properly
+        joins = (
+            Membership.objects
+            .filter(society=society, joined_at__gte=start_date)
+            .annotate(period=trunc_function('joined_at'))
+            .values('period')
+            .annotate(count=Count('id'))
+            .order_by('period')
+        )
 
-            days.append(day.strftime("%a"))  # Mon, Tue, etc
-            totals.append(current_total)
+        # Get leaves grouped properly
+        leaves = (
+            Membership.objects
+            .filter(society=society, left_at__gte=start_date)
+            .annotate(period=trunc_function('left_at'))
+            .values('period')
+            .annotate(count=Count('id'))
+            .order_by('period')
+        )
 
         return Response({
-            "days": days,
-            "totals": totals
+            "joins": list(joins),
+            "leaves": list(leaves)
         })
