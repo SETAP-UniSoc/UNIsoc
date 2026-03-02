@@ -13,7 +13,7 @@ from .models import Society, Membership
 class AnalyticsView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, society_id):
+    def get(self, request):
 
         if request.user.role != "admin":
             return Response({"error": "Admins only"}, status=403)
