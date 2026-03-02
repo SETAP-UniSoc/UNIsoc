@@ -99,6 +99,7 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
   _showError("Password must contain at least one special character");
   return;
 }
+
     final url = Uri.parse("http://10.128.5.47:8000/api/user/register/");
 
     try {
@@ -239,7 +240,7 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
 
 //sign up button goes back to login screen user page 
             ElevatedButton(
-              onPressed: signupUser,
+              onPressed: () => LoginScreenUser(),
               child: const Text("Signup"),
               
             ),
