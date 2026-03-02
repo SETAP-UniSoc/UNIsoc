@@ -71,7 +71,7 @@ class Society(models.Model):
     admin = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        limit_choices_to={'role': 'admin'}
+        limit_choices_to={'role': 'admin'},
         null = True,
         blank = True
     )
