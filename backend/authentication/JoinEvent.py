@@ -3,49 +3,45 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
-from .models import EventAttendance, Society, Membership
+from .models import EventAttendance, Society, Membership, Event
 
-class JoinSocietyView(APIView):
+class JoinEventView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, society_id):
-        user = request.user
+    def post(self, request, event_id):
 
         try:
-            society = Society.objects.get(id=society_id)
-        except Society.DoesNotExist:
+            event = Event.objects.get(id=event_id)
+        except Event.DoesNotExist:
+            return Response({"error": "Event not found"}, status=404)
+
+        # prevent joining past events
+        if event.event_date < timezone.now():
             return Response(
-                {"error": "Society not found"},
-                status=status.HTTP_404_NOT_FOUND
+                {"error": "Event has already passed"},
+                status=400
             )
 
-        membership, created = Membership.objects.get_or_create(
-            user=user,
-            society=society,
+        attendance, created = EventAttendance.objects.get_or_create(
+            user=request.user,
+            event=event,
             defaults={"left_at": None}
         )
 
-        # If membership already existed
         if not created:
-            if membership.left_at is None:
-                return Response(
-                    {"message": "Already joined"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            if attendance.left_at is None:
+                return Response({"message": "Already attending"}, status=400)
             else:
-                # Rejoining
-                membership.left_at = None
-                membership.joined_at = timezone.now()
-                membership.save()
+                attendance.left_at = None
+                attendance.joined_at = timezone.now()
+                attendance.save()
 
-                return Response(
-                    {"message": "Rejoined successfully"},
-                    status=status.HTTP_200_OK
-                )
         attendee_count = EventAttendance.objects.filter(
-            event__society=society, 
-            left_at__isnull=True).count()
-        return Response(
-            {"message": "Successfully joined", "attendee_count": attendee_count},
-            status=status.HTTP_201_CREATED
-        )
+            event=event,
+            left_at__isnull=True
+        ).count()
+
+        return Response({
+            "message": "Joined event",
+            "attendee_count": attendee_count
+        })
