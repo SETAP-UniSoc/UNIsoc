@@ -71,12 +71,22 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
       }
 
       if (response.statusCode == 401) {
-        _showError("Invalid credentials");
+        String message = "Incorrect password";
+        try {
+          final data = jsonDecode(response.body);
+          if (data is Map<String, dynamic>) {
+            final serverMessage = (data['error'] ?? data['message'] ?? data['detail'])?.toString().toLowerCase();
+            if (serverMessage != null && serverMessage.contains('email')) {
+              message = "Email not found";
+            }
+          }
+        } catch (_) {}
+        _showError(message);
         return;
       }
 
       if (response.statusCode == 404) {
-        _showError("Admin account not found");
+        _showError("Email not found");
         return;
       }
 
