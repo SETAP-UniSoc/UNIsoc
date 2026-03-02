@@ -17,6 +17,8 @@ class LoginScreenAdmin extends StatefulWidget {
 class _LoginScreenAdminState extends State<LoginScreenAdmin> {
   //final TextEditingController usernameController = TextEditingController();
 
+  bool _isLoading = false;
+  final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
@@ -32,6 +34,10 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
       return;
     }
     
+    setState(() {
+      _isLoading = true;
+    });
+
     final url = Uri.parse("http://10.128.5.47:8000/api/login/");
 //http://10.0.2.2:8000/api/login/
     try {
@@ -48,11 +54,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         final token = data['token'] as String;
         final role = data['role'] as String? ?? 'admin';
-  // final response = await http.post(
-  //   url,
-  //   headers: {"Content-Type": "application/json", "Accept": "application/json"},
-  //   body: jsonEncode({"email": email, "password": password}),
-  // );
+
      Navigator.pushReplacement(
     context, 
     MaterialPageRoute(
@@ -87,6 +89,9 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
         SnackBar(content: Text('Network error: $e')),
       );
       
+    } 
+    finally {
+      if (mounted) setState (()=> _isLoading = false);
     }
   }
 
