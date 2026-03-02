@@ -6,7 +6,7 @@ from .JoinSoc import JoinSocietyView
 from .LeaveSoc import LeaveSocietyView
 
 urlpatterns = [
-    path("/api/user/login/", LoginView.as_view(), name="login"),
+    path("login/", LoginView.as_view(), name="login"),
     path("user/register/", RegisterView.as_view(), name="register"),
     path("society/<int:society_id>/join/", JoinSocietyView.as_view(), name="join-society"),
     path("society/<int:society_id>/leave/", LeaveSocietyView.as_view(), name="leave-society"),
