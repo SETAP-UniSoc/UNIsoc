@@ -52,6 +52,23 @@ class HomeHeader extends StatelessWidget {
                 'Welcome $studentName',
                 style: const TextStyle(fontSize: 18, color: Colors.grey),
               ),
+              const SizedBox(height: 16),
+              TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search events or societies',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 0,
+                  ),
+                ),
+                onChanged: (value) {
+                  // TODO: hook up search logic later
+                },
+              ),
             ],
           ),
         ),
