@@ -9,14 +9,17 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: const [
-            // Header with navbar + "UniSoc" + "Welcome Student"
-            HomeHeader(),
+        child: SingleChildScrollView(
+          child: Column(
+            children: const [
+              // Header with navbar + "UniSoc" + "Welcome Student"
+              HomeHeader(),
 
-            // Main content placeholder
-            Expanded(child: Center(child: Text('Home content here'))),
-          ],
+              // Main content placeholder (will be replaced by A–Z list section)
+              // For now we can leave it or remove it:
+              // SizedBox(height: 400, child: Center(child: Text('Home content here'))),
+            ],
+          ),
         ),
       ),
     );
