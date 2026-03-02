@@ -7,6 +7,7 @@ import 'forgotten_password_screen.dart';
 import 'signup_user_page.dart';
 //kfnd
 
+
 class LoginScreenUser extends StatefulWidget {
   const LoginScreenUser({super.key});
 
@@ -19,23 +20,29 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
   final TextEditingController passwordController = TextEditingController();
 
   Future<void> loginUser() async {
-    final up_number = upnumberController.text;
+   
+    final up_number = upnumberController.text; 
     final password = passwordController.text;
+
+    if (upNumber.length != 7) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("UP number must be 7 digits")),
+      );
+      return;
+    }
 
     final url = Uri.parse("http://10.128.5.47:8000/api/user/login/");
 
-    final response = await http.post(
-      url,
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-      body: jsonEncode({"up_number": up_number, "password": password}),
-    );
+  final response = await http.post(
+    url,
+    headers: {"Content-Type": "application/json", "Accept": "application/json"},
+    body: jsonEncode({"up_number": up_number, "password": password}),
+  );
 
     print("Response Status: ${response.statusCode}");
     print("Response Body: ${response.body}");
 
+    
     print(upnumberController.text);
     print(passwordController.text);
 
@@ -55,8 +62,10 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
               "Login",
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
-
+            
             const SizedBox(height: 30),
+
+        
 
             TextField(
               controller: upnumberController,
@@ -93,61 +102,62 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
               ),
             ),
 
-            // making it direct to blank page for now but will change it to user homepage late
+        
+// making it direct to blank page for now but will change it to user homepage late
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const HomePage()),
+                    MaterialPageRoute(builder: (context) => const LoginScreenAdmin()),
                   );
                 },
                 child: const Text("Login"),
               ),
             ),
             const SizedBox(height: 20),
-
-            //Row(
-            // mainAxisAlignment: MainAxisAlignment.bottomLeft,
+          //Row(
+           // mainAxisAlignment: MainAxisAlignment.bottomLeft,
             //children: [
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const SignupUserPage(), //for now the sign up button goes to the signup page but it should go to the admin homepage after signing up and then the user can go to the signup page from the admin homepage
-                    ),
-                  );
-                },
-                child: const Text("Signup"),
-              ),
-            ),
 
-            Align(
-              alignment: Alignment.bottomLeft,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.push(
+
+              Align(
+                  alignment: Alignment.bottomCenter,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SignupUserPage(),
+                        ),
+                      );
+                    },
+                    child: const Text("Signup"),
+                  ),
+                ),
+
+
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreenAdmin(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const LoginScreenAdmin()),
                   );
                 },
                 child: const Text("Admin"),
               ),
             ),
-
+            
             //adding a button bottom left to go to signup page
-          ],
+            
+              ],
+            ),
+         // ],
         ),
-        // ],
-      ),
-      //  ),
+    //  ),
     );
   }
 }
