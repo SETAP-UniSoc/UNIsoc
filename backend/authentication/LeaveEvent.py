@@ -22,4 +22,8 @@ class LeaveEventView(APIView):
         attendance.left_at = timezone.now()
         attendance.save()
 
+        attendee_count = EventAttendance.objects.filter(
+            event_id=event_id, 
+            left_at__isnull=True).count()
+
         return Response({"message": "Left event successfully"})
