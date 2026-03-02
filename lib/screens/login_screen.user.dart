@@ -176,6 +176,9 @@
 // }
 
 
+
+
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -189,50 +192,28 @@ class LoginScreenUser extends StatefulWidget {
 
   @override
   State<LoginScreenUser> createState() => _LoginScreenUserState();
-
-  
 }
 
 class _LoginScreenUserState extends State<LoginScreenUser> {
   final TextEditingController upnumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  // ...existing code...
-void _showError(String message) {
-  if (!mounted) return;
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(message)),
-  );
-}
-// ...existing code...
-
-  bool isLoading = false;
-
   Future<void> loginUser() async {
     final upNumber = upnumberController.text.trim();
     final password = passwordController.text;
 
-  if (upNumber.isEmpty || password.isEmpty) {
-    _showError("Please enter UP number and password");
-    return;
-  }
-
-  if (upNumber.length != 7) {
-    _showError("UP number must be 7 digits");
-    return;
-  }
-
-    setState(() => isLoading = true);
+    // Bare minimum: just print values for debug
+    print("Login pressed: UP=$upNumber, PW=$password");
 
     final url = Uri.parse("http://10.128.5.47:8000/api/user/login/");
 
     final response = await http.post(
       url,
-      headers: {"Content-Type": "application/json", "Accept": "application/json"},
+      headers: {"Content-Type": "application/json"},
       body: jsonEncode({"up_number": upNumber, "password": password}),
     );
 
-    setState(() => isLoading = false);
+    print("Status: ${response.statusCode}, Body: ${response.body}");
 
     if (response.statusCode == 200) {
       Navigator.pushReplacement(
@@ -256,7 +237,6 @@ void _showError(String message) {
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
-
             TextField(
               controller: upnumberController,
               decoration: const InputDecoration(
@@ -266,7 +246,6 @@ void _showError(String message) {
               ),
             ),
             const SizedBox(height: 20),
-
             TextField(
               controller: passwordController,
               obscureText: true,
@@ -276,27 +255,10 @@ void _showError(String message) {
               ),
             ),
             const SizedBox(height: 30),
-
             TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ForgottenPasswordScreen(),
-                  ),
-                );
-              },
-              child: const Text("Forgot Password?"),
-            ),
-            const SizedBox(height: 10),
-
-            // button to go to hompage after succesadul login
-            ElevatedButton(
-              onPressed: loginUser, // loginuser is a function that will be called when the button is pressed
+              onPressed: loginUser,
               child: const Text("Login"),
             ),
-            
-            
             TextButton(
               onPressed: () {
                 Navigator.push(
