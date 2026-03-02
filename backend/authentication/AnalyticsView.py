@@ -4,10 +4,9 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from datetime import timedelta
 from django.utils import timezone
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db.models.functions import (TruncDay, TruncWeek, TruncMonth)
 from .models import Society, Membership
-from UNIsoc.backend.authentication import models
 
 
 
@@ -74,7 +73,7 @@ class AnalyticsView(APIView):
         events_stats = society.events.annotate(
             attendee_count = Count(
                 "eventattendance",
-                filter = models.Q(eventattendance__left_at__isnull=True)
+                filter = Q(eventattendance__left_at__isnull=True)
             )
         ).values("name", "attendee_count")
 
@@ -82,7 +81,7 @@ class AnalyticsView(APIView):
         most_popular = society.events.annotate(
             attendee_count = Count(
                 "eventattendance",
-                filter = models.Q(eventattendance__left_at__isnull=True)
+                filter = Q(eventattendance__left_at__isnull=True)
             )
         ).order_by("-attendee_count").values("name", "attendee_count").first()
 
