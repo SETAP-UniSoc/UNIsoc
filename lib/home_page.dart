@@ -22,6 +22,15 @@ class HomePage extends StatelessWidget {
   }
 }
 
+class HomeHeader extends StatelessWidget {
+  const HomeHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const HomeNavbar();
+  }
+}
+
 
 /*  Future<void> loginUser() async {
     final up_number = upnumberController.text;
