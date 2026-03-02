@@ -22,47 +22,40 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   @override
   void initState() {
     super.initState();
-    fetchTrend(selectedPeriod); // Default period is "year"
+    fetchTrend(selectedPeriod);
   }
 
-Future<void> fetchTrend( String week) async {
-  setState(() {
-    isLoading = true;
-    statusMessage = "Loading analytics...";
-  });
+  Future<void> fetchTrend(String week) async {
+    setState(() {
+      isLoading = true;
+      statusMessage = "Loading analytics...";
+    });
 
-  final url = Uri.parse(
-    "http://10.128.5.47:8000/api/my-analytics/society/?period=$week",
-  );
-
-  try {
-    final response = await http.get(
-      url,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Token 67a80ebb9c0f939fe04164f66ed5165f65d3e66", // Add your token here
-        // Add your token here
-        // "Authorization": "Token YOUR_TOKEN",
-      },
+    final url = Uri.parse(
+      "http://10.128.5.47:8000/api/my-analytics/society/?period=$week",
     );
 
-    if (response.statusCode != 200) {
-      print("Server error: ${response.statusCode}");
-      if (!mounted) return;
-      setState(() {
-        labels = [];
-        values = [];
-        statusMessage = "Server error ${response.statusCode}";
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Server error ${response.statusCode}")),
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization":
+              "Token 67a80ebb9c0f939fe04164f66ed5165f65d3e66",
+        },
       );
-    } else {
-      final data = jsonDecode(response.body);
 
-      if (data is Map<String, dynamic>) {
-        final dynamic rawLabels = data["labels"] ?? [];
-        final dynamic rawValues = data["totals"] ?? data["data"] ?? [];
+      if (response.statusCode != 200) {
+        setState(() {
+          labels = [];
+          values = [];
+          statusMessage = "Server error ${response.statusCode}";
+        });
+      } else {
+        final data = jsonDecode(response.body);
+
+        final rawLabels = data["labels"] ?? [];
+        final rawValues = data["totals"] ?? data["data"] ?? [];
 
         setState(() {
           labels = List<String>.from(rawLabels);
@@ -71,145 +64,178 @@ Future<void> fetchTrend( String week) async {
               .toList();
           statusMessage = values.isEmpty ? "No data available" : "";
         });
-      } else {
-        setState(() {
-          labels = [];
-          values = [];
-          statusMessage = "Invalid server response";
-        });
       }
+    } catch (e) {
+      setState(() {
+        labels = [];
+        values = [];
+        statusMessage = "Failed to load analytics";
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
-  } catch (e) {
-    print("Error fetching trend: $e");
-    if (!mounted) return;
-    setState(() {
-      labels = [];
-      values = [];
-      statusMessage = "Failed to load analytics";
-    });
-  } finally {
-    if (!mounted) return;
-    setState(() {
-      isLoading = false;
-    });
   }
-}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        title: const Text(
+          "My Analytics",
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        title: const Text("My Analytics"),
       ),
       body: Column(
         children: [
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
+
+          // Trading-style period selector
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildPeriodButton("year", "1 Year"),
-              _buildPeriodButton("6months", "6 Months"),
-              _buildPeriodButton("month", "1 Month"),
-              _buildPeriodButton("week", "1 Week"),
+              _buildPeriodButton("week", "1W"),
+              _buildPeriodButton("month", "1M"),
+              _buildPeriodButton("6months", "6M"),
+              _buildPeriodButton("year", "1Y"),
             ],
           ),
-          const SizedBox(height: 40),
+
+          const SizedBox(height: 20),
+
+          // Large current value display
+          if (values.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Text(
+                values.last.toStringAsFixed(0),
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
           Expanded(
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Stack(
-                      children: [
-                        LineChart(
+                : values.isEmpty
+                    ? Center(
+                        child: Text(
+                          statusMessage,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: LineChart(
                           LineChartData(
                             minX: 0,
-                            maxX: labels.isNotEmpty ? (labels.length - 1).toDouble() : 3,
+                            maxX: (values.length - 1).toDouble(),
                             minY: 0,
-                            maxY: values.isNotEmpty
-                                ? values.reduce((a, b) => a > b ? a : b) + 1
-                                : 10,
-                            borderData: FlBorderData(show: true),
-                            gridData: const FlGridData(show: true),
+                            maxY: values.reduce((a, b) =>
+                                    a > b ? a : b) *
+                                1.2,
+
+                            gridData:
+                                const FlGridData(show: false),
+                            borderData:
+                                FlBorderData(show: false),
+
+                            titlesData:
+                                const FlTitlesData(
+                              leftTitles: AxisTitles(
+                                  sideTitles:
+                                      SideTitles(showTitles: false)),
+                              rightTitles: AxisTitles(
+                                  sideTitles:
+                                      SideTitles(showTitles: false)),
+                              topTitles: AxisTitles(
+                                  sideTitles:
+                                      SideTitles(showTitles: false)),
+                              bottomTitles: AxisTitles(
+                                  sideTitles:
+                                      SideTitles(showTitles: false)),
+                            ),
+
                             lineBarsData: [
                               LineChartBarData(
                                 isCurved: true,
-                                spots: values.isNotEmpty
-                                    ? List.generate(
-                                        values.length,
-                                        (index) => FlSpot(index.toDouble(), values[index]),
-                                      )
-                                    : const [
-                                        FlSpot(0, 0),
-                                        FlSpot(1, 0),
-                                        FlSpot(2, 0),
-                                        FlSpot(3, 0),
-                                      ],
-                                barWidth: 4,
-                                color: values.isNotEmpty ? Colors.purple : Colors.grey,
-                              ),
-                            ],
-                            titlesData: FlTitlesData(
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  getTitlesWidget: (value, meta) {
-                                    final index = value.toInt();
-                                    if (index >= 0 && index < labels.length) {
-                                      return Text(labels[index]);
-                                    }
-                                    return const Text("");
-                                  },
+                                curveSmoothness: 0.2,
+                                spots: List.generate(
+                                  values.length,
+                                  (index) => FlSpot(
+                                    index.toDouble(),
+                                    values[index],
+                                  ),
+                                ),
+                                barWidth: 3,
+                                color: Colors.purple,
+                                dotData:
+                                    const FlDotData(show: false),
+                                belowBarData: BarAreaData(
+                                  show: true,
+                                  gradient: LinearGradient(
+                                    begin:
+                                        Alignment.topCenter,
+                                    end: Alignment
+                                        .bottomCenter,
+                                    colors: [
+                                      Colors.purple
+                                          .withOpacity(0.4),
+                                      Colors.purple
+                                          .withOpacity(0.05),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
-                        if (values.isEmpty)
-                          Center(
-                            child: Text(
-                              statusMessage,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
+                      ),
           ),
         ],
       ),
     );
   }
 
-
+  // Trading-style text buttons
   Widget _buildPeriodButton(String value, String label) {
     final bool isSelected = selectedPeriod == value;
 
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor:
-            isSelected ? Colors.purple : Colors.grey.shade300,
-        foregroundColor:
-            isSelected ? Colors.white : Colors.black,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
-        padding: const EdgeInsets.symmetric(
-            horizontal: 20, vertical: 12),
-      ),
-      onPressed: () {
+    return GestureDetector(
+      onTap: () {
         setState(() {
           selectedPeriod = value;
         });
-        fetchTrend(selectedPeriod); // Fetch new data for the selected period
+        fetchTrend(value);
       },
-      child: Text(label),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color:
+                  isSelected ? Colors.purple : Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            height: 2,
+            width: 30,
+            color: isSelected
+                ? Colors.purple
+                : Colors.transparent,
+          ),
+        ],
+      ),
     );
   }
 }
