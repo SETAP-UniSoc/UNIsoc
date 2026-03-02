@@ -189,11 +189,22 @@ class LoginScreenUser extends StatefulWidget {
 
   @override
   State<LoginScreenUser> createState() => _LoginScreenUserState();
+
+  
 }
 
 class _LoginScreenUserState extends State<LoginScreenUser> {
   final TextEditingController upnumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  // ...existing code...
+void _showError(String message) {
+  if (!mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(message)),
+  );
+}
+// ...existing code...
 
   bool isLoading = false;
 
