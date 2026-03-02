@@ -3,7 +3,7 @@ from .RegisterView import RegisterView
 from .LoginView import LoginView
 from .AnalyticsView import AnalyticsView
 from .JoinSoc import JoinSocietyView
-from .LeaveSoc import LeaveSocietyView
+from .LeaveSoc import LeaveSocView
 
 urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
