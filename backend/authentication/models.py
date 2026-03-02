@@ -100,7 +100,7 @@ class SocietyAdmin(models.Model):
     )
 
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='admin_societies'
     )
