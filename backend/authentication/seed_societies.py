@@ -3,9 +3,15 @@ from authentication.models import Society
 def seed():
     societies = [
         {"name": "Football", "category": "Sports"},
-        {"name": "Dance", "category": "Arts"},
-        {"name": "Chess", "category": "Games"},
-        {"name": "Computing", "category": "Academic"},
+        {"name": "Christianity", "category": "Religious"},
+        {"name": "ACS", "category": "Cultural"},
+        {"name": "Computer Science", "category": "Academic"},
+        {"name": "Forex", "category": "Extra-curricular"},
+        {"name": "South Asian", "category": "Cultural"},
+        {"name": "Badminton", "category": "Sports"},
+        {"name": "Debate", "category": "Academic"},
+        {"name": "Photography", "category": "Extra-curricular"},
+        {"name": "Arab", "category": "Cultural"},
     ]
 
     for soc in societies:
