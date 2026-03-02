@@ -5,11 +5,10 @@ from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from .models import Society, Membership
 
-class LeaveSocietyView(APIView):
+class JoinSocietyView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, society_id):
-
         user = request.user
 
         try:
@@ -20,22 +19,31 @@ class LeaveSocietyView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        try:
-            membership = Membership.objects.get(
-                user=user,
-                society=society,
-                left_at__isnull=True   # Only active membership
-            )
-        except Membership.DoesNotExist:
-            return Response(
-                {"error": "You are not an active member"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        membership, created = Membership.objects.get_or_create(
+            user=user,
+            society=society,
+            defaults={"left_at": None}
+        )
 
-        membership.left_at = timezone.now()
-        membership.save()
+        # If membership already existed
+        if not created:
+            if membership.left_at is None:
+                return Response(
+                    {"message": "Already joined"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            else:
+                # Rejoining
+                membership.left_at = None
+                membership.joined_at = timezone.now()
+                membership.save()
+
+                return Response(
+                    {"message": "Rejoined successfully"},
+                    status=status.HTTP_200_OK
+                )
 
         return Response(
-            {"message": "Successfully left society"},
-            status=status.HTTP_200_OK
+            {"message": "Successfully joined"},
+            status=status.HTTP_201_CREATED
         )
