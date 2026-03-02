@@ -241,6 +241,7 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
             ElevatedButton(
               onPressed: signupUser,
               child: const Text("Signup"),
+              
             ),
           ],
         ),  
