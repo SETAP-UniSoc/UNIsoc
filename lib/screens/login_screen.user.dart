@@ -126,7 +126,12 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(
-                onPressed: loginUser,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomePage()),
+                  );
+                },
                 child: const Text("Login"),
               ),
             ),
