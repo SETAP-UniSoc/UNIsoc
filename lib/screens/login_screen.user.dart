@@ -26,74 +26,64 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
   }
 
   Future<void> loginUser() async {
-    final upNumber = upnumberController.text.trim();
-    final password = passwordController.text;
+  final upNumber = upnumberController.text.trim();
+  final password = passwordController.text;
 
-    // ✅ Basic validation
-    if (upNumber.isEmpty || password.isEmpty) {
-      _showError("Please enter UP number and password");
-      return;
-    }
-
-    if (upNumber.length != 7) {
-      _showError("UP number must be 7 digits");
-      return;
-    }
-
-    setState(() => isLoading = true);
-
-    final url = Uri.parse("http://10.128.5.47:8000/api/user/login/");
-
-    try {
-      final response = await http.post(
-        url,
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: jsonEncode({
-          "up_number": upNumber,
-          "password": password,
-        }),
-      );
-
-      print("Response Status: ${response.statusCode}");
-      print("Response Body: ${response.body}");
-
-      if (!mounted) return;
-
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Login successful")),
-        );
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
-        return;
-      }
-
-      if (response.statusCode == 404) {
-        _showError("UP number not found");
-        return;
-      }
-
-      if (response.statusCode == 401) {
-        _showError("Incorrect password");
-        return;
-      }
-
-      _showError("Login failed (${response.statusCode})");
-    } catch (e) {
-      _showError("Network error: $e");
-    } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
-    }
+  if (upNumber.isEmpty || password.isEmpty) {
+    _showError("Please enter UP number and password");
+    return;
   }
 
+  if (upNumber.length != 7) {
+    _showError("UP number must be 7 digits");
+    return;
+  }
+
+  setState(() => isLoading = true);
+
+  final url = Uri.parse("http://10.128.5.47:8000/api/user/login/");
+
+  try {
+    final response = await http
+        .post(
+          url,
+          headers: {"Content-Type": "application/json", "Accept": "application/json"},
+          body: jsonEncode({"up_number": upNumber, "password": password}),
+        )
+        .timeout(const Duration(seconds: 10)); // ✅ timeout added
+
+    if (!mounted) return;
+
+    print("Response Status: ${response.statusCode}");
+    print("Response Body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Login successful")),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } else if (response.statusCode == 404) {
+      _showError("UP number not found");
+    } else if (response.statusCode == 401) {
+      _showError("Incorrect password");
+    } else {
+      _showError("Login failed (${response.statusCode})");
+    }
+  } on http.ClientException catch (e) {
+    _showError("Client error: $e");
+  } on FormatException catch (e) {
+    _showError("Response format error: $e");
+  } on Exception catch (e) {
+    _showError("Network error or timeout: $e");
+  } finally {
+    if (mounted) setState(() => isLoading = false); // ✅ stop loading indicator
+  }
+}
+
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,7 +135,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
 
             const SizedBox(height: 10),
 
-            // ✅ FIXED LOGIN BUTTON
+            
             isLoading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
