@@ -124,7 +124,7 @@ DATABASES = {
         'PASSWORD': 'strongpassword',
         'HOST': 'localhost',   
         'PORT': '5432', 
-    }
+   }
 }
 
 AUTH_USER_MODEL = 'authentication.User' 
