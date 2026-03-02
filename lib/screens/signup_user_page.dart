@@ -239,7 +239,7 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
 
 //sign up button goes back to login screen user page 
             ElevatedButton(
-              onPressed: signupUser,
+              onPressed: () => LoginScreenUser(),
               child: const Text("Signup"),
             ),
           ],
