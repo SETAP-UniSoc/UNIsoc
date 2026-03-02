@@ -40,6 +40,20 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
   }
 
   setState(() => isLoading = true);
+//////conectivity test
+  //  try {
+  //   final testResponse =
+  //       await http.get(Uri.parse("http://10.128.5.47:8000/api/user/login/")).timeout(
+  //             const Duration(seconds: 5),
+  //           );
+  //   print("Backend reachable: ${testResponse.statusCode}");
+  // } catch (e) {
+  //   print("Backend not reachable: $e");
+  //   _showError("Backend not reachable. Check your connection.");
+  //   if (mounted) setState(() => isLoading = false);
+  //   return; // Stop further execution if backend is unreachable
+  // }
+////////////////////////
 
   final url = Uri.parse("http://10.128.5.47:8000/api/user/login/");
 
