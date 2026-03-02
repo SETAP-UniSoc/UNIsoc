@@ -69,6 +69,16 @@ class HomeHeader extends StatelessWidget {
                   // TODO: hook up search logic later
                 },
               ),
+              const SizedBox(height: 24),
+              // Placeholder for featured societies carousel
+              const Text(
+                'Featured societies will appear here',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey,
+                ),
+              ),
             ],
           ),
         ),
