@@ -195,32 +195,72 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
   final TextEditingController passwordController = TextEditingController();
 
   // Temporary login function: navigates immediately but also sends HTTP request
+  // Future<void> loginUser() async {
+  //   final upNumber = upnumberController.text.trim();
+  //   final password = passwordController.text;
+
+  //   print("Login pressed: UP=$upNumber, PW=$password");
+
+  //   // Fire the HTTP request but do not block navigation
+  //   final url = Uri.parse("http://10.128.5.47:8000/api/user/login/");
+  //   http
+  //       .post(
+  //         url,
+  //         headers: {"Content-Type": "application/json"},
+  //         body: jsonEncode({"up_number": upNumber, "password": password}),
+  //       )
+  //       .then((response) {
+  //     print("HTTP Status: ${response.statusCode}, Body: ${response.body}");
+  //   }).catchError((e) {
+  //     print("HTTP Error: $e");
+  //   });
+
+  //   // Immediately navigate to HomePage
+  //   Navigator.pushReplacement(
+  //     context,
+  //     MaterialPageRoute(builder: (context) => const HomePage()),
+  //   );
+  // }
+
   Future<void> loginUser() async {
-    final upNumber = upnumberController.text.trim();
-    final password = passwordController.text;
+  final upNumber = upnumberController.text.trim();
+  final password = passwordController.text;
 
-    print("Login pressed: UP=$upNumber, PW=$password");
+  print("Login pressed: UP=$upNumber, PW=$password");
 
-    // Fire the HTTP request but do not block navigation
-    final url = Uri.parse("http://10.128.5.47:8000/api/user/login/");
-    http
+  final url = Uri.parse("http://10.128.5.47:8000/api/user/login/");
+
+  try {
+    final response = await http
         .post(
           url,
           headers: {"Content-Type": "application/json"},
           body: jsonEncode({"up_number": upNumber, "password": password}),
         )
-        .then((response) {
-      print("HTTP Status: ${response.statusCode}, Body: ${response.body}");
-    }).catchError((e) {
-      print("HTTP Error: $e");
-    });
+        .timeout(const Duration(seconds: 10)); // avoid infinite waiting
 
-    // Immediately navigate to HomePage
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomePage()),
+    print("HTTP Status: ${response.statusCode}, Body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      print("Login successful, navigating to HomePage.");
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } else {
+      // Basic error handling
+      print("Login failed with status ${response.statusCode}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Login failed: ${response.statusCode}")),
+      );
+    }
+  } catch (e) {
+    print("Error during login: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Network or server error")),
     );
   }
+}
 
   @override
   Widget build(BuildContext context) {
