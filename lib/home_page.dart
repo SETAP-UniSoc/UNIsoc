@@ -142,6 +142,25 @@ class HomeHeader extends StatelessWidget {
                   );
                 },
               ),
+              const SizedBox(height: 24),
+
+              // Upcoming events carousel
+              const Text(
+                'Upcoming Events',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 140,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: featuredEvents.length,
+                  itemBuilder: (context, index) {
+                    final event = featuredEvents[index];
+                    return _EventCard(event: event);
+                  },
+                ),
+              ),
             ],
           ),
         ),
