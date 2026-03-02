@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from datetime import timedelta
 from django.utils import timezone
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db.models.functions import (TruncDay, TruncWeek, TruncMonth)
 from .models import Society, Membership
 
@@ -13,7 +13,7 @@ from .models import Society, Membership
 class AnalyticsView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, society_id):
+    def get(self, request):
 
         if request.user.role != "admin":
             return Response({"error": "Admins only"}, status=403)
@@ -68,7 +68,28 @@ class AnalyticsView(APIView):
 
             current_date += delta
 
+        society = Society.objects.get(admin=request.user) # gets admis society
+        total_events = society.events.count() # total events in that society
+        events_stats = society.events.annotate(
+            attendee_count = Count(
+                "eventattendance",
+                filter = Q(eventattendance__left_at__isnull=True)
+            )
+        ).values("name", "attendee_count")
+
+        #most popular event
+        most_popular = society.events.annotate(
+            attendee_count = Count(
+                "eventattendance",
+                filter = Q(eventattendance__left_at__isnull=True)
+            )
+        ).order_by("-attendee_count").values("name", "attendee_count").first()
+
+
         return Response({
             "labels": labels,
-            "totals": totals
+            "totals": totals,
+            "total_events": total_events,
+            "events_stats": list(events_stats),
+            "most_popular": most_popular
         })

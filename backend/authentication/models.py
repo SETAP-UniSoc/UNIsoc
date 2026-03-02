@@ -83,7 +83,7 @@ class Society(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     
 class SocietyAdmin(models.Model):
     ROLE_CHOICES = [
@@ -100,12 +100,10 @@ class SocietyAdmin(models.Model):
     )
 
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='admin_societies'
     )
-
-    role = models.CharField(max_length=50, choices=ROLE_CHOICES)
 
     class Meta:
         unique_together = ('society', 'user')
@@ -269,6 +267,14 @@ class AuditLog(models.Model):
         return self.action
 
 
+class EventAttendance(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    joined_at = models.DateTimeField(auto_now_add=True)
+    left_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ("user", "event")
 
 #run in terminal 
 #python manage.py makemigrations
