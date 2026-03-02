@@ -71,7 +71,9 @@ class Society(models.Model):
     admin = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="managed_societies"
+        limit_choices_to={'role': 'admin'},
+        null = True,
+        blank = True
     )
 
     is_active = models.BooleanField(default=True)
@@ -79,6 +81,10 @@ class Society(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.name
+    
+    
 class SocietyAdmin(models.Model):
     ROLE_CHOICES = [
         ('president', 'President'),
