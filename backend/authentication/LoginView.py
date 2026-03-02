@@ -23,9 +23,9 @@ class LoginView(APIView):
             if email:
                 user = User.objects.get(email__iexact=email)
             elif up_number:
-                if not up_number.lower().startswith("up"):
-                    up_number = f"u{up_number}"
-                    up_number = "u" + up_number
+                up_number = up_number.lower()
+                if not up_number.startswith("up"):
+                    up_number = f"up{up_number}"
                 user = User.objects.get(up_number__iexact=up_number)
             else:
                 return Response(
