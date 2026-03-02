@@ -22,15 +22,24 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   Future<void> loginAdmin() async {
     final name = nameController.text.trim();
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter all fields")),
-      );
+      _showError("Please enter all fields");
+      return;
+    }
+
+    if (!RegExp(r'^[\w\-.]+@([\w\-]+\.)+[\w\-]{2,4}$').hasMatch(email)) {
+      _showError("Please enter a valid email address");
       return;
     }
     
@@ -50,44 +59,41 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
       print("Response Status: ${response.statusCode}");
       print("Response Body: ${response.body}");
 
+    //if name is not in database show error message
+      
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final token = data['token'] as String;
-        final role = data['role'] as String? ?? 'admin';
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const AdminHomepage()),
+        );
+        return;
+      }
 
-     Navigator.pushReplacement(
-    context, 
-    MaterialPageRoute(
-      builder: (context) => Scaffold(
-        appBar: AppBar(title: const Text("Admin Login Success")),
-        body: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.admin_panel_settings, size: 80, color: Colors.green),
-              const SizedBox(height: 20),
-              const Text("Admin login successful!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
-              Text("Token: $token", style: const TextStyle(fontSize: 14, fontFamily: 'monospace')),
-              Text("Role: $role"),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
-                child: const Text("Back to Login"),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-} 
+      if (response.statusCode == 401) {
+        _showError("Invalid credentials");
+        return;
+      }
+
+      if (response.statusCode == 404) {
+        _showError("Admin account not found");
+        return;
+      }
+
+      String errorMessage = "Login failed (${response.statusCode})";
+      try {
+        final data = jsonDecode(response.body);
+        if (data is Map<String, dynamic>) {
+          final serverMessage = data['error'] ?? data['message'] ?? data['detail'];
+          if (serverMessage is String && serverMessage.isNotEmpty) {
+            errorMessage = serverMessage;
+          }
+        }
+      } catch (_) {}
+      _showError(errorMessage);
     }  catch(e) {
       print("Error:$e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: $e')),
-      );
+      _showError('Network error: $e');
       
     } 
     finally {
@@ -151,18 +157,19 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
                 child: const Text("Forgot Password?"),
               ),
             ),
-//should go to admin homepage when login sbutton is pressed and the login is successful, otherwise show a snackbar with the error message
+//should go to admin homepage when login button is pressed and the login is successful, otherwise show a snackbar with the error message
             const SizedBox(height: 20),
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(
-                onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AdminHomepage()),
-                    );
-                  },
-                  child: const Text("Login"),
+                onPressed: _isLoading ? null : loginAdmin,
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text("Login"),
                 ),
               ),
             const SizedBox(height: 20),
