@@ -33,6 +33,20 @@ class _SignupUserPageState extends State<SignupUserPage> {
     final password = passwordController.text;
     final confirmPassword = confirmPasswordController.text;
 
+  //checking if email  is correct format 
+
+
+
+    if (!email.contains('@') || !email.contains('.')) {
+      _showError("Please enter a valid email address");
+      return;
+    }
+
+    if (RegExp(r'[A-Za-z]').hasMatch(upnumberDigits)) {
+      _showError("UP number must contain only digits");
+      return;
+    }
+
     if (upnumberDigits.length != 7) {
       _showError("UP number must be 7 digits");
       return;

@@ -12,7 +12,7 @@ class LoginScreenAdmin extends StatefulWidget {
   State<LoginScreenAdmin> createState() => _LoginScreenAdminState();
 }
 
-
+//adding error handleing for the name email and password fields
 
 class _LoginScreenAdminState extends State<LoginScreenAdmin> {
   //final TextEditingController usernameController = TextEditingController();
@@ -93,6 +93,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     finally {
       if (mounted) setState (()=> _isLoading = false);
     }
+    // error handeling for email 
   }
 
 
