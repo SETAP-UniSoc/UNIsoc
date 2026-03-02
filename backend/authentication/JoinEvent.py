@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
-from .models import Society, Membership
+from .models import EventAttendance, Society, Membership
 
 class JoinSocietyView(APIView):
     permission_classes = [IsAuthenticated]
@@ -42,8 +42,10 @@ class JoinSocietyView(APIView):
                     {"message": "Rejoined successfully"},
                     status=status.HTTP_200_OK
                 )
-
+        attendee_count = EventAttendance.objects.filter(
+            event__society=society, 
+            left_at__isnull=True).count()
         return Response(
-            {"message": "Successfully joined"},
+            {"message": "Successfully joined", "attendee_count": attendee_count},
             status=status.HTTP_201_CREATED
         )
