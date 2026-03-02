@@ -4,7 +4,6 @@ import 'screens/my_account_page.dart';
 import 'screens/my_events_page.dart';
 import 'screens/user_mysoc_page.dart';
 
-
 // A reusable navbar for the logged-in home page
 class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
   const HomeNavbar({super.key});
@@ -28,13 +27,15 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
                 );
                 break;
               case _MenuAction.mySocs:
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const MySocietyPage()),
-                  );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MySocietyPage(),
+                  ),
+                );
                 break;
               case _MenuAction.settings:
-               Navigator.push(
+                Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const SettingsPage()),
                 );
@@ -42,32 +43,29 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
               case _MenuAction.myAccount:
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MyAccountPage()),
+                  MaterialPageRoute(
+                    builder: (context) => const MyAccountPage(),
+                  ),
                 );
                 break;
               case _MenuAction.logout:
+                // TODO: implement logout
                 break;
             }
           },
-          itemBuilder: (context) => [
-            const PopupMenuItem(
+          itemBuilder: (context) => const [
+            PopupMenuItem(
               value: _MenuAction.myEvents,
               child: Text('My Events'),
             ),
-            const PopupMenuItem(
-              value: _MenuAction.mySocs,
-              child: Text('MySocs'),
-            ),
-            const PopupMenuItem(
-              value: _MenuAction.settings,
-              child: Text('Settings'),
-            ),
-            const PopupMenuItem(
+            PopupMenuItem(value: _MenuAction.mySocs, child: Text('MySocs')),
+            PopupMenuItem(value: _MenuAction.settings, child: Text('Settings')),
+            PopupMenuItem(
               value: _MenuAction.myAccount,
               child: Text('My Account'),
             ),
-            const PopupMenuDivider(),
-            const PopupMenuItem(
+            PopupMenuDivider(),
+            PopupMenuItem(
               value: _MenuAction.logout,
               child: Text('Log Out', style: TextStyle(color: Colors.red)),
             ),
@@ -80,8 +78,6 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
 
 enum _MenuAction { myEvents, mySocs, settings, myAccount, logout }
 
-// ...existing code...
-
 /// Header section that shows the navbar and a greeting.
 /// [studentName] will later be replaced with the actual logged-in user's name.
 class HomeHeader extends StatelessWidget {
@@ -89,7 +85,7 @@ class HomeHeader extends StatelessWidget {
 
   const HomeHeader({
     super.key,
-    this.studentName = 'Student', // default for now
+    this.studentName = 'Student', // later pass the real name
   });
 
   @override
@@ -114,6 +110,25 @@ class HomeHeader extends StatelessWidget {
                 'Welcome $studentName',
                 style: const TextStyle(fontSize: 18, color: Colors.grey),
               ),
+              const SizedBox(height: 16),
+              // Search bar
+              TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search events or societies',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 0,
+                  ),
+                ),
+                onChanged: (value) {
+                  // TODO: hook up search logic later
+                  // print(value);
+                },
+              ),
             ],
           ),
         ),
@@ -121,3 +136,25 @@ class HomeHeader extends StatelessWidget {
     );
   }
 }
+
+
+/*  Future<void> loginUser() async {
+    final up_number = upnumberController.text;
+    final password = passwordController.text;
+
+    final url = Uri.parse("http://10.128.5.47:8000/api/user/login/");
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: jsonEncode({"up_number": up_number, "password": password}),
+    );
+
+    print("Response Status: ${response.statusCode}");
+    print("Response Body: ${response.body}");
+
+    print(upnumberController.text);
+    print(passwordController.text); */
