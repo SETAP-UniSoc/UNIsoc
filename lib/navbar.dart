@@ -49,28 +49,23 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
                 );
                 break;
               case _MenuAction.logout:
+                // TODO: implement logout
                 break;
             }
           },
-          itemBuilder: (context) => [
-            const PopupMenuItem(
+          itemBuilder: (context) => const [
+            PopupMenuItem(
               value: _MenuAction.myEvents,
               child: Text('My Events'),
             ),
-            const PopupMenuItem(
-              value: _MenuAction.mySocs,
-              child: Text('MySocs'),
-            ),
-            const PopupMenuItem(
-              value: _MenuAction.settings,
-              child: Text('Settings'),
-            ),
-            const PopupMenuItem(
+            PopupMenuItem(value: _MenuAction.mySocs, child: Text('MySocs')),
+            PopupMenuItem(value: _MenuAction.settings, child: Text('Settings')),
+            PopupMenuItem(
               value: _MenuAction.myAccount,
               child: Text('My Account'),
             ),
-            const PopupMenuDivider(),
-            const PopupMenuItem(
+            PopupMenuDivider(),
+            PopupMenuItem(
               value: _MenuAction.logout,
               child: Text('Log Out', style: TextStyle(color: Colors.red)),
             ),
