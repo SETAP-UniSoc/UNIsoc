@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:unisoc/screens/admin_hompage.dart';
+import 'package:unisoc/screens/admin/admin_hompage.dart';
 import 'forgotten_password_screen.dart';
 import 'login_screen.user.dart';
 
