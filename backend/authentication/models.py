@@ -72,6 +72,8 @@ class Society(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         limit_choices_to={'role': 'admin'}
+        null = True,
+        blank = True
     )
 
     is_active = models.BooleanField(default=True)
