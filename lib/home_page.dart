@@ -94,6 +94,53 @@ class HomeHeader extends StatelessWidget {
                   },
                 ),
               ),
+              const SizedBox(height: 24),
+
+              // A–Z list header with sort/filter labels
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  Text(
+                    'All Societies (A–Z)',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        'Sort by',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                      SizedBox(width: 16),
+                      Text(
+                        'Filter by',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Scrollable list of societies A–Z
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: featuredSocieties.length,
+                itemBuilder: (context, index) {
+                  final soc = featuredSocieties[index];
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: soc.color,
+                      child: Icon(soc.icon, color: Colors.white, size: 20),
+                    ),
+                    title: Text(soc.name),
+                    subtitle: const Text('Short description here'),
+                    onTap: () {
+                      // TODO: navigate to society detail page
+                    },
+                  );
+                },
+              ),
             ],
           ),
         ),
