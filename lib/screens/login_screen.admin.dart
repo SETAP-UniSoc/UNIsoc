@@ -18,16 +18,18 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
   //final TextEditingController usernameController = TextEditingController();
 
   bool _isLoading = false;
+  final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   Future<void> loginAdmin() async {
+    final name = nameController.text.trim();
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter both email and password")),
+        const SnackBar(content: Text("Please enter all fields")),
       );
       return;
     }
@@ -42,7 +44,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json", "Accept": "application/json"},
-        body: jsonEncode({"email": email, "password": password}),
+        body: jsonEncode({"name": name, "email": email, "password": password}),
       );
 
       print("Response Status: ${response.statusCode}");
@@ -110,6 +112,14 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
+            TextField(
+              controller:nameController,
+              decoration: const InputDecoration(
+                labelText: "Society Name",
+                border: UnderlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
             TextField(
               controller: emailController,
               decoration: const InputDecoration(
