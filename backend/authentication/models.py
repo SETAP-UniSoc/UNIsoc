@@ -104,7 +104,8 @@ class SocietyAdmin(models.Model):
         on_delete=models.CASCADE,
         related_name='admin_societies'
     )
-
+     
+    is_admin = models.BooleanField(default=False)
     role = models.CharField(max_length=50, choices=ROLE_CHOICES)
 
     class Meta:
