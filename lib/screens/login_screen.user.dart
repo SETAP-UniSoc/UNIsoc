@@ -399,7 +399,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
 
     setState(() => isLoading = true);
 
-    final url = Uri.parse("http://10.128.5.47:8000/api/user/login/");
+    final url = Uri.parse("http://10.128.4.254:8000/api/user/login/");
 
     try {
       final response = await http
