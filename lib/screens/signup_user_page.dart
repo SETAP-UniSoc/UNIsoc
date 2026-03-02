@@ -95,7 +95,7 @@ if (!RegExp(r'\d').hasMatch(password)) {
 }
 
 // Must contain special character
-if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
+if (!RegExp(r'[^\w\s]').hasMatch(password)) {
   _showError("Password must contain at least one special character");
   return;
 }
@@ -240,8 +240,14 @@ if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
 
 //sign up button goes back to login screen user page 
             ElevatedButton(
-              onPressed: () => LoginScreenUser(),
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreenUser()),
+                );
+              },
               child: const Text("Signup"),
+              
             ),
           ],
         ),  
