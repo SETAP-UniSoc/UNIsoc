@@ -17,48 +17,56 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
   final TextEditingController upnumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  bool isLoading = false;
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   Future<void> loginUser() async {
     final upNumber = upnumberController.text.trim();
     final password = passwordController.text;
 
-    if (upNumber.length != 7) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("UP number must be 7 digits")),
-      );
+    // ✅ Basic validation
+    if (upNumber.isEmpty || password.isEmpty) {
+      _showError("Please enter UP number and password");
       return;
     }
+
+    if (upNumber.length != 7) {
+      _showError("UP number must be 7 digits");
+      return;
+    }
+
+    setState(() => isLoading = true);
 
     final url = Uri.parse("http://10.128.5.47:8000/api/user/login/");
 
     try {
       final response = await http.post(
         url,
-        headers: {"Content-Type": "application/json", "Accept": "application/json"},
-        body: jsonEncode({"up_number": upNumber, "password": password}),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: jsonEncode({
+          "up_number": upNumber,
+          "password": password,
+        }),
       );
 
       print("Response Status: ${response.statusCode}");
       print("Response Body: ${response.body}");
 
-      if (response.statusCode == 404) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("UP number not found")),
-        );
-        return;
-      }
-
-      if (response.statusCode == 401) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Incorrect password")),
-        );
-        return;
-      }
+      if (!mounted) return;
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Login successful")),
         );
-        if (!mounted) return;
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
@@ -66,13 +74,23 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login failed (${response.statusCode})")),
-      );
+      if (response.statusCode == 404) {
+        _showError("UP number not found");
+        return;
+      }
+
+      if (response.statusCode == 401) {
+        _showError("Incorrect password");
+        return;
+      }
+
+      _showError("Login failed (${response.statusCode})");
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: $e')),
-      );
+      _showError("Network error: $e");
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -90,6 +108,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
+
             TextField(
               controller: upnumberController,
               decoration: const InputDecoration(
@@ -98,6 +117,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
                 border: UnderlineInputBorder(),
               ),
             ),
+
             const SizedBox(height: 20),
 
             TextField(
@@ -108,62 +128,56 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
                 border: UnderlineInputBorder(),
               ),
             ),
+
             const SizedBox(height: 30),
 
-            Align(
-              alignment: Alignment.center,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ForgottenPasswordScreen()),
-                  );
-                },
-                child: const Text("Forgot Password?"),
-              ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ForgottenPasswordScreen(),
+                  ),
+                );
+              },
+              child: const Text("Forgot Password?"),
             ),
 
-            Align(
-              alignment: Alignment.center,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomePage()),
-                  );
-                },
-                child: const Text("Login"),
-              ),
-            ),
+            const SizedBox(height: 10),
+
+            // ✅ FIXED LOGIN BUTTON
+            isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: loginUser,
+                    child: const Text("Login"),
+                  ),
+
             const SizedBox(height: 20),
 
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SignupUserPage(),
-                    ),
-                  );
-                },
-                child: const Text("Signup"),
-              ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SignupUserPage(),
+                  ),
+                );
+              },
+              child: const Text("Signup"),
             ),
 
-            Align(
-              alignment: Alignment.bottomLeft,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginScreenAdmin()),
-                    );
-                  },
-                  child: const Text("Admin"),
-                ),
-              ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LoginScreenAdmin(),
+                  ),
+                );
+              },
+              child: const Text("Admin"),
+            ),
           ],
         ),
       ),
