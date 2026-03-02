@@ -53,7 +53,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
 
   setState(() => _isLoading = true);
 
-  final url = Uri.parse("http://10.128.5.47:8000/api/login/");
+  final url = Uri.parse("http://10.128.4.254:8000/api/login/");
 
   try {
     final response = await http
@@ -69,7 +69,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
             "password": password,
           }),
         )
-        .timeout(const Duration(seconds: 10));
+        .timeout(const Duration(seconds: 5));
 
     if (!mounted) return;
 
