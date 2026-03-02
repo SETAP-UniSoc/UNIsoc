@@ -70,19 +70,88 @@ class HomeHeader extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 24),
-              // Placeholder for featured societies carousel
               const Text(
-                'Featured societies will appear here',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontStyle: FontStyle.italic,
-                  color: Colors.grey,
+                'Featured Societies',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 80, // height of the logo cards
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: const [
+                    _SocietyLogoCard(
+                      label: 'Gaming Soc',
+                      color: Colors.blueAccent,
+                      icon: Icons.sports_esports,
+                    ),
+                    _SocietyLogoCard(
+                      label: 'Music Soc',
+                      color: Colors.purpleAccent,
+                      icon: Icons.music_note,
+                    ),
+                    _SocietyLogoCard(
+                      label: 'Drama Soc',
+                      color: Colors.orangeAccent,
+                      icon: Icons.theaters,
+                    ),
+                    _SocietyLogoCard(
+                      label: 'Chess Soc',
+                      color: Colors.greenAccent,
+                      icon: Icons.extension,
+                    ),
+                    _SocietyLogoCard(
+                      label: 'Tech Soc',
+                      color: Colors.tealAccent,
+                      icon: Icons.computer,
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+class _SocietyLogoCard extends StatelessWidget {
+  final String label;
+  final Color color;
+  final IconData icon;
+
+  const _SocietyLogoCard({
+    required this.label,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 80,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 32, color: Colors.white),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }
