@@ -77,36 +77,18 @@ class HomeHeader extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 80, // height of the logo cards
-                child: ListView(
+                height: 80,
+                child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  children: const [
-                    _SocietyLogoCard(
-                      label: 'Gaming Soc',
-                      color: Colors.blueAccent,
-                      icon: Icons.sports_esports,
-                    ),
-                    _SocietyLogoCard(
-                      label: 'Music Soc',
-                      color: Colors.purpleAccent,
-                      icon: Icons.music_note,
-                    ),
-                    _SocietyLogoCard(
-                      label: 'Drama Soc',
-                      color: Colors.orangeAccent,
-                      icon: Icons.theaters,
-                    ),
-                    _SocietyLogoCard(
-                      label: 'Chess Soc',
-                      color: Colors.greenAccent,
-                      icon: Icons.extension,
-                    ),
-                    _SocietyLogoCard(
-                      label: 'Tech Soc',
-                      color: Colors.tealAccent,
-                      icon: Icons.computer,
-                    ),
-                  ],
+                  itemCount: featuredSocieties.length,
+                  itemBuilder: (context, index) {
+                    final soc = featuredSocieties[index];
+                    return _SocietyLogoCard(
+                      label: soc.name,
+                      color: soc.color,
+                      icon: soc.icon,
+                    );
+                  },
                 ),
               ),
             ],
