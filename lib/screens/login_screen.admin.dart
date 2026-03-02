@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:unisoc/screens/admin_hompage.dart';
+import 'package:unisoc/screens/admin/admin_hompage.dart';
 import 'forgotten_password_screen.dart';
 import 'login_screen.user.dart';
 
@@ -17,7 +17,6 @@ class LoginScreenAdmin extends StatefulWidget {
 class _LoginScreenAdminState extends State<LoginScreenAdmin> {
   //final TextEditingController usernameController = TextEditingController();
 
-  bool _isLoading = false;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
@@ -32,10 +31,6 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
       return;
     }
     
-    setState(() {
-      _isLoading = true;
-    });
-
     final url = Uri.parse("http://10.128.5.47:8000/api/login/");
 //http://10.0.2.2:8000/api/login/
     try {
@@ -91,9 +86,6 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
         SnackBar(content: Text('Network error: $e')),
       );
       
-    } 
-    finally {
-      if (mounted) setState (()=> _isLoading = false);
     }
   }
 
