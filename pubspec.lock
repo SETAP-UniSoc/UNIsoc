@@ -382,10 +382,5 @@ packages:
     source: hosted
     version: "6.6.1"
 sdks:
-<<<<<<< HEAD
   dart: ">=3.9.0 <4.0.0"
-  flutter: ">=3.18.0-18.0.pre.54"
-=======
-  dart: ">=3.10.0 <4.0.0"
   flutter: ">=3.27.4"
->>>>>>> Maya-up2266552
