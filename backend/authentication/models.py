@@ -83,7 +83,12 @@ class Society(models.Model):
 
     def __str__(self):
         return self.name
-    
+
+class User(AbstractUser):
+    is_admin = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.email
     
 class SocietyAdmin(models.Model):
     ROLE_CHOICES = [
@@ -102,10 +107,9 @@ class SocietyAdmin(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='admin_societies'
+        related_name='admin_roles'
     )
-     
-    is_admin = models.BooleanField(default=False)
+
     role = models.CharField(max_length=50, choices=ROLE_CHOICES)
 
     class Meta:
