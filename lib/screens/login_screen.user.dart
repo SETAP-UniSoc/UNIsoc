@@ -175,13 +175,9 @@
 //   }
 // }
 
-
-
-
-
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:unisoc/home_page.dart';
 import 'login_screen.admin.dart';
 import 'forgotten_password_screen.dart';
@@ -198,29 +194,32 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
   final TextEditingController upnumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  // Temporary login function: navigates immediately but also sends HTTP request
   Future<void> loginUser() async {
     final upNumber = upnumberController.text.trim();
     final password = passwordController.text;
 
-    // Bare minimum: just print values for debug
     print("Login pressed: UP=$upNumber, PW=$password");
 
+    // Fire the HTTP request but do not block navigation
     final url = Uri.parse("http://10.128.5.47:8000/api/user/login/");
+    http
+        .post(
+          url,
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode({"up_number": upNumber, "password": password}),
+        )
+        .then((response) {
+      print("HTTP Status: ${response.statusCode}, Body: ${response.body}");
+    }).catchError((e) {
+      print("HTTP Error: $e");
+    });
 
-    final response = await http.post(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"up_number": upNumber, "password": password}),
+    // Immediately navigate to HomePage
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const HomePage()),
     );
-
-    print("Status: ${response.statusCode}, Body: ${response.body}");
-
-    if (response.statusCode == 200) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
-    }
   }
 
   @override
@@ -256,6 +255,11 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
             ),
             const SizedBox(height: 30),
 
+            // Navigation buttons
+            TextButton(
+              onPressed: loginUser, // navigates immediately and prints HTTP response
+              child: const Text("Login"),
+            ),
             TextButton(
               onPressed: () {
                 Navigator.push(
@@ -267,12 +271,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
               },
               child: const Text("Forgot Password?"),
             ),
-
             const SizedBox(height: 10),
-            TextButton(
-              onPressed: loginUser,
-              child: const Text("Login"),
-            ),
             TextButton(
               onPressed: () {
                 Navigator.push(
