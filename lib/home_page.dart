@@ -23,10 +23,39 @@ class HomePage extends StatelessWidget {
 }
 
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key});
+  final String studentName;
+
+  const HomeHeader({
+    super.key,
+    this.studentName = 'Student', // later pass the real name
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const HomeNavbar();
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const HomeNavbar(),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          color: Colors.white,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'UniSoc',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Welcome $studentName',
+                style: const TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
