@@ -210,7 +210,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
 
     final name = nameController.text.trim();
     final email = emailController.text.trim();
-    final password = passwordController.text.trim();
+    final password = passwordController.text;
 
     // ✅ Basic frontend validation only
     if (email.isEmpty || password.isEmpty) {
