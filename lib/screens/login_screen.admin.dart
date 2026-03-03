@@ -27,17 +27,17 @@
 //   }
 
 //   Future<void> loginAdmin() async {
-//   final name = nameController.text.trim();
+  
 //   final email = emailController.text.trim();
 //   final password = passwordController.text.trim();
 
 //   // Check empty fields first
-//   if (name.isEmpty) {
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       const SnackBar(content: Text("Society name is required")),
-//     );
-//     return;
-//   }
+//   // if (name.isEmpty) {
+//   //   ScaffoldMessenger.of(context).showSnackBar(
+//   //     const SnackBar(content: Text("Society name is required")),
+//   //   );
+//   //   return;
+//   // }
 //   if (email.isEmpty) {
 //     ScaffoldMessenger.of(context).showSnackBar(
 //       const SnackBar(content: Text("Email is required")),
@@ -69,46 +69,25 @@
 //             "password": password,
 //           }),
 //         )
-//         .timeout(const Duration(seconds: 5));
+//         .timeout(const Duration(seconds: 10));
 
 //     if (!mounted) return;
 
 //     // Assume backend returns JSON like:
 //     // { "success": false, "errors": { "name": "Invalid", "email": "Not found", "password": "Incorrect" } }
-//     //final responseData = jsonDecode(response.body);
+//     final responseData = jsonDecode(response.body);
 
-//   void _showError(String message) {
-//   if (!mounted) return;
-//   ScaffoldMessenger.of(context).showSnackBar(
-//     SnackBar(content: Text(message)),
-//   );
-// }
+//     if (response.statusCode == 200 && responseData['success'] == true) {
+//       // Successful login
+//       Navigator.pushReplacement(
+//         context,
+//         MaterialPageRoute(builder: (context) => const AdminHomepage()),
+//       );
+//     } else {
+//       // Field-level errors
+//       final errors = responseData['errors'] as Map<String, dynamic>?;
 
-//   if (response.statusCode == 200) {
-//   final responseData = jsonDecode(response.body);
-
-//   Navigator.pushReplacement(
-//     context,
-//     MaterialPageRoute(builder: (context) => const AdminHomepage()),
-//   );
-//   } else {
-//     print("Error body: ${response.body}");
-//     _showError("Login failed (${response.statusCode})");
-//   }
-
-
-
-//     // if (response.statusCode == 200 && responseData['success'] == true) {
-//     //   // Successful login
-//     //   Navigator.pushReplacement(
-//     //     context,
-//     //     MaterialPageRoute(builder: (context) => const AdminHomepage()),
-//     //   );
-//     // } else {
-//     //   // Field-level errors
-//     //   final errors = responseData['errors'] as Map<String, dynamic>?;
-
-//     if (errors != null) {
+//       if (errors != null) {
 //         if (errors.containsKey('name')) {
 //           ScaffoldMessenger.of(context).showSnackBar(
 //             SnackBar(content: Text("Name Error: ${errors['name']}")),
@@ -141,8 +120,6 @@
 //   } finally {
 //     if (mounted) setState(() => _isLoading = false);
 //   }
-
-
 // }
 //   @override
 //   Widget build(BuildContext context) {
@@ -221,7 +198,7 @@
 //                   Navigator.push(
 //                     context,
 //                     MaterialPageRoute(
-//                       builder: (context) => const LoginScreenUser(),
+//                       builder: (context) => const LoginScreenAdminUser(),
 //                     ),
 //                   );
 //                 },
@@ -237,12 +214,222 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import 'dart:convert';
+// import 'package:flutter/material.dart';
+// import 'package:http/http.dart' as http;
+// import 'package:unisoc/screens/admin/admin_hompage.dart';
+// //import 'login_screen.admin.dart';
+// import 'forgotten_password_screen.dart';
+// import 'signup_user_page.dart';
+
+// class LoginScreenAdmin extends StatefulWidget {
+//   const LoginScreenAdmin({super.key});
+
+//   @override
+//   State<LoginScreenAdmin> createState() => _LoginScreenAdminState();
+// }
+
+// class _LoginScreenAdminState extends State<LoginScreenAdmin> {
+//  final TextEditingController nameController = TextEditingController();
+//   final TextEditingController emailController = TextEditingController();
+//   final TextEditingController passwordController = TextEditingController();
+
+//   bool isLoading = false;
+
+//   // Minimal error display
+//   void _showError(String message) {
+//     if (!mounted) return;
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       SnackBar(content: Text(message)),
+//     );
+//   }
+
+//   Future<void> loginUser() async {
+//     final name = nameController.text.trim();
+//     final email = emailController.text.trim();
+//     final password = passwordController.text;
+
+//     if (name.isEmpty || email.isEmpty || password.isEmpty) {
+//       _showError("Please enter all fields");
+//       return;
+//     }
+
+//     setState(() => isLoading = true);
+
+//     final url = Uri.parse("http://10.128.4.254:8000/api/admin/login/");
+
+//     try {
+//       final response = await http
+//           .post(
+//             url,
+//             headers: {"Content-Type": "application/json"},
+//             body: jsonEncode({"name": name, "email": email, "password": password}),
+//           )
+//           .timeout(const Duration(seconds: 10));
+
+//       print("HTTP Status: ${response.statusCode}, Body: ${response.body}");
+
+//       if (!mounted) return;
+
+//       if (response.statusCode == 200) {
+//         Navigator.pushReplacement(
+//           context,
+//           MaterialPageRoute(builder: (context) => const AdminHomepage()),
+//         );
+//       } else if (response.statusCode == 404) {
+//         _showError("Email not found");
+//       } else if (response.statusCode == 401) {
+//         _showError("Incorrect password");
+//       } else {
+//         _showError("Login failed (${response.statusCode})");
+//       }
+//     } catch (e) {
+//       _showError("Network or server error");
+//       print("Error during login: $e");
+//     } finally {
+//       if (mounted) setState(() => isLoading = false);
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: const Text("Admin Login")),
+//       body: Padding(
+//         padding: const EdgeInsets.all(20),
+//         child: Column(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: [
+//             const Text(
+//               "Login",
+//               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+//             ),
+//             const SizedBox(height: 30),
+
+//             TextField(
+//               controller: nameController,
+//               decoration: const InputDecoration(
+//                 labelText: "Society Name",
+              
+//                 border: UnderlineInputBorder(),
+//               ),
+//             ),
+//             const SizedBox(height: 20),
+
+//             // UP Number
+//             TextField(
+//               controller: emailController,
+//               decoration: const InputDecoration(
+//                 labelText: "Email",
+              
+//                 border: UnderlineInputBorder(),
+//               ),
+//             ),
+//             const SizedBox(height: 20),
+
+//             // Password
+//             TextField(
+//               controller: passwordController,
+//               obscureText: true,
+//               decoration: const InputDecoration(
+//                 labelText: "Password",
+//                 border: UnderlineInputBorder(),
+//               ),
+//             ),
+//             const SizedBox(height: 30),
+
+//             // Forgot Password stays as TextButton
+//             TextButton(
+//               onPressed: () {
+//                 Navigator.push(
+//                   context,
+//                   MaterialPageRoute(
+//                     builder: (context) => const ForgottenPasswordScreen(),
+//                   ),
+//                 );
+//               },
+//               child: const Text("Forgot Password?"),
+//             ),
+//             const SizedBox(height: 10),
+
+//             // Login as ElevatedButton
+//             isLoading
+//                 ? const CircularProgressIndicator()
+//                 : SizedBox(
+//                     width: double.infinity,
+//                     child: ElevatedButton(
+//                       onPressed: loginUser,
+//                       child: const Text("Login"),
+//                     ),
+//                   ),
+//             const SizedBox(height: 10),
+
+//             // Signup ElevatedButton
+//             SizedBox(
+//               width: double.infinity,
+//               child: ElevatedButton(
+//                 onPressed: () {
+//                   Navigator.push(
+//                     context,
+//                     MaterialPageRoute(
+//                       builder: (context) => const SignupUserPage(),
+//                     ),
+//                   );
+//                 },
+//                 child: const Text("Signup"),
+//               ),
+//             ),
+//             const SizedBox(height: 10),
+
+//             // Admin ElevatedButton
+//             // SizedBox(
+//             //   width: double.infinity,
+//             //   child: ElevatedButton(
+//             //     onPressed: () {
+//             //       Navigator.push(
+//             //         context,
+//             //         MaterialPageRoute(
+//             //           builder: (context) => const AdminHomepage(),
+//             //         ),
+//             //       );
+//             //     },
+//             //     child: const Text("Admin"),
+//             //   ),
+//             // ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+
+
+
+
+
+
+
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:unisoc/screens/admin/admin_hompage.dart';
 import 'forgotten_password_screen.dart';
-import 'login_screen.user.dart';
+import 'signup_user_page.dart';
 
 class LoginScreenAdmin extends StatefulWidget {
   const LoginScreenAdmin({super.key});
@@ -252,11 +439,38 @@ class LoginScreenAdmin extends StatefulWidget {
 }
 
 class _LoginScreenAdminState extends State<LoginScreenAdmin> {
-  bool _isLoading = false;
-
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  bool isLoading = false;
+
+  Future<void> loginUser() async {
+    setState(() => isLoading = true);
+
+    final url = Uri.parse("http://10.128.4.254:8000/api/login/");
+
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "name": nameController.text.trim(),
+        "email": emailController.text.trim(),
+        "password": passwordController.text,
+      }),
+    );
+
+    if (!mounted) return;
+
+    if (response.statusCode == 200) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const AdminHomepage()),
+      );
+    }
+
+    setState(() => isLoading = false);
+  }
 
   @override
   void dispose() {
@@ -266,95 +480,10 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     super.dispose();
   }
 
-  void _showError(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
-  Future<void> loginAdmin() async {
-    final name = nameController.text.trim();
-    final email = emailController.text.trim();
-    final password = passwordController.text.trim();
-
-    if (name.isEmpty) {
-      _showError("Society name is required");
-      return;
-    }
-    if (email.isEmpty) {
-      _showError("Email is required");
-      return;
-    }
-    if (password.isEmpty) {
-      _showError("Password is required");
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-  final url = Uri.parse("http://10.128.4.254:8000/api/admin/login/");
-
-    try {
-      final response = await http
-          .post(
-            url,
-            headers: {
-              "Content-Type": "application/json",
-              "Accept": "application/json",
-            },
-            body: jsonEncode({
-              "name": name,
-              "email": email,
-              "password": password,
-            }),
-          )
-          .timeout(const Duration(seconds: 15));
-
-      Map<String, dynamic> responseData = {};
-      try {
-        responseData = jsonDecode(response.body) as Map<String, dynamic>;
-      } catch (_) {
-        responseData = {};
-      }
-
-      if (!mounted) return;
-
-      if (response.statusCode == 200) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const AdminHomepage()),
-        );
-      } else {
-        final errors = responseData['errors'] as Map<String, dynamic>?;
-
-        if (errors != null && errors.isNotEmpty) {
-          if (errors.containsKey('name')) {
-            _showError("Name Error: ${errors['name']}");
-          } else if (errors.containsKey('email')) {
-            _showError("Email Error: ${errors['email']}");
-          } else if (errors.containsKey('password')) {
-            _showError("Password Error: ${errors['password']}");
-          } else {
-            _showError("Login failed (${response.statusCode})");
-          }
-        } else {
-          _showError("Login failed (${response.statusCode})");
-        }
-      }
-    } catch (e) {
-      _showError("Network error: $e");
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Admin Login"),
-      ),
+      appBar: AppBar(title: const Text("Admin Login")),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -365,6 +494,8 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
+
+            // Society Name
             TextField(
               controller: nameController,
               decoration: const InputDecoration(
@@ -373,60 +504,67 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
               ),
             ),
             const SizedBox(height: 20),
+
+            // Email
             TextField(
               controller: emailController,
               decoration: const InputDecoration(
-                labelText: "email",
+                labelText: "Email",
                 border: UnderlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
+
+            // Password
             TextField(
               controller: passwordController,
               obscureText: true,
               decoration: const InputDecoration(
-                labelText: "password",
+                labelText: "Password",
                 border: UnderlineInputBorder(),
               ),
             ),
             const SizedBox(height: 30),
-            Align(
-              alignment: Alignment.center,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ForgottenPasswordScreen(),
-                    ),
-                  );
-                },
-                child: const Text("Forgot Password?"),
-              ),
+
+            // Forgot Password
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ForgottenPasswordScreen(),
+                  ),
+                );
+              },
+              child: const Text("Forgot Password?"),
             ),
-            const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.center,
-              child: _isLoading
-                  ? const CircularProgressIndicator()
-                  : ElevatedButton(
-                      onPressed: loginAdmin,
+            const SizedBox(height: 10),
+
+            // Login Button
+            isLoading
+                ? const CircularProgressIndicator()
+                : SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: loginUser,
                       child: const Text("Login"),
                     ),
-            ),
-            const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: TextButton(
+                  ),
+            const SizedBox(height: 10),
+
+            // Signup Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const LoginScreenUser(),
+                      builder: (context) => const SignupUserPage(),
                     ),
                   );
                 },
-                child: const Text("Sign up"),
+                child: const Text("Signup"),
               ),
             ),
           ],
