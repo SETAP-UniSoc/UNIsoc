@@ -366,6 +366,7 @@ import 'package:unisoc/home_page.dart';
 import 'login_screen.admin.dart';
 import 'forgotten_password_screen.dart';
 import 'signup_user_page.dart';
+import 'package:unisoc/services/api_services.dart';
 
 class LoginScreenUser extends StatefulWidget {
   const LoginScreenUser({super.key});
@@ -415,6 +416,8 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
       if (!mounted) return;
 
       if (response.statusCode == 200) {
+         final responseData = jsonDecode(response.body);
+         ApiService.authToken = responseData["token"];
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
