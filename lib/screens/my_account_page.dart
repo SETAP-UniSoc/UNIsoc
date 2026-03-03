@@ -105,40 +105,11 @@ class MyAccountPage extends StatelessWidget {
               ),
             ),
 
-            // Student ID
+            // Current Password
             Padding(
               padding: const EdgeInsets.only(top: 16, bottom: 8),
               child: Text(
-                'Student ID',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 12,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-              child: const Text(
-                '',
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-
-            // Date of Birth
-            Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 8),
-              child: Text(
-                'Date of Birth',
+                'Current Password',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
