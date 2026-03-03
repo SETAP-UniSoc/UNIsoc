@@ -62,54 +62,28 @@ class _UserSocietyPageState extends State<UserSocietyPage> {
   }
 
   Future<void> toggleJoinSociety() async {
-  final endpoint = joinedSociety
-      ? "/society/${widget.societyId}/leave/"
-      : "/society/${widget.societyId}/join/";
-
-  final url = Uri.parse("${ApiService.baseUrl}$endpoint");
-
   try {
-    final response = await http.post(
-      url,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Token ${ApiService.authToken}",
-      },
-    );
+    final response = joinedSociety
+        ? await ApiService.leaveSociety(widget.societyId)
+        : await ApiService.joinSociety(widget.societyId);
 
     if (response.statusCode == 201) {
-      setState(() {
-        joinedSociety = true;
-      });
-
+      setState(() => joinedSociety = true);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Successfully joined society 🎉"),
-          duration: Duration(seconds: 2),
-        ),
+        const SnackBar(content: Text("Successfully joined society 🎉")),
       );
-    } 
-    else if (response.statusCode == 200) {
-      setState(() {
-        joinedSociety = false;
-      });
-
+    } else if (response.statusCode == 200) {
+      setState(() => joinedSociety = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Successfully left society"),
-          duration: Duration(seconds: 2),
-        ),
+        const SnackBar(content: Text("Successfully left society")),
       );
     }
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Network error: $e"),
-      ),
+      SnackBar(content: Text("Network error: $e")),
     );
   }
 }
-
   Future<void> toggleJoinEvent(int eventId) async {
     final url =
         Uri.parse("${ApiService.baseUrl}/event/$eventId/join/");
