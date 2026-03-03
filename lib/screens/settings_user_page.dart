@@ -117,7 +117,6 @@ class _SettingsPageState extends State<SettingsPage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: Implement password confirmation logic
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4A235A),

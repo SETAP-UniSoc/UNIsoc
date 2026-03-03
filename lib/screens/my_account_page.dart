@@ -141,7 +141,6 @@ class MyAccountPage extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: Implement change password functionality
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4A235A),
