@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'navbar.dart';
 import 'models/soc_model.dart';
 import 'models/event_model.dart';
+import 'screens/user/user_society_page.dart'; //importing user society page to be used as a button in the home page
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -85,14 +86,35 @@ class HomeHeader extends StatelessWidget {
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: featuredSocieties.length,
+                  // itemBuilder: (context, index) {
+                  //   final soc = featuredSocieties[index];
+                  //   return _SocietyLogoCard(
+                  //     label: soc.name,
+                  //     color: soc.color,
+                  //     icon: soc.icon,
+                  //   );
+                  // },
+                  //changing one of the feature socs to be a button that goes to a different page for now 
                   itemBuilder: (context, index) {
                     final soc = featuredSocieties[index];
-                    return _SocietyLogoCard(
-                      label: soc.name,
-                      color: soc.color,
-                      icon: soc.icon,
-                    );
-                  },
+                    if (index == 0) {
+                      return _SocietyLogoCard(
+                        label: soc.name,
+                        color: soc.color,
+                        icon: soc.icon,
+                        UserSocietyPage: const UserSocietyPage(
+                          societyId: 1,
+                          societyName: "Tech Society",
+                          description: "A society for tech enthusiasts to share and learn about the latest in technology.",
+                        ),
+                        );
+                        }
+                        return _SocietyLogoCard(
+                          label: soc.name,
+                          color: soc.color,
+                          icon: soc.icon,
+                          );
+                          },
                 ),
               ),
               const SizedBox(height: 24),
@@ -173,37 +195,49 @@ class _SocietyLogoCard extends StatelessWidget {
   final String label;
   final Color color;
   final IconData icon;
+  final Widget? UserSocietyPage;
 
   const _SocietyLogoCard({
     required this.label,
     required this.color,
     required this.icon,
+    this.UserSocietyPage,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 80,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 32, color: Colors.white),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: UserSocietyPage == null
+          ? null
+          : () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => UserSocietyPage!),
+              );
+            },
+      child: Container(
+        width: 80,
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 32, color: Colors.white),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
