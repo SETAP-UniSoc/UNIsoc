@@ -104,8 +104,8 @@ class HomeHeader extends StatelessWidget {
                         icon: soc.icon,
                         UserSocietyPage: const UserSocietyPage(
                           societyId: 1,
-                          societyName: "Tech Society",
-                          description: "A society for tech enthusiasts to share and learn about the latest in technology.",
+                          societyName: "Gaming Society",
+                          description: "A society for gaming enthusiasts to share and learn about the latest in gaming.",
                         ),
                         );
                         }
