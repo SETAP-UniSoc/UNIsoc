@@ -32,12 +32,12 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
   final password = passwordController.text.trim();
 
   // Check empty fields first
-  // if (name.isEmpty) {
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     const SnackBar(content: Text("Society name is required")),
-  //   );
-  //   return;
-  // }
+  if (name.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Society name is required")),
+    );
+    return;
+  }
   if (email.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Email is required")),
