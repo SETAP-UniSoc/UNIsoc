@@ -24,7 +24,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     final email = emailController.text.trim();
     final password = passwordController.text;
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("All fields are required")),
       );
@@ -33,7 +33,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
 
     setState(() => isLoading = true);
 
-    final url = Uri.parse("http://10.128.4.254:8000/api/login/");
+    final url = Uri.parse("http://10.128.4.196:8000/api/login/");
 
     final body = {
       "name": name, // backend ignores this
@@ -44,17 +44,17 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     print("Sending POST to $url");
     print("Body: ${jsonEncode(body)}");
 
-    try {
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
+<<<<<<< HEAD
+    final body = {
+      "name": name, // backend ignores this
+      "email": email,
         body: jsonEncode(body),
       );
 
+>>>>>>> Maya-up2266552
       print("Status Code: ${response.statusCode}");
       print("Response Body: ${response.body}");
 
-      if (!mounted) return;
 
       final responseData = jsonDecode(response.body);
 
