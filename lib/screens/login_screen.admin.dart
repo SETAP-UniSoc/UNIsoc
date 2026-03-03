@@ -27,7 +27,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
   }
 
   Future<void> loginAdmin() async {
-  
+  final name = nameController.text.trim();
   final email = emailController.text.trim();
   final password = passwordController.text.trim();
 
