@@ -24,7 +24,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     final email = emailController.text.trim();
     final password = passwordController.text;
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("All fields are required")),
       );
