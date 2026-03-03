@@ -44,17 +44,17 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     print("Sending POST to $url");
     print("Body: ${jsonEncode(body)}");
 
-<<<<<<< HEAD
-    final body = {
-      "name": name, // backend ignores this
-      "email": email,
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
         body: jsonEncode(body),
       );
 
->>>>>>> Maya-up2266552
       print("Status Code: ${response.statusCode}");
       print("Response Body: ${response.body}");
 
+      if (!mounted) return;
 
       final responseData = jsonDecode(response.body);
 
