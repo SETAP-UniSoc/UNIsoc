@@ -33,7 +33,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
 
     setState(() => isLoading = true);
 
-    final url = Uri.parse("http://10.128.4.254:8000/api/login/");
+    final url = Uri.parse("http://10.128.4.196:8000/api/login/");
 
     final body = {
       "name": name, // backend ignores this
