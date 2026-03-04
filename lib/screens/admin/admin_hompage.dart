@@ -39,7 +39,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-  // ================= HEADER =================
+  // header
 
   Widget _buildHeader() {
     return Container(
@@ -93,7 +93,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-  // ================= TOP SOCIETIES CAROUSEL =================
+  // Top socs
 
   Widget _buildTopSocietiesCarousel() {
     List<String> topSocieties = [
@@ -175,7 +175,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-  // ================= BROWSE SOCIETIES =================
+  // browse soc
 
   Widget _buildBrowseSocietiesSection() {
     return Padding(
@@ -246,7 +246,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-  // ================= EVENTS CAROUSEL =================
+  // events
 
   Widget _buildEventsCarousel() {
     List<String> topEvents = [
