@@ -187,7 +187,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:unisoc/screens/admin/admin_hompage.dart';
+//import 'package:unisoc/screens/admin/admin_hompage.dart';
 import 'forgotten_password_screen.dart';
 import 'signup_user_page.dart';
 
@@ -250,7 +250,8 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const AdminHomepage(),
+            //chnaging  page it goes to as error wih adminhomepage
+            builder: (context) => const SignupUserPage(),
           ),
         );
       } else if (response.statusCode == 401) {
