@@ -4,11 +4,7 @@ import 'package:http/http.dart' as http;
 class ApiService {
   static const String baseUrl = "http://10.128.4.254:8000/api";
 
-<<<<<<< HEAD
-  static String? authToken; // 
-=======
   static String? authToken; // 👈 ADD THIS
->>>>>>> Maya-up2266552
 
   static Map<String, String> get headers => {
         "Content-Type": "application/json",
