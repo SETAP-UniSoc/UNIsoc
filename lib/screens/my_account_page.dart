@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'settings_user_page.dart';
 
 class MyAccountPage extends StatelessWidget {
   const MyAccountPage({super.key});
@@ -141,6 +142,12 @@ class MyAccountPage extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SettingsPage(),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4A235A),
