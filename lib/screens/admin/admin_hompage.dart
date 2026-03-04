@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' hide CarouselController;
+import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'admin_bottom_nav.dart';
 import 'admin_dropdown_menu.dart';
@@ -11,9 +11,8 @@ class AdminHomepage extends StatefulWidget {
 }
 
 class _AdminHomepageState extends State<AdminHomepage> {
-  final CarouselController _societyController = CarouselController();
-  final CarouselController _eventController = CarouselController();
-
+  final CarouselSliderController _societyController = CarouselSliderController();
+final CarouselSliderController _eventController = CarouselSliderController();
   String adminName = "John Smith"; // Later from backend
 
   @override
