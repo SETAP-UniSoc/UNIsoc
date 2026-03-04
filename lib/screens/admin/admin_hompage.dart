@@ -176,74 +176,76 @@ final CarouselSliderController _eventController = CarouselSliderController();
 
   // browse soc
 
-  Widget _buildBrowseSocietiesSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                "Browse Societies",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+ Widget _buildBrowseSocietiesSection() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header row (MATCHES USER PAGE STYLE)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: const [
+            Text(
+              'All Societies (A–Z)',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Row(
+              children: [
+                Text(
+                  'Sort by',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
-              Row(
-                children: [
-                  DropdownButton<String>(
-                    hint: const Text("Sort by"),
-                    items: const [
-                      DropdownMenuItem(
-                        value: "name",
-                        child: Text("Name"),
-                      ),
-                      DropdownMenuItem(
-                        value: "members",
-                        child: Text("Members"),
-                      ),
-                    ],
-                    onChanged: (value) {},
+                SizedBox(width: 16),
+                Text(
+                  'Filter by',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
                   ),
-                  const SizedBox(width: 12),
-                  DropdownButton<String>(
-                    hint: const Text("Filter by"),
-                    items: const [
-                      DropdownMenuItem(
-                        value: "category",
-                        child: Text("Category"),
-                      ),
-                    ],
-                    onChanged: (value) {},
+                ),
+              ],
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 12),
+
+        // Scrollable box (ADMIN ONLY DIFFERENCE)
+        Container(
+          height: 260,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: ListView.builder(
+            itemCount: 10,
+            itemBuilder: (context, index) {
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.blue,
+                  child: Text(
+                    "${index + 1}",
+                    style: const TextStyle(color: Colors.white),
                   ),
-                ],
-              ),
-            ],
+                ),
+                title: Text("Society ${index + 1}"),
+                subtitle: const Text("Short description here"),
+                onTap: () {},
+              );
+            },
           ),
-          const SizedBox(height: 12),
-          Container(
-            height: 260,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListView.builder(
-              itemCount: 10,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text("Society ${index + 1}"),
-                  subtitle: const Text("Short description here"),
-                  onTap: () {},
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   // events
 
