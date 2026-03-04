@@ -62,22 +62,6 @@ class _UserSocietyPageState extends State<UserSocietyPage> {
   }
 
   Future<void> toggleJoinSociety() async {
-<<<<<<< HEAD
-  try {
-    final response = joinedSociety
-        ? await ApiService.leaveSociety(widget.societyId)
-        : await ApiService.joinSociety(widget.societyId);
-
-    if (response.statusCode == 201) {
-      setState(() => joinedSociety = true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Successfully joined society 🎉")),
-      );
-    } else if (response.statusCode == 200) {
-      setState(() => joinedSociety = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Successfully left society")),
-=======
   final endpoint = joinedSociety
       ? "/society/${widget.societyId}/leave/"
       : "/society/${widget.societyId}/join/";
@@ -115,17 +99,10 @@ class _UserSocietyPageState extends State<UserSocietyPage> {
           content: Text("Successfully left society"),
           duration: Duration(seconds: 2),
         ),
->>>>>>> Maya-up2266552
       );
     }
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
-<<<<<<< HEAD
-      SnackBar(content: Text("Network error: $e")),
-    );
-  }
-}
-=======
       SnackBar(
         content: Text("Network error: $e"),
       ),
@@ -133,7 +110,6 @@ class _UserSocietyPageState extends State<UserSocietyPage> {
   }
 }
 
->>>>>>> Maya-up2266552
   Future<void> toggleJoinEvent(int eventId) async {
     final url =
         Uri.parse("${ApiService.baseUrl}/event/$eventId/join/");
@@ -210,7 +186,3 @@ class _UserSocietyPageState extends State<UserSocietyPage> {
     );
   }
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> Maya-up2266552
