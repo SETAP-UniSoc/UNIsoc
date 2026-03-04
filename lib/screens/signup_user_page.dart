@@ -19,229 +19,211 @@ class _SignupUserPageState extends State<SignupUserPage> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
+  bool isLoading = false;
+
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
 
-  Future<void> signupUser() async {
-    final firstName = firstNameController.text;
-    final lastName = lastNameController.text;
+  bool _validateFields() {
+    final firstName = firstNameController.text.trim();
+    final lastName = lastNameController.text.trim();
     final upnumberDigits = upnumberController.text.trim();
-    final email = emailController.text;
+    final email = emailController.text.trim();
     final password = passwordController.text;
     final confirmPassword = confirmPasswordController.text;
 
-    if (upnumberDigits.length != 7) {
-      _showError("UP number must be 7 digits");
-      return;
+    if (firstName.isEmpty ||
+        lastName.isEmpty ||
+        upnumberDigits.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
+      _showError("Please fill in all fields");
+      return false;
     }
 
-    final upnumber = 'UP$upnumberDigits';
-
-    if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match")),
-      );
-      return;
-    }
-
-    if (firstName.isEmpty || lastName.isEmpty || upnumber.isEmpty || email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in all fields")),
-      );
-      return;
+    if (!RegExp(r'^\d{7}$').hasMatch(upnumberDigits)) {
+      _showError("UP number must be exactly 7 digits");
+      return false;
     }
 
     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter a valid email address")),
-      );
-      return;
+      _showError("Enter a valid email address");
+      return false;
     }
 
-  //password validation checks password is at least 8 characters at least one  specicial character , a number , one uppercase letter
-    // Password must be at least 8 characters
-if (password.length < 8) {
-  _showError("Password must be at least 8 characters long");
-  return;
-}
+    if (password != confirmPassword) {
+      _showError("Passwords do not match");
+      return false;
+    }
 
-// Must contain uppercase letter
-if (!RegExp(r'[A-Z]').hasMatch(password)) {
-  _showError("Password must contain at least one uppercase letter");
-  return;
-}
+    if (password.length < 8) {
+      _showError("Password must be at least 8 characters");
+      return false;
+    }
 
-// Must contain number
-if (!RegExp(r'\d').hasMatch(password)) {
-  _showError("Password must contain at least one number");
-  return;
-}
+    if (!RegExp(r'[A-Z]').hasMatch(password)) {
+      _showError("Password must contain one uppercase letter");
+      return false;
+    }
 
-// Must contain special character
-if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
-  _showError("Password must contain at least one special character");
-  return;
-}
-    final url = Uri.parse("http://10.128.5.47:8000/api/user/register/");
+    if (!RegExp(r'\d').hasMatch(password)) {
+      _showError("Password must contain one number");
+      return false;
+    }
+
+    if (!RegExp(r'[^\w\s]').hasMatch(password)) {
+      _showError("Password must contain one special character");
+      return false;
+    }
+
+    return true;
+  }
+
+  Future<void> signupUser() async {
+    if (!_validateFields()) return;
+
+    setState(() => isLoading = true);
+
+    final upnumber = "UP${upnumberController.text.trim()}";
+
+    final url =
+        Uri.parse("http://10.128.4.196:8000/api/user/register/");
 
     try {
       final response = await http.post(
         url,
-        headers: {"Content-Type": "application/json", "Accept": "application/json"},
-        body: jsonEncode({"first_name": firstNameController.text,"last_name": lastNameController.text, "up_number": upnumber, "email": email, "password": password, "confirm_password": confirmPassword}),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: jsonEncode({
+          "first_name": firstNameController.text.trim(),
+          "last_name": lastNameController.text.trim(),
+          "up_number": upnumber,
+          "email": emailController.text.trim(),
+          "password": passwordController.text,
+          "confirm_password": confirmPasswordController.text,
+        }),
       );
 
       if (!mounted) return;
 
-      print("Response Status: ${response.statusCode}");
-      print("Response Body: ${response.body}");
-//adding a first and last name field to the signup page and printing them to the console to check if they are being sent to the backend correctly
-      print(firstNameController.text);
-      print(lastNameController.text);
-      print(upnumberController.text);
-      print(emailController.text);
-      print(passwordController.text);
+      if (response.statusCode == 200 ||
+          response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Signup successful")),
+        );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const LoginScreenUser()),
+        );
+      } else {
+        String errorMessage =
+            "Signup failed (${response.statusCode})";
+
         if (response.body.isNotEmpty) {
           try {
             final data = jsonDecode(response.body);
             if (data is Map<String, dynamic>) {
-              final token = data['token'] as String?;
-              final role = data['role'] as String? ?? 'user';
-              print("Token: $token");
-              print("Role: $role");
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Signup successful ($role)')),
-              );
+              errorMessage =
+                  data['error'] ??
+                  data['message'] ??
+                  data['detail'] ??
+                  errorMessage;
             }
           } catch (_) {}
         }
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreenUser()),
-        );
-        return;
+        _showError(errorMessage);
       }
-
-      String errorMessage = 'Signup failed (${response.statusCode})';
-      if (response.body.isNotEmpty) {
-        try {
-          final data = jsonDecode(response.body);
-          if (data is Map<String, dynamic>) {
-            final serverMessage = data['error'] ?? data['message'] ?? data['detail'];
-            if (serverMessage is String && serverMessage.isNotEmpty) {
-              errorMessage = serverMessage;
-            }
-          }
-        } catch (_) {}
-      }
-      _showError(errorMessage);
     } catch (e) {
-      if (!mounted) return;
-      _showError('Network error: $e');
+      _showError("Network error: $e");
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("User Signup")), //theres an automaticly generated back arrow 
+      appBar:
+          AppBar(title: const Text("User Signup")),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              "Signup",
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 30),
-            
-            TextField(
-              controller: firstNameController,
-              decoration: const InputDecoration(
-                labelText: "First Name",
-                border: UnderlineInputBorder(),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              const Text(
+                "Signup",
+                style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(height: 10),
+              const SizedBox(height: 30),
 
-            TextField(
-              controller: lastNameController,
-              decoration: const InputDecoration(
-                labelText: "Last Name",
-                border: UnderlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
+              _buildField(firstNameController, "First Name"),
+              _buildField(lastNameController, "Last Name"),
 
-            TextField(
-              controller: upnumberController,
-              keyboardType: TextInputType.number,
-              inputFormatters:[
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(7),
-              ],
-              decoration: const InputDecoration(
-                labelText: "UP number",
-                prefixText: "UP",
-                border: UnderlineInputBorder(),
+              TextField(
+                controller: upnumberController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(7),
+                ],
+                decoration: const InputDecoration(
+                  labelText: "UP Number",
+                  prefixText: "UP",
+                  border: UnderlineInputBorder(),
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            //email input that checks email format and shows error message if email is not valid
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(
-                labelText: "email",
-                border: UnderlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: "password",
-                border: UnderlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
 
-            TextField(
-              controller: confirmPasswordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: "confirm password",
-                border: UnderlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
+              _buildField(emailController, "Email"),
 
-//sign up button goes back to login screen user page 
-            ElevatedButton(
-              onPressed: signupUser,
-              child: const Text("Signup"),
-            ),
-          ],
-        ),  
+              _buildField(passwordController, "Password",
+                  obscure: true),
+
+              _buildField(confirmPasswordController,
+                  "Confirm Password",
+                  obscure: true),
+
+              const SizedBox(height: 30),
+
+              isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: signupUser,
+                      child: const Text("Signup"),
+                    ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildField(TextEditingController controller,
+      String label,
+      {bool obscure = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextField(
+        controller: controller,
+        obscureText: obscure,
+        decoration: InputDecoration(
+          labelText: label,
+          border: const UnderlineInputBorder(),
+        ),
       ),
     );
   }
 }
-
-// class BlankPage extends StatelessWidget {
-//   const BlankPage({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return const Scaffold(
-//       body: SizedBox.expand(),
-//     );
-//   }
-// }
