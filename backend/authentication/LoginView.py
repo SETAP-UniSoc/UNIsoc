@@ -35,11 +35,21 @@ class LoginView(APIView):
 
             if user.check_password(password):
                 token, _ = Token.objects.get_or_create(user=user)
+                society_id = None #M added
+                society_name = None #M added
+                from .models import Society #M added
+                society = Society.objects.filter(admin=user).first() #M added
+                if society: #M added
+                    society_id = society.id #M added
+                    society_name = society.name #M added
+                
                 return Response({
                     "token": token.key,
                     "role": user.role,
                     "email": user.email,
-                    "up_number": user.up_number
+                    "up_number": user.up_number,
+                    "society_id": society_id, #M added
+                    "society_name": society_name, #M added
                 })
 
         except User.DoesNotExist:
