@@ -29,7 +29,7 @@ class AdminBottomNav extends StatelessWidget {
       case 2:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const AdminEventsPage()),
+          MaterialPageRoute(builder: (_) => const AdminEventsPage(societyId: 1)),
         );
         break;
     }

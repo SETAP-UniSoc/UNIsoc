@@ -126,6 +126,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_calenders:
+    dependency: "direct main"
+    description:
+      name: flutter_calenders
+      sha256: "104c8780364a72dfc590e18e7546b31141fd43df89b1591c282b1156e032d445"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.7"
   flutter_lints:
     dependency: "direct dev"
     description:
