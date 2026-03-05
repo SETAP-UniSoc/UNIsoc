@@ -249,16 +249,6 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
       if (!mounted) return;
 
       if (response.statusCode == 200) {
-<<<<<<< HEAD
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            //chnaging  page it goes to as error wih adminhomepage
-            builder: (context) => const AdminHomepage(),
-          ),
-        );
-      } else if (response.statusCode == 401) {
-=======
   final responseData = jsonDecode(response.body);
   ApiService.authToken = responseData["token"];
   ApiService.societyId = responseData["society_id"];
@@ -271,8 +261,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     ),
   );
 }else if (response.statusCode == 401) {
->>>>>>> Maya-up2266552
-        // ✅ Generic message (backend unchanged)
+        // backend is unchanged
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Invalid email or password"),
