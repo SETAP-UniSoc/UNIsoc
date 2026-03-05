@@ -28,7 +28,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class HomeHeader extends StatelessWidget {
+class HomeHeader extends StatefulWidget {
   final String studentName;
 
   const HomeHeader({
@@ -36,6 +36,11 @@ class HomeHeader extends StatelessWidget {
     this.studentName = 'Student', // later pass the real name
   });
 
+  @override
+  State<HomeHeader> createState() => _HomeHeaderState();
+}
+
+class _HomeHeaderState extends State<HomeHeader> {
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -55,7 +60,7 @@ class HomeHeader extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Welcome $studentName',
+                'Welcome ${widget.studentName}',
                 style: const TextStyle(fontSize: 18, color: Colors.grey),
               ),
               const SizedBox(height: 16),
