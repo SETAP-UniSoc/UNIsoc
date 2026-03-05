@@ -11,8 +11,9 @@ class AdminHomepage extends StatefulWidget {
 }
 
 class _AdminHomepageState extends State<AdminHomepage> {
-  final CarouselSliderController _societyController = CarouselSliderController();
-final CarouselSliderController _eventController = CarouselSliderController();
+  final CarouselSliderController _societyController =
+      CarouselSliderController();
+  final CarouselSliderController _eventController = CarouselSliderController();
   String adminName = "John Smith"; // Later from backend
 
   @override
@@ -54,10 +55,7 @@ final CarouselSliderController _eventController = CarouselSliderController();
             children: const [
               Text(
                 "UniSoc",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
               AdminDropdownMenu(),
             ],
@@ -68,10 +66,7 @@ final CarouselSliderController _eventController = CarouselSliderController();
           // Welcome + Name (same line)
           Text(
             "Welcome $adminName",
-            style: const TextStyle(
-              fontSize: 18,
-              color: Colors.grey,
-            ),
+            style: const TextStyle(fontSize: 18, color: Colors.grey),
           ),
 
           const SizedBox(height: 16),
@@ -105,10 +100,7 @@ final CarouselSliderController _eventController = CarouselSliderController();
       children: [
         const Text(
           "Top Societies",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
         Stack(
@@ -176,76 +168,67 @@ final CarouselSliderController _eventController = CarouselSliderController();
 
   // browse soc
 
- Widget _buildBrowseSocietiesSection() {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header row (MATCHES USER PAGE STYLE)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Text(
-              'All Societies (A–Z)',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+  Widget _buildBrowseSocietiesSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row (MATCHES USER PAGE STYLE)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Text(
+                'All Societies (A–Z)',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
-            ),
-            Row(
-              children: [
-                Text(
-                  'Sort by',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
+              Row(
+                children: [
+                  Text(
+                    'Sort by',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
-                ),
-                SizedBox(width: 16),
-                Text(
-                  'Filter by',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
+                  SizedBox(width: 16),
+                  Text(
+                    'Filter by',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
-                ),
-              ],
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 12),
-
-        // Scrollable box (ADMIN ONLY DIFFERENCE)
-        Container(
-          height: 260,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade300),
+                ],
+              ),
+            ],
           ),
-          child: ListView.builder(
-            itemCount: 10,
-            itemBuilder: (context, index) {
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.blue,
-                  child: Text(
-                    "${index + 1}",
-                    style: const TextStyle(color: Colors.white),
+
+          const SizedBox(height: 12),
+
+          // Scrollable box (ADMIN ONLY DIFFERENCE)
+          Container(
+            height: 260,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: ListView.builder(
+              itemCount: 10,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.blue,
+                    child: Text(
+                      "${index + 1}",
+                      style: const TextStyle(color: Colors.white),
+                    ),
                   ),
-                ),
-                title: Text("Society ${index + 1}"),
-                subtitle: const Text("Short description here"),
-                onTap: () {},
-              );
-            },
+                  title: Text("Society ${index + 1}"),
+                  subtitle: const Text("Short description here"),
+                  onTap: () {},
+                );
+              },
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   // events
 
@@ -260,10 +243,7 @@ final CarouselSliderController _eventController = CarouselSliderController();
       children: [
         const Text(
           "Events",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
         CarouselSlider(
@@ -311,7 +291,3 @@ class AdminSocietyPage extends StatelessWidget {
     );
   }
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> Maya-up2266552
