@@ -310,23 +310,36 @@ void onDateTapped(DateTime date) {
         automaticallyImplyLeading: false,
         title: const Text("Calendar"),
       ),
-      body: SizedBox.expand(
-        child: EventBasedCalender(
-          margin: EdgeInsets.zero,
-          padding: EdgeInsets.zero,
-          events: calendarEvents,
-          primaryColor: Colors.blue,
-          backgroundColor: Colors.blue.withValues(alpha: .05),
-          chooserColor: Colors.black,
-          endYear: 2028,
-          startYear: 2024,
-          currentMonthDateColor: Colors.black,
-          pastFutureMonthDateColor: Colors.grey,
-          isSelectedColor: Colors.amber,
-          isSelectedShow: true,
-          showEvent: true,
-          onDateTap: (date) => onDateTapped(date),
-        ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+              ),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: EventBasedCalender(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.all(8),
+                  events: calendarEvents,
+                  primaryColor: Colors.blue,
+                  backgroundColor: Colors.blue.withValues(alpha: .05),
+                  chooserColor: Colors.black,
+                  endYear: 2028,
+                  startYear: 2024,
+                  currentMonthDateColor: Colors.black,
+                  pastFutureMonthDateColor: Colors.grey,
+                  isSelectedColor: Colors.amber,
+                  isSelectedShow: true,
+                  showEvent: true,
+                  onDateTap: (date) => onDateTapped(date),
+                ),
+              ),
+            ),
+          );
+        },
       ),
       bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
     );
