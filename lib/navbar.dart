@@ -3,6 +3,7 @@ import 'screens/settings_user_page.dart';
 import 'screens/my_account_page.dart';
 import 'screens/my_events_page.dart';
 import 'screens/user_mysoc_page.dart';
+import 'screens/login_screen.user.dart';
 
 // A reusable navbar for the logged-in home page
 class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
@@ -49,6 +50,7 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
                 );
                 break;
               case _MenuAction.logout:
+                // TODO: implement logout
                 break;
             }
           },
