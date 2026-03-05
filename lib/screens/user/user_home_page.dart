@@ -160,51 +160,85 @@ class _HomeHeaderState extends State<HomeHeader> {
               ),
               const SizedBox(height: 24),
 
-              // A–Z list header with sort/filter labels
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text(
-                    'All Societies (A–Z)',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        'Sort by',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                      SizedBox(width: 16),
-                      Text(
-                        'Filter by',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Scrollable list of societies A–Z
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: featuredSocieties.length,
-                itemBuilder: (context, index) {
-                  final soc = featuredSocieties[index];
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: soc.color,
-                      child: Icon(soc.icon, color: Colors.white, size: 20),
+              // Box around A–Z section
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
-                    title: Text(soc.name),
-                    subtitle: const Text('Short description here'),
-                    onTap: () {
-                      // TODO: navigate to society detail page
-                    },
-                  );
-                },
+                  ],
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Column(
+                  children: [
+                    // A–Z list header with sort/filter labels
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text(
+                          'All Societies (A–Z)',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              'Sort by',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Text(
+                              'Filter by',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Scrollable list of societies A–Z
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: featuredSocieties.length,
+                      itemBuilder: (context, index) {
+                        final soc = featuredSocieties[index];
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: soc.color,
+                            child: Icon(
+                              soc.icon,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          title: Text(soc.name),
+                          subtitle: const Text('Short description here'),
+                          onTap: () {
+                            // TODO: navigate to society detail page
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
+
               const SizedBox(height: 24),
 
               // Upcoming events carousel
