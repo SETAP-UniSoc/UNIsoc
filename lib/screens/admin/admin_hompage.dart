@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' hide CarouselController;
+import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'admin_bottom_nav.dart';
 import 'admin_dropdown_menu.dart';
@@ -11,9 +11,8 @@ class AdminHomepage extends StatefulWidget {
 }
 
 class _AdminHomepageState extends State<AdminHomepage> {
-  final CarouselController _societyController = CarouselController();
-  final CarouselController _eventController = CarouselController();
-
+  final CarouselSliderController _societyController = CarouselSliderController();
+final CarouselSliderController _eventController = CarouselSliderController();
   String adminName = "John Smith"; // Later from backend
 
   @override
@@ -39,7 +38,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-  // ================= HEADER =================
+  // header
 
   Widget _buildHeader() {
     return Container(
@@ -93,7 +92,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-  // ================= TOP SOCIETIES CAROUSEL =================
+  // Top socs
 
   Widget _buildTopSocietiesCarousel() {
     List<String> topSocieties = [
@@ -175,78 +174,80 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-  // ================= BROWSE SOCIETIES =================
+  // browse soc
 
-  Widget _buildBrowseSocietiesSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                "Browse Societies",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+ Widget _buildBrowseSocietiesSection() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header row (MATCHES USER PAGE STYLE)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: const [
+            Text(
+              'All Societies (A–Z)',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Row(
+              children: [
+                Text(
+                  'Sort by',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
-              Row(
-                children: [
-                  DropdownButton<String>(
-                    hint: const Text("Sort by"),
-                    items: const [
-                      DropdownMenuItem(
-                        value: "name",
-                        child: Text("Name"),
-                      ),
-                      DropdownMenuItem(
-                        value: "members",
-                        child: Text("Members"),
-                      ),
-                    ],
-                    onChanged: (value) {},
+                SizedBox(width: 16),
+                Text(
+                  'Filter by',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
                   ),
-                  const SizedBox(width: 12),
-                  DropdownButton<String>(
-                    hint: const Text("Filter by"),
-                    items: const [
-                      DropdownMenuItem(
-                        value: "category",
-                        child: Text("Category"),
-                      ),
-                    ],
-                    onChanged: (value) {},
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            height: 260,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(12),
+                ),
+              ],
             ),
-            child: ListView.builder(
-              itemCount: 10,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text("Society ${index + 1}"),
-                  subtitle: const Text("Short description here"),
-                  onTap: () {},
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
 
-  // ================= EVENTS CAROUSEL =================
+        const SizedBox(height: 12),
+
+        // Scrollable box (ADMIN ONLY DIFFERENCE)
+        Container(
+          height: 260,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: ListView.builder(
+            itemCount: 10,
+            itemBuilder: (context, index) {
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.blue,
+                  child: Text(
+                    "${index + 1}",
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+                title: Text("Society ${index + 1}"),
+                subtitle: const Text("Short description here"),
+                onTap: () {},
+              );
+            },
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+  // events
 
   Widget _buildEventsCarousel() {
     List<String> topEvents = [
@@ -310,3 +311,7 @@ class AdminSocietyPage extends StatelessWidget {
     );
   }
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> Maya-up2266552

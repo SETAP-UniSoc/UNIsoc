@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'settings_user_page.dart';
 
 class MyAccountPage extends StatelessWidget {
   const MyAccountPage({super.key});
@@ -105,11 +106,11 @@ class MyAccountPage extends StatelessWidget {
               ),
             ),
 
-            // Student ID
+            // Current Password
             Padding(
               padding: const EdgeInsets.only(top: 16, bottom: 8),
               child: Text(
-                'Student ID',
+                'Current Password',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -134,32 +135,36 @@ class MyAccountPage extends StatelessWidget {
               ),
             ),
 
-            // Date of Birth
+            // Change Password Button
             Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 8),
-              child: Text(
-                'Date of Birth',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
+              padding: const EdgeInsets.only(top: 24),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SettingsPage(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4A235A),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Change Password',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 12,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-              child: const Text(
-                '',
-                style: TextStyle(fontSize: 16),
               ),
             ),
           ],
