@@ -32,6 +32,10 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         headers: ApiService.headers,
       );
 
+
+    print("Load events status: ${response.statusCode}"); // ← add
+    print("Load events body: ${response.body}"); 
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as List;
 
