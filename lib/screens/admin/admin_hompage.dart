@@ -311,3 +311,7 @@ class AdminSocietyPage extends StatelessWidget {
     );
   }
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> Maya-up2266552
