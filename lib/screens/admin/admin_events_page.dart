@@ -59,22 +59,42 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   }
 
   // show popup when admin taps a date
-  void onDateTapped(DateTime date) {
-    // check if there's already an event on this date
-    final existing = eventData.where((e) =>
-      DateTime.parse(e["start_time"]).toLocal().day == date.day &&
-      DateTime.parse(e["start_time"]).toLocal().month == date.month &&
-      DateTime.parse(e["start_time"]).toLocal().year == date.year
-    ).toList();
+  // void onDateTapped(DateTime date) {
+  //   // check if there's already an event on this date
+  //   final existing = eventData.where((e) =>
+  //     DateTime.parse(e["start_time"]).toLocal().day == date.day &&
+  //     DateTime.parse(e["start_time"]).toLocal().month == date.month &&
+  //     DateTime.parse(e["start_time"]).toLocal().year == date.year
+  //   ).toList();
 
-    if (existing.isNotEmpty) {
-      // show existing event with remove button
-      _showEventDetails(existing.first);
-    } else {
-      // show create event form
-      _showCreateEventDialog(date);
-    }
+  //   if (existing.isNotEmpty) {
+  //     // show existing event with remove button
+  //     _showEventDetails(existing.first);
+  //   } else {
+  //     // show create event form
+  //     _showCreateEventDialog(date);
+  //   }
+  // }
+
+  // show popup when admin taps a date
+void onDateTapped(DateTime date) {
+  print("Tapped: $date");
+  print("Events: $eventData");
+
+  final existing = eventData.where((e) =>
+    DateTime.parse(e["start_time"]).toLocal().day == date.day &&
+    DateTime.parse(e["start_time"]).toLocal().month == date.month &&
+    DateTime.parse(e["start_time"]).toLocal().year == date.year
+  ).toList();
+
+  print("Matching events: $existing");
+
+  if (existing.isNotEmpty) {
+    _showEventDetails(existing.first);
+  } else {
+    _showCreateEventDialog(date);
   }
+}
 
   // popup to view and remove an existing event
   void _showEventDetails(Map event) {
@@ -283,22 +303,27 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Calendar")),
-      body: EventBasedCalender(
-        margin: const EdgeInsets.symmetric(horizontal: 10),
-        padding: const EdgeInsets.all(10),
-        events: calendarEvents,
-        primaryColor: Colors.blue,
-        backgroundColor: Colors.blue.withValues(alpha: .05),
-        chooserColor: Colors.black,
-        endYear: 2028,
-        startYear: 2024,
-        currentMonthDateColor: Colors.black,
-        pastFutureMonthDateColor: Colors.grey,
-        isSelectedColor: Colors.amber,
-        isSelectedShow: true,
-        showEvent: true,
-        onDateTap: (date) => onDateTapped(date),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text("Calendar"),
+      ),
+      body: SizedBox.expand(
+        child: EventBasedCalender(
+          margin: EdgeInsets.zero,
+          padding: EdgeInsets.zero,
+          events: calendarEvents,
+          primaryColor: Colors.blue,
+          backgroundColor: Colors.blue.withValues(alpha: .05),
+          chooserColor: Colors.black,
+          endYear: 2028,
+          startYear: 2024,
+          currentMonthDateColor: Colors.black,
+          pastFutureMonthDateColor: Colors.grey,
+          isSelectedColor: Colors.amber,
+          isSelectedShow: true,
+          showEvent: true,
+          onDateTap: (date) => onDateTapped(date),
+        ),
       ),
       bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
     );
