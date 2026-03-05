@@ -32,7 +32,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         headers: ApiService.headers,
       );
 
-
+    print("SOCIETY ID: ${widget.societyId}"); 
     print("Load events status: ${response.statusCode}"); // ← add
     print("Load events body: ${response.body}"); 
 
