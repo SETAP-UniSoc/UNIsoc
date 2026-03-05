@@ -122,7 +122,8 @@ class _HomeHeaderState extends State<HomeHeader> {
               const SizedBox(height: 12),
               SizedBox(
                 height: 80,
-                child: ListView.builder(
+                child: PageView.builder(
+                  controller: _societyPageController,
                   scrollDirection: Axis.horizontal,
                   itemCount: featuredSocieties.length,
                   // itemBuilder: (context, index) {
