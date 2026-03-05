@@ -3,6 +3,7 @@ import '../../navbar.dart';
 import '../../models/soc_model.dart';
 import '../../models/event_model.dart';
 import 'user_society_page.dart'; //importing user society page to be used as a button in the home page
+import 'dart:async';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -41,6 +42,39 @@ class HomeHeader extends StatefulWidget {
 }
 
 class _HomeHeaderState extends State<HomeHeader> {
+  late final PageController _societyPageController;
+  int _currentSocietyPage = 0;
+  Timer? _societyTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _societyPageController = PageController(viewportFraction: 0.35);
+
+    // Auto-advance every 5 seconds
+    _societyTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (!mounted || featuredSocieties.isEmpty) return;
+
+      setState(() {
+        _currentSocietyPage =
+            (_currentSocietyPage + 1) % featuredSocieties.length;
+      });
+
+      _societyPageController.animateToPage(
+        _currentSocietyPage,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _societyTimer?.cancel();
+    _societyPageController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
