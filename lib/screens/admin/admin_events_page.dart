@@ -26,55 +26,78 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
 
   // fetch events from backend and convert to calendar Event objects
   Future<void> loadEvents() async {
-    try {
-      final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
-        headers: ApiService.headers,
-      );
+  print("SOCIETY ID: ${widget.societyId}");  // ← move to here
+  print("TOKEN: ${ApiService.authToken}");    // ← move to here
+  print("URL: ${ApiService.baseUrl}/society/${widget.societyId}/events/");
+  try {
+    final response = await http.get(
+      Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
+      headers: ApiService.headers,
+    );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as List;
+    print("Load events status: ${response.statusCode}");
+    print("Load events body: ${response.body}");
 
-        final now = DateTime.now();
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as List;
 
-        // filter out past events on frontend
-        final filtered = data.where((e) =>
-          DateTime.parse(e["start_time"]).isAfter(now)
-        ).toList();
+      final now = DateTime.now();
 
-        setState(() {
-          eventData = filtered;
+      final filtered = data.where((e) =>
+        DateTime.parse(e["start_time"]).isAfter(now)
+      ).toList();
 
-          // convert to flutter_calenders Event objects
-          calendarEvents = filtered.map((e) => Event(
-            eventName: e["title"],
-            dates: [DateTime.parse(e["start_time"])],
-            color: Colors.blue,
-          )).toList();
-        });
-      }
-    } catch (e) {
-      print("Error loading events: $e");
+      setState(() {
+        eventData = filtered;
+        calendarEvents = filtered.map((e) => Event(
+          eventName: e["title"],
+          dates: [DateTime.parse(e["start_time"])],
+          color: Colors.blue,
+        )).toList();
+      });
     }
+  } catch (e) {
+    print("LOAD EVENTS ERROR: $e");
   }
+}
 
   // show popup when admin taps a date
-  void onDateTapped(DateTime date) {
-    // check if there's already an event on this date
-    final existing = eventData.where((e) =>
-      DateTime.parse(e["start_time"]).toLocal().day == date.day &&
-      DateTime.parse(e["start_time"]).toLocal().month == date.month &&
-      DateTime.parse(e["start_time"]).toLocal().year == date.year
-    ).toList();
+  // void onDateTapped(DateTime date) {
+  //   // check if there's already an event on this date
+  //   final existing = eventData.where((e) =>
+  //     DateTime.parse(e["start_time"]).toLocal().day == date.day &&
+  //     DateTime.parse(e["start_time"]).toLocal().month == date.month &&
+  //     DateTime.parse(e["start_time"]).toLocal().year == date.year
+  //   ).toList();
 
-    if (existing.isNotEmpty) {
-      // show existing event with remove button
-      _showEventDetails(existing.first);
-    } else {
-      // show create event form
-      _showCreateEventDialog(date);
-    }
+  //   if (existing.isNotEmpty) {
+  //     // show existing event with remove button
+  //     _showEventDetails(existing.first);
+  //   } else {
+  //     // show create event form
+  //     _showCreateEventDialog(date);
+  //   }
+  // }
+
+  // show popup when admin taps a date
+void onDateTapped(DateTime date) {
+  print("Tapped: $date");
+  print("Events: $eventData");
+
+  final existing = eventData.where((e) =>
+    DateTime.parse(e["start_time"]).toLocal().day == date.day &&
+    DateTime.parse(e["start_time"]).toLocal().month == date.month &&
+    DateTime.parse(e["start_time"]).toLocal().year == date.year
+  ).toList();
+
+  print("Matching events: $existing");
+
+  if (existing.isNotEmpty) {
+    _showEventDetails(existing.first);
+  } else {
+    _showCreateEventDialog(date);
   }
+}
 
   // popup to view and remove an existing event
   void _showEventDetails(Map event) {
@@ -283,22 +306,27 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Calendar")),
-      body: EventBasedCalender(
-        margin: const EdgeInsets.symmetric(horizontal: 10),
-        padding: const EdgeInsets.all(10),
-        events: calendarEvents,
-        primaryColor: Colors.blue,
-        backgroundColor: Colors.blue.withValues(alpha: .05),
-        chooserColor: Colors.black,
-        endYear: 2028,
-        startYear: 2024,
-        currentMonthDateColor: Colors.black,
-        pastFutureMonthDateColor: Colors.grey,
-        isSelectedColor: Colors.amber,
-        isSelectedShow: true,
-        showEvent: true,
-        onDateTap: (date) => onDateTapped(date),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text("Calendar"),
+      ),
+      body: SizedBox.expand(
+        child: EventBasedCalender(
+          margin: EdgeInsets.zero,
+          padding: EdgeInsets.zero,
+          events: calendarEvents,
+          primaryColor: Colors.blue,
+          backgroundColor: Colors.blue.withValues(alpha: .05),
+          chooserColor: Colors.black,
+          endYear: 2028,
+          startYear: 2024,
+          currentMonthDateColor: Colors.black,
+          pastFutureMonthDateColor: Colors.grey,
+          isSelectedColor: Colors.amber,
+          isSelectedShow: true,
+          showEvent: true,
+          onDateTap: (date) => onDateTapped(date),
+        ),
       ),
       bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
     );
