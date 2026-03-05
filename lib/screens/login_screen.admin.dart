@@ -250,6 +250,10 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
 
       if (response.statusCode == 200) {
   final responseData = jsonDecode(response.body);
+
+  print("Full response: $responseData");
+  print("Society ID: ${responseData['society_id']}");
+
   ApiService.authToken = responseData["token"];
   ApiService.societyId = responseData["society_id"];
   ApiService.societyName = responseData["society_name"];
