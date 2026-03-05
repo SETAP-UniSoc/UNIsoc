@@ -13,7 +13,6 @@ class AdminHomepage extends StatefulWidget {
 }
 
 class _AdminHomepageState extends State<AdminHomepage> {
-<<<<<<< HEAD
   final CarouselSliderController _societyController = CarouselSliderController();
 <<<<<<< HEAD
   final CarouselSliderController _eventController = CarouselSliderController();
@@ -30,10 +29,13 @@ class _AdminHomepageState extends State<AdminHomepage> {
   List events = [];
   bool isLoading = true;
 
-  // browse section state
   String selectedCategory = "All";
   String sortBy = "A-Z";
   bool showingCategories = true;
+
+  List searchResults = [];
+  Timer? debounce;
+  bool isSearching = false;
 
   final List<String> categories = [
 <<<<<<< HEAD
@@ -47,20 +49,18 @@ class _AdminHomepageState extends State<AdminHomepage> {
 >>>>>>> 95e0df9 (Edit carousel slider)
   ];
 
-  // colour per category
   final Map<String, Color> categoryColours = {
-    "Academic": const Color(0xFF5C6BC0),       // indigo
-    "Cultural": const Color(0xFF26A69A),        // teal
-    "Sports": const Color(0xFF7E57C2),          // medium purple
-    "Religious": const Color(0xFF8D6E63),       // warm brown purple
-    "Extra-curricular": const Color(0xFF42A5F5), // light blue
-    "All": const Color(0xFF7B1FA2),             // deep purple
+    "Academic": const Color(0xFF5C6BC0), //indgo
+    "Cultural": const Color(0xFF26A69A), //teal
+    "Sports": const Color(0xFF7E57C2), //medium purple
+    "Religious": const Color(0xFF8D6E63), //warm brown
+    "Extra-curricular": const Color(0xFF42A5F5), //light blue
+    "All": const Color(0xFF7B1FA2), //deep purple
   };
 
-  // carousel card colours — different purple shades
   final List<Color> carouselColours = [
-    const Color(0xFF7B1FA2), // deep purple
-    const Color(0xFF6A1B9A), // darker purple
+    const Color(0xFF7B1FA2), //deep purple
+    const Color(0xFF6A1B9A), //darker purple
     const Color(0xFF9C27B0), // purple
     const Color(0xFF8E24AA), // medium purple
     const Color(0xFF6D1F7B), // darkest purple
@@ -69,18 +69,16 @@ class _AdminHomepageState extends State<AdminHomepage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) { // added so that multiple http requests don't block the initial UI rendering — allows the circular progress indicators to show up while loading instead of a blank screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       loadData();
     });
   }
 
-  // load societies and events from backend
   Future<void> loadData() async {
     await Future.wait([loadSocieties(), loadEvents()]);
     setState(() => isLoading = false);
   }
 
-  // fetch all societies
   Future<void> loadSocieties() async {
     try {
       final response = await http.get(
@@ -99,7 +97,6 @@ class _AdminHomepageState extends State<AdminHomepage> {
     }
   }
 
-  // fetch events for admin's society
   Future<void> loadEvents() async {
     try {
       final response = await http.get(
@@ -108,19 +105,13 @@ class _AdminHomepageState extends State<AdminHomepage> {
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as List;
-        final now = DateTime.now();
-        setState(() {
-          events = data.where((e) =>
-            DateTime.parse(e["start_time"]).isAfter(now)
-          ).toList();
-        });
+        setState(() => events = data);
       }
     } catch (e) {
       print("Error loading events: $e");
     }
   }
 
-  // apply sort and filter
   void applyFilters() {
     List result = [...societies];
 
@@ -200,7 +191,11 @@ class _AdminHomepageState extends State<AdminHomepage> {
             children: const [
               Text(
                 "UniSoc",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
               AdminDropdownMenu(),
             ],
@@ -210,10 +205,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
           // shows society name from login instead of hardcoded name
           Text(
             "Welcome — ${ApiService.societyName ?? 'Admin'}",
-            style: const TextStyle(
-              fontSize: 18,
-              color: Colors.white70,
-            ),
+            style: const TextStyle(fontSize: 18, color: Colors.white70),
           ),
         ],
       ),
@@ -346,9 +338,15 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
     return Column(
       children: [
-        const Text(
-          "Top Societies",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "Top Societies",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+          ),
         ),
         const SizedBox(height: 12),
         if (isLoading)
@@ -452,7 +450,6 @@ class _AdminHomepageState extends State<AdminHomepage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // header row with sort and filter dropdowns
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -462,15 +459,17 @@ class _AdminHomepageState extends State<AdminHomepage> {
               ),
               Row(
                 children: [
-                  // sort by dropdown
                   PopupMenuButton<String>(
                     child: const Row(
                       children: [
-                        Text("Sort by",
-                            style: TextStyle(
-                                fontSize: 14, color: Color(0xFF9C27B0))),
-                        Icon(Icons.arrow_drop_down,
-                            color: Color(0xFF9C27B0)),
+                        Text(
+                          "Sort by",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF9C27B0),
+                          ),
+                        ),
+                        Icon(Icons.arrow_drop_down, color: Color(0xFF9C27B0)),
                       ],
                     ),
                     onSelected: (value) {
@@ -481,23 +480,27 @@ class _AdminHomepageState extends State<AdminHomepage> {
                       PopupMenuItem(value: "A-Z", child: Text("A-Z")),
                       PopupMenuItem(value: "Z-A", child: Text("Z-A")),
                       PopupMenuItem(
-                          value: "Most Members",
-                          child: Text("Most Members")),
+                        value: "Most Members",
+                        child: Text("Most Members"),
+                      ),
                       PopupMenuItem(
-                          value: "Least Members",
-                          child: Text("Least Members")),
+                        value: "Least Members",
+                        child: Text("Least Members"),
+                      ),
                     ],
                   ),
                   const SizedBox(width: 8),
-                  // filter by dropdown
                   PopupMenuButton<String>(
                     child: const Row(
                       children: [
-                        Text("Filter by",
-                            style: TextStyle(
-                                fontSize: 14, color: Color(0xFF9C27B0))),
-                        Icon(Icons.arrow_drop_down,
-                            color: Color(0xFF9C27B0)),
+                        Text(
+                          "Filter by",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF9C27B0),
+                          ),
+                        ),
+                        Icon(Icons.arrow_drop_down, color: Color(0xFF9C27B0)),
                       ],
                     ),
                     onSelected: (value) {
@@ -505,8 +508,9 @@ class _AdminHomepageState extends State<AdminHomepage> {
                       applyFilters();
                     },
                     itemBuilder: (_) => categories
-                        .map((cat) =>
-                            PopupMenuItem(value: cat, child: Text(cat)))
+                        .map(
+                          (cat) => PopupMenuItem(value: cat, child: Text(cat)),
+                        )
                         .toList(),
                   ),
                 ],
@@ -519,8 +523,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
           if (!showingCategories)
             TextButton.icon(
               onPressed: resetToCategories,
-              icon: const Icon(Icons.arrow_back,
-                  color: Color(0xFF9C27B0)),
+              icon: const Icon(Icons.arrow_back, color: Color(0xFF9C27B0)),
               label: const Text(
                 "Back to Categories",
                 style: TextStyle(color: Color(0xFF9C27B0)),
@@ -537,11 +540,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
               childAspectRatio: 1.5,
-              children: categories
-                  .where((c) => c != "All")
-                  .map((category) {
-                final colour =
-                    categoryColours[category] ?? Colors.purple;
+              children: categories.where((c) => c != "All").map((category) {
+                final colour = categoryColours[category] ?? Colors.purple;
                 final count = societies
                     .where((s) => s["category"] == category)
                     .length;
@@ -566,8 +566,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           category,
@@ -630,14 +629,12 @@ class _AdminHomepageState extends State<AdminHomepage> {
                     ),
                     title: Text(
                       soc["name"],
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w600),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(soc["category"] ?? ""),
                     trailing: Text(
                       "${soc["member_count"]} members",
-                      style: const TextStyle(
-                          fontSize: 12, color: Colors.grey),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                     onTap: () {
                       Navigator.push(
@@ -659,33 +656,35 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-  Widget _buildEventsCarousel() {
-    return Column(
-      children: [
-        const Text(
-          "Events",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-        if (isLoading)
-          const CircularProgressIndicator()
-        else if (events.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Text("No upcoming events"),
-          )
-        else
-          CarouselSlider(
-            carouselController: _eventController,
-            options: CarouselOptions(
+  Widget _buildEventsSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Upcoming Events",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 12),
+          if (isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (events.isEmpty)
+            const Text(
+              "No upcoming events",
+              style: TextStyle(color: Colors.grey),
+            )
+          else
+            SizedBox(
               height: 160,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: events.length,
                 itemBuilder: (context, index) {
                   final event = events[index];
-                  final startTime =
-                      DateTime.parse(event["start_time"]).toLocal();
+                  final startTime = DateTime.parse(
+                    event["start_time"],
+                  ).toLocal();
 
                   return GestureDetector(
                     onTap: () {
@@ -705,10 +704,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF6A1B9A),
-                            Color(0xFF4A148C)
-                          ],
+                          colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -716,8 +712,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             event["title"],
@@ -730,8 +725,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 "${startTime.day}/${startTime.month}/${startTime.year}",
@@ -786,5 +780,7 @@ class AdminSocietyPage extends StatelessWidget {
     );
   }
 }
+<<<<<<< HEAD
 =======
->>>>>>> 95e0df9 (Edit carousel slider)
+
+>>>>>>> Maya-up2266552
