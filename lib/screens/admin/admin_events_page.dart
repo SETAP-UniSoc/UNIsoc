@@ -26,41 +26,40 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
 
   // fetch events from backend and convert to calendar Event objects
   Future<void> loadEvents() async {
-    try {
-      final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
-        headers: ApiService.headers,
-      );
+  print("SOCIETY ID: ${widget.societyId}");  // ← move to here
+  print("TOKEN: ${ApiService.authToken}");    // ← move to here
+  print("URL: ${ApiService.baseUrl}/society/${widget.societyId}/events/");
+  try {
+    final response = await http.get(
+      Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
+      headers: ApiService.headers,
+    );
 
-    print("SOCIETY ID: ${widget.societyId}"); 
-    print("Load events status: ${response.statusCode}"); // ← add
-    print("Load events body: ${response.body}"); 
+    print("Load events status: ${response.statusCode}");
+    print("Load events body: ${response.body}");
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as List;
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as List;
 
-        final now = DateTime.now();
+      final now = DateTime.now();
 
-        // filter out past events on frontend
-        final filtered = data.where((e) =>
-          DateTime.parse(e["start_time"]).isAfter(now)
-        ).toList();
+      final filtered = data.where((e) =>
+        DateTime.parse(e["start_time"]).isAfter(now)
+      ).toList();
 
-        setState(() {
-          eventData = filtered;
-
-          // convert to flutter_calenders Event objects
-          calendarEvents = filtered.map((e) => Event(
-            eventName: e["title"],
-            dates: [DateTime.parse(e["start_time"])],
-            color: Colors.blue,
-          )).toList();
-        });
-      }
-    } catch (e) {
-      print("Error loading events: $e");
+      setState(() {
+        eventData = filtered;
+        calendarEvents = filtered.map((e) => Event(
+          eventName: e["title"],
+          dates: [DateTime.parse(e["start_time"])],
+          color: Colors.blue,
+        )).toList();
+      });
     }
+  } catch (e) {
+    print("LOAD EVENTS ERROR: $e");
   }
+}
 
   // show popup when admin taps a date
   // void onDateTapped(DateTime date) {
