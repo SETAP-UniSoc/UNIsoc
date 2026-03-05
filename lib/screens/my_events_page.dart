@@ -6,13 +6,14 @@ class MyEventsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+<<<<<<< HEAD
       appBar: AppBar(
         title: const Text('My Events'),
         backgroundColor: const Color(0xFF4A235A),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
-        children: const [
+        children: [
           EventCard(
             day: '25',
             month: 'FEB',
@@ -66,6 +67,7 @@ class EventCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.grey.withOpacity(0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -123,3 +125,10 @@ class EventCard extends StatelessWidget {
     );
   }
 }
+=======
+      appBar: AppBar(title: const Text('My Events')),
+      body: const Center(child: Text('My Events Page')),
+    );
+  }
+}
+>>>>>>> Maya-up2266552
