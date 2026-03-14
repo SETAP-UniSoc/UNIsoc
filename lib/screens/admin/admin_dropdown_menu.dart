@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:unisoc/screens/admin/admin_my_account_page.dart';
 
 class AdminDropdownMenu extends StatelessWidget {
   const AdminDropdownMenu({super.key});
@@ -10,29 +11,25 @@ class AdminDropdownMenu extends StatelessWidget {
       onSelected: (value) {
         switch (value) {
           case "account":
-            // Navigate to My Account page later
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const AdminMyAccountPage(),
+              ),
+            );
             break;
           case "settings":
-            // Navigate to Settings page later
+            // settings page later
             break;
           case "logout":
-            // Handle logout later
+            // logout later
             break;
         }
       },
       itemBuilder: (context) => const [
-        PopupMenuItem(
-          value: "account",
-          child: Text("My Account"),
-        ),
-        PopupMenuItem(
-          value: "settings",
-          child: Text("Settings"),
-        ),
-        PopupMenuItem(
-          value: "logout",
-          child: Text("Logout"),
-        ),
+        PopupMenuItem(value: "account", child: Text("My Account")),
+        PopupMenuItem(value: "settings", child: Text("Settings")),
+        PopupMenuItem(value: "logout", child: Text("Logout")),
       ],
     );
   }
