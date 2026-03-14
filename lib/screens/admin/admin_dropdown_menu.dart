@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:unisoc/screens/admin/admin_my_account_page.dart';
+import 'package:unisoc/screens/society_profile_page.dart';
+import 'package:unisoc/services/api_services.dart';
 
 class AdminDropdownMenu extends StatelessWidget {
   const AdminDropdownMenu({super.key});
@@ -14,15 +15,16 @@ class AdminDropdownMenu extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => const AdminMyAccountPage(),
+                builder: (_) => SocietyProfilePage(
+                  societyId: ApiService.societyId ?? 0,
+                  isAdmin: true,
+                ),
               ),
             );
             break;
           case "settings":
-            // settings page later
             break;
           case "logout":
-            // logout later
             break;
         }
       },

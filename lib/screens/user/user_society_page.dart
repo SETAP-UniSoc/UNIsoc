@@ -1,10 +1,7 @@
-import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:unisoc/services/api_services.dart';
+import 'package:unisoc/screens/society_profile_page.dart';
 
-class UserSocietyPage extends StatefulWidget {
+class UserSocietyPage extends StatelessWidget {
   final int societyId;
   final String societyName;
   final String description;
@@ -82,37 +79,31 @@ class _UserSocietyPageState extends State<UserSocietyPage> {
         joinedSociety = true;
       });
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Successfully joined society 🎉"),
           duration: Duration(seconds: 2),
         ),
-        );
-      }
+      );
     } 
     else if (response.statusCode == 200) {
       setState(() {
         joinedSociety = false;
       });
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Successfully left society"),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    }
-  } catch (e) {
-    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Network error: $e"),
+        const SnackBar(
+          content: Text("Successfully left society"),
+          duration: Duration(seconds: 2),
         ),
       );
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Network error: $e"),
+      ),
+    );
   }
 }
 
@@ -132,63 +123,9 @@ class _UserSocietyPageState extends State<UserSocietyPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.societyName)),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-
-            Text(widget.description),
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-              onPressed: toggleJoinSociety,
-              child: Text(
-                  joinedSociety ? "Leave Society" : "Join Society"),
-            ),
-
-            const SizedBox(height: 20),
-
-            Expanded(
-              child: ListView.builder(
-                itemCount: events.length,
-                itemBuilder: (context, index) {
-                  final event = events[index];
-
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            event["title"],
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: joinedSociety
-                                ? () =>
-                                    toggleJoinEvent(event["id"])
-                                : null,
-                            child: const Text("Join Event"),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                              "👥 ${event["attendee_count"] ?? 0} attending"),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            )
-          ],
-        ),
-      ),
+    return SocietyProfilePage(
+      societyId: societyId,
+      isAdmin: false,
     );
   }
 }
