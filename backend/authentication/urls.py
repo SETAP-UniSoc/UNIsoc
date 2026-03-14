@@ -4,6 +4,7 @@ from .LoginView import LoginView
 from .AnalyticsView import AnalyticsView
 from .JoinSoc import JoinSocietyView
 from .LeaveSoc import LeaveSocietyView
+from .SocietyDetailView import SocietyDetailView
 
 urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
