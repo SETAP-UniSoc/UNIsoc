@@ -5,7 +5,7 @@ from .AnalyticsView import AnalyticsView
 from .JoinSoc import JoinSocietyView
 from .LeaveSoc import LeaveSocietyView
 from .EventView import EventListCreateView, EventDetailView #M added
-from .SocietyView import SocietyListView
+from .SocietyView import SocietyDetailView, SocietyListView #M added
 
 urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
@@ -16,6 +16,7 @@ urlpatterns = [
     path("society/<int:society_id>/events/", EventListCreateView.as_view(), name="society-events"), #M added
     path("event/<int:event_id>/delete/", EventDetailView.as_view(), name="event-detail"), #M added
     path("societies/", SocietyListView.as_view(), name="societies"),
+    path("society/<int:society_id>/", SocietyDetailView.as_view(), name="society-detail"), #M added
 ]
 
 
