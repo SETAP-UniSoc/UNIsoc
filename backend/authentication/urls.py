@@ -5,7 +5,6 @@ from .AnalyticsView import AnalyticsView
 from .JoinSoc import JoinSocietyView
 from .LeaveSoc import LeaveSocietyView
 from .EventView import EventListCreateView, EventDetailView #M added
-from .SocietyView import SocietyDetailView, SocietyListView #M added
 from .SocietyView import SocietyListView, SocietyDetailView, SocietyMembershipCheckView #M added
 
 urlpatterns = [
