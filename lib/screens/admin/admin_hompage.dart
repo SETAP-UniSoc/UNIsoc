@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:unisoc/services/api_services.dart';
+import 'package:unisoc/screens/society_profile_page.dart';
 import 'admin_bottom_nav.dart';
 import 'admin_dropdown_menu.dart';
 
@@ -27,7 +28,6 @@ class _AdminHomepageState extends State<AdminHomepage> {
     loadData();
   }
 
-  // load societies and events from backend
   Future<void> loadData() async {
     await Future.wait([
       loadSocieties(),
@@ -36,7 +36,6 @@ class _AdminHomepageState extends State<AdminHomepage> {
     setState(() => isLoading = false);
   }
 
-  // fetch all societies
   Future<void> loadSocieties() async {
     try {
       final response = await http.get(
@@ -51,7 +50,6 @@ class _AdminHomepageState extends State<AdminHomepage> {
     }
   }
 
-  // fetch events for admin's society
   Future<void> loadEvents() async {
     try {
       final id = ApiService.societyId;
@@ -63,7 +61,6 @@ class _AdminHomepageState extends State<AdminHomepage> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as List;
         final now = DateTime.now();
-        // filter out past events
         setState(() {
           events = data.where((e) =>
             DateTime.parse(e["start_time"]).isAfter(now)
@@ -111,22 +108,16 @@ class _AdminHomepageState extends State<AdminHomepage> {
             children: const [
               Text(
                 "UniSoc",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
               AdminDropdownMenu(),
             ],
           ),
           const SizedBox(height: 8),
-
-          // shows society name from login instead of hardcoded name
           Text(
             "Welcome — ${ApiService.societyName ?? 'Admin'}",
             style: const TextStyle(fontSize: 18, color: Colors.grey),
           ),
-
           const SizedBox(height: 16),
           TextField(
             decoration: InputDecoration(
@@ -143,9 +134,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-  // top societies by member count
   Widget _buildTopSocietiesCarousel() {
-    // sort by member count and take top 5
     final topSocieties = [...societies]
       ..sort((a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0));
     final top5 = topSocieties.take(5).toList();
@@ -177,10 +166,14 @@ class _AdminHomepageState extends State<AdminHomepage> {
                 items: top5.map((society) {
                   return GestureDetector(
                     onTap: () {
+                      // navigates to that specific society's profile page
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const AdminSocietyPage(),
+                          builder: (_) => SocietyProfilePage(
+                            societyId: society["id"],
+                            isAdmin: false,
+                          ),
                         ),
                       );
                     },
@@ -236,7 +229,6 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-  // all societies A-Z
   Widget _buildBrowseSocietiesSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -280,7 +272,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
                             leading: CircleAvatar(
                               backgroundColor: Colors.blue,
                               child: Text(
-                                soc["name"][0], // first letter of society name
+                                soc["name"][0],
                                 style: const TextStyle(color: Colors.white),
                               ),
                             ),
@@ -291,7 +283,18 @@ class _AdminHomepageState extends State<AdminHomepage> {
                               style: const TextStyle(
                                   fontSize: 12, color: Colors.grey),
                             ),
-                            onTap: () {},
+                            // navigates to that specific society's profile page
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => SocietyProfilePage(
+                                    societyId: soc["id"],
+                                    isAdmin: false,
+                                  ),
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
@@ -301,7 +304,6 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-  // events carousel for admin's society
   Widget _buildEventsCarousel() {
     return Column(
       children: [
@@ -360,19 +362,6 @@ class _AdminHomepageState extends State<AdminHomepage> {
             }).toList(),
           ),
       ],
-    );
-  }
-}
-
-// Temporary Blank Page
-class AdminSocietyPage extends StatelessWidget {
-  const AdminSocietyPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Admin Society Page")),
-      body: const Center(child: Text("Blank for now")),
     );
   }
 }
