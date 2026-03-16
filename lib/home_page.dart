@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'user_profile_state.dart';
 import 'navbar.dart';
 import 'models/soc_model.dart';
 import 'models/event_model.dart';
@@ -29,12 +30,7 @@ class HomePage extends StatelessWidget {
 }
 
 class HomeHeader extends StatelessWidget {
-  final String studentName;
-
-  const HomeHeader({
-    super.key,
-    this.studentName = 'Student', // later pass the real name
-  });
+  const HomeHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -54,9 +50,17 @@ class HomeHeader extends StatelessWidget {
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              Text(
-                'Welcome $studentName',
-                style: const TextStyle(fontSize: 18, color: Colors.grey),
+              ValueListenableBuilder<String>(
+                valueListenable: UserProfileState.firstName,
+                builder: (context, firstName, _) {
+                  final displayName = firstName.trim().isEmpty
+                      ? 'Student'
+                      : firstName.trim();
+                  return Text(
+                    'Welcome $displayName',
+                    style: const TextStyle(fontSize: 18, color: Colors.grey),
+                  );
+                },
               ),
               const SizedBox(height: 16),
               TextField(
