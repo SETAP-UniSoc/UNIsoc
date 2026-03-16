@@ -25,13 +25,15 @@ class _MySocietyPageState extends State<MySocietyPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
               child: MouseRegion(
                 onEnter: (_) => setState(() => _isTechHovered = true),
                 onExit: (_) => setState(() => _isTechHovered = false),
                 child: Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: _isTechHovered
@@ -94,12 +96,13 @@ class _MySocietyPageState extends State<MySocietyPage> {
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(height: 16),
             Expanded(
               child: MouseRegion(
                 onEnter: (_) => setState(() => _isAcsHovered = true),
                 onExit: (_) => setState(() => _isAcsHovered = false),
                 child: Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: _isAcsHovered
