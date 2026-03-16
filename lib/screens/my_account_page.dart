@@ -1,8 +1,30 @@
 import 'package:flutter/material.dart';
+import '../user_profile_state.dart';
 import 'settings_user_page.dart';
 
-class MyAccountPage extends StatelessWidget {
+class MyAccountPage extends StatefulWidget {
   const MyAccountPage({super.key});
+
+  @override
+  State<MyAccountPage> createState() => _MyAccountPageState();
+}
+
+class _MyAccountPageState extends State<MyAccountPage> {
+  late final TextEditingController _firstNameController;
+
+  @override
+  void initState() {
+    super.initState();
+    _firstNameController = TextEditingController(
+      text: UserProfileState.firstName.value,
+    );
+  }
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +54,8 @@ class MyAccountPage extends StatelessWidget {
               ),
             ),
             TextField(
+              controller: _firstNameController,
+              onChanged: UserProfileState.setFirstName,
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.grey[100],

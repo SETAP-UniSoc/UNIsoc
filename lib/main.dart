@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'screens/login_screen.user.dart';
+=======
+import 'home_page.dart';
+>>>>>>> dfe222f (Added First Name saving)
 
 
 void main() {
@@ -14,7 +18,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
+<<<<<<< HEAD
       home: LoginScreenUser(),
+=======
+      home: HomePage(),
+>>>>>>> dfe222f (Added First Name saving)
     );
   }
 }
