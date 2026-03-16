@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:unisoc/services/api_services.dart';
 import 'package:unisoc/screens/admin/admin_bottom_nav.dart';
-
+//society profile page used by both users and admins — shows society details and upcoming events. Admins can also edit the description
 class SocietyProfilePage extends StatefulWidget {
   final int societyId;
   final bool isAdmin;
