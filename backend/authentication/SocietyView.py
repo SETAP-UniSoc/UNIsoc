@@ -4,11 +4,11 @@ from rest_framework.permissions import IsAuthenticated
 from django.db.models import Count, Q
 from .models import Society, Membership
 
+
 class SocietyListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # get all active societies with member count
         societies = Society.objects.filter(is_active=True).annotate(
             member_count=Count(
                 'membership',
@@ -54,7 +54,6 @@ class SocietyDetailView(APIView):
         except Society.DoesNotExist:
             return Response({"error": "Society not found or not your society"}, status=404)
 
-        # only allow description to be updated
         description = request.data.get("description")
         if description is not None:
             society.description = description
@@ -67,3 +66,16 @@ class SocietyDetailView(APIView):
             "description": society.description,
             "message": "Society updated successfully"
         })
+
+
+class SocietyMembershipCheckView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, society_id):
+        is_member = Membership.objects.filter(
+            user=request.user,
+            society_id=society_id,
+            left_at__isnull=True
+        ).exists()
+
+        return Response({"is_member": is_member})

@@ -1,39 +1,58 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:unisoc/services/api_services.dart';
-import 'admin_bottom_nav.dart';
+import 'package:unisoc/screens/admin/admin_bottom_nav.dart';
+//society profile page used by both users and admins — shows society details and upcoming events. Admins can also edit the description
+class SocietyProfilePage extends StatefulWidget {
+  final int societyId;
+  final bool isAdmin;
 
-class AdminMyAccountPage extends StatefulWidget {
-  const AdminMyAccountPage({super.key});
+  const SocietyProfilePage({
+    super.key,
+    required this.societyId,
+    required this.isAdmin,
+  });
 
   @override
-  State<AdminMyAccountPage> createState() => _AdminMyAccountPageState();
+  State<SocietyProfilePage> createState() => _SocietyProfilePageState();
 }
 
-class _AdminMyAccountPageState extends State<AdminMyAccountPage> {
+class _SocietyProfilePageState extends State<SocietyProfilePage> {
   Map societyData = {};
   List events = [];
   bool isLoading = true;
   bool isEditing = false;
+  bool isMember = false;
+  Timer? pollingTimer;
   final TextEditingController descController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     loadData();
+    if (!widget.isAdmin) startPolling();
   }
 
   @override
   void dispose() {
+    pollingTimer?.cancel();
     descController.dispose();
     super.dispose();
+  }
+
+  void startPolling() {
+    pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      loadEvents();
+    });
   }
 
   Future<void> loadData() async {
     await Future.wait([
       loadSociety(),
       loadEvents(),
+      if (!widget.isAdmin) checkMembership(),
     ]);
     setState(() => isLoading = false);
   }
@@ -41,14 +60,10 @@ class _AdminMyAccountPageState extends State<AdminMyAccountPage> {
   // load society details
   Future<void> loadSociety() async {
     try {
-      final id = ApiService.societyId;
-      if (id == null) return;
-
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/society/$id/"),
+        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/"),
         headers: ApiService.headers,
       );
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
@@ -61,17 +76,13 @@ class _AdminMyAccountPageState extends State<AdminMyAccountPage> {
     }
   }
 
-  // load upcoming events for this society
+  // load upcoming events
   Future<void> loadEvents() async {
     try {
-      final id = ApiService.societyId;
-      if (id == null) return;
-
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/society/$id/events/"),
+        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
         headers: ApiService.headers,
       );
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as List;
         final now = DateTime.now();
@@ -86,27 +97,65 @@ class _AdminMyAccountPageState extends State<AdminMyAccountPage> {
     }
   }
 
-  // save updated description
+  // check if user is already a member
+  Future<void> checkMembership() async {
+    try {
+      final response = await http.get(
+        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/is-member/"),
+        headers: ApiService.headers,
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() => isMember = data["is_member"] ?? false);
+      }
+    } catch (e) {
+      print("Error checking membership: $e");
+    }
+  }
+
+  // admin saves description
   Future<void> saveDescription() async {
     try {
-      final id = ApiService.societyId;
-      if (id == null) return;
-
       final response = await http.patch(
-        Uri.parse("${ApiService.baseUrl}/society/$id/"),
+        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/"),
         headers: ApiService.headers,
         body: jsonEncode({"description": descController.text}),
       );
-
       if (response.statusCode == 200) {
         setState(() => isEditing = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Description updated ✅")),
         );
-        loadSociety(); // refresh
+        loadSociety();
       }
     } catch (e) {
       print("Error saving description: $e");
+    }
+  }
+
+  // user joins or leaves society
+  Future<void> toggleJoinSociety() async {
+    final endpoint = isMember
+        ? "/society/${widget.societyId}/leave/"
+        : "/society/${widget.societyId}/join/";
+
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiService.baseUrl}$endpoint"),
+        headers: ApiService.headers,
+      );
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        setState(() => isMember = !isMember);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isMember
+                ? "Successfully joined society 🎉"
+                : "Successfully left society"),
+          ),
+        );
+      }
+    } catch (e) {
+      print("Error toggling membership: $e");
     }
   }
 
@@ -114,20 +163,20 @@ class _AdminMyAccountPageState extends State<AdminMyAccountPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text(societyData["name"] ?? "My Society"),
+        automaticallyImplyLeading: !widget.isAdmin,
+        title: Text(societyData["name"] ?? "Society"),
         actions: [
-          // edit/save button for description
-          IconButton(
-            icon: Icon(isEditing ? Icons.check : Icons.edit),
-            onPressed: () {
-              if (isEditing) {
-                saveDescription();
-              } else {
-                setState(() => isEditing = true);
-              }
-            },
-          ),
+          if (widget.isAdmin)
+            IconButton(
+              icon: Icon(isEditing ? Icons.check : Icons.edit),
+              onPressed: () {
+                if (isEditing) {
+                  saveDescription();
+                } else {
+                  setState(() => isEditing = true);
+                }
+              },
+            ),
         ],
       ),
       body: isLoading
@@ -171,7 +220,34 @@ class _AdminMyAccountPageState extends State<AdminMyAccountPage> {
 
                   const SizedBox(height: 24),
 
-                  // description section
+                  // join/leave button — users only
+                  if (!widget.isAdmin)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: toggleJoinSociety,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              isMember ? Colors.red : Colors.blue,
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          isMember ? "Leave Society" : "Join Society",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  if (!widget.isAdmin) const SizedBox(height: 24),
+
+                  // about section
                   const Text(
                     "About",
                     style: TextStyle(
@@ -189,13 +265,16 @@ class _AdminMyAccountPageState extends State<AdminMyAccountPage> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            hintText: "Write a description for your society...",
+                            hintText:
+                                "Write a description for your society...",
                           ),
                         )
                       : Text(
                           societyData["description"]?.isNotEmpty == true
                               ? societyData["description"]
-                              : "No description yet — tap edit to add one.",
+                              : widget.isAdmin
+                                  ? "No description yet — tap edit to add one."
+                                  : "No description yet.",
                           style: const TextStyle(
                             fontSize: 15,
                             color: Colors.black87,
@@ -226,7 +305,9 @@ class _AdminMyAccountPageState extends State<AdminMyAccountPage> {
                           itemCount: events.length,
                           itemBuilder: (context, index) {
                             final event = events[index];
-                            final startTime = DateTime.parse(event["start_time"]).toLocal();
+                            final startTime =
+                                DateTime.parse(event["start_time"])
+                                    .toLocal();
                             return Card(
                               margin: const EdgeInsets.only(bottom: 10),
                               shape: RoundedRectangleBorder(
@@ -257,7 +338,9 @@ class _AdminMyAccountPageState extends State<AdminMyAccountPage> {
                 ],
               ),
             ),
-      bottomNavigationBar: const AdminBottomNav(currentIndex: 0),
+      bottomNavigationBar: widget.isAdmin
+          ? const AdminBottomNav(currentIndex: 0)
+          : null,
     );
   }
 }
