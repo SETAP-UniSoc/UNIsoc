@@ -24,7 +24,9 @@ class _AdminHomepageState extends State<AdminHomepage> {
   @override
   void initState() {
     super.initState();
-    loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) { // added so that multiple http requests don't block the initial UI rendering — allows the circular progress indicators to show up while loading instead of a blank screen
+      loadData();
+    });
   }
 
   Future<void> loadData() async {

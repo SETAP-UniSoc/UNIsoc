@@ -27,8 +27,11 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   @override
   void initState() {
     super.initState();
-    fetchAnalytics(selectedPeriod);
-    startLiveUpdates();
+    WidgetsBinding.instance.addPostFrameCallback((_) { //added temporatily to delay the initial fetch until after the first frame so that the circular progress indicator shows up while loading instead of a blank screen. Can remove this once we have the event attendance data to show on the second graph, as then the initial fetch will be fast enough that the loading indicator isn't needed
+      fetchAnalytics(selectedPeriod);
+    });
+    
+    //startLiveUpdates();  temporarily commnted out live updates until we have the event attendance data to show on the second graph. No point refreshing the member count every 5 seconds if the event attendance graph just shows "No data yet"
   }
 
   @override
