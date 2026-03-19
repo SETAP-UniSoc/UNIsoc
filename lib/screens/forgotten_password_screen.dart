@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 //import 'login_screen.user.dart';
 //import 'login_screen.admin.dart';
 
+//for now ser will enter their up number and if it mathces they can reset thier password
+//user enters email and backend checks if it belongs to user or admin
+// if admin it shon new password directly 
+// if user then user enters their up number then shows the new password field
 
 //forgotten password screen for both admin and user login screens 
 class ForgottenPasswordScreen extends StatefulWidget {
