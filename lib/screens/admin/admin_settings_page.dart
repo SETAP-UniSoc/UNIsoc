@@ -137,6 +137,9 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
 
             const SizedBox(height: 32),
 
+// toggle for emial notifications for event reminders and updates (not implemented yet)
+            
+
             const Text(
               "Change Password",
               style: TextStyle(
