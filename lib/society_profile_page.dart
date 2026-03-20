@@ -261,6 +261,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                       ? TextField(
                           controller: descController,
                           maxLines: 4,
+                          autofocus: true,
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
