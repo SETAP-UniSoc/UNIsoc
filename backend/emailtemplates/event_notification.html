@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .title {
+            color: #2c3e50;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 class="title">🎉 New Event: {{ event.title }}</h2>
+
+    <p><strong>Society:</strong> {{ event.society.name }}</p>
+    <p><strong>Description:</strong> {{ event.description }}</p>
+    <p><strong>Location:</strong> {{ event.location }}</p>
+    <p><strong>Time:</strong> {{ event.start_time }}</p>
+
+    <br>
+
+    <a href="#" class="button">View Event</a>
+
+    <hr>
+
+    <p style="font-size: 12px; color: gray;">
+        You received this email because you opted in to notifications.
+    </p>
+</div>
+
+</body>
+</html>
