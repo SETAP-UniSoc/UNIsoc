@@ -1,5 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from .models import NotificationPreference
 
 User = get_user_model()
 
@@ -15,5 +19,30 @@ def authenticate_user(identifier, password):
         return user
 
     return None
+
+def send_event_notifications(event):
+    prefs = NotificationPreference.objects.filter(
+        society=event.society,
+        event_notifications=True
+    )
+
+    for pref in prefs:
+        user = pref.user
+
+        html_content = render_to_string(
+            "emails/event_notification.html",
+            {"event": event}
+        )
+
+        email = EmailMultiAlternatives(
+            subject=f"New Event: {event.title}",
+            body="A new event has been posted.",  # fallback text
+            from_email="your_email@gmail.com",
+            to=[user.email],
+        )
+
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+        
 
 
