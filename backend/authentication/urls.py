@@ -11,7 +11,7 @@ urlpatterns = [
     path("society/<int:society_id>/join/", JoinSocietyView.as_view(), name="join-society"),
     path("society/<int:society_id>/leave/", LeaveSocietyView.as_view(), name="leave-society"),
     path('my-analytics/', AnalyticsView.as_view(), name="society-analytics")
-
+    path('societies/<int:society_id>/', SocietyDetailView.as_view(), name='society-detail'),
 ]
 
 
