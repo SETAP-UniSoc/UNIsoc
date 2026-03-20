@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .models import Event, Society
 
-class EventListCreateView(APIView):
+class CalanderView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, society_id):  #gets all eventts for socities doesnt include canceled and removed events 
