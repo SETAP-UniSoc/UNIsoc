@@ -94,3 +94,4 @@ class AnalyticsView(APIView):
             "most_popular": most_popular
         })
 
+        
