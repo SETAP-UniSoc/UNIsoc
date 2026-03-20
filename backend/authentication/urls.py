@@ -1,10 +1,12 @@
 from django.urls import path
+
+from UNIsoc.backend.authentication import CalanderView
 from .RegisterView import RegisterView
 from .LoginView import LoginView
 from .AnalyticsView import AnalyticsView
 from .JoinSoc import JoinSocietyView
 from .LeaveSoc import LeaveSocietyView
-from .EventView import EventListCreateView, EventDetailView #M added
+from .EventView import EventListCreateView #M added
 from .SocietyView import SocietyListView, SocietyDetailView, SocietyMembershipCheckView #M added
 from .ChangePasswordView import ChangePasswordView #M added
 
@@ -15,7 +17,7 @@ urlpatterns = [
     path("society/<int:society_id>/leave/", LeaveSocietyView.as_view(), name="leave-society"),
     path('my-analytics/', AnalyticsView.as_view(), name="society-analytics"),
     path("society/<int:society_id>/events/", EventListCreateView.as_view(), name="society-events"), #M added
-    path("event/<int:event_id>/delete/", EventDetailView.as_view(), name="event-detail"), #M added
+    path("event/<int:event_id>/delete/", CalanderView.as_view(), name="event-detail"), #M added
     path("societies/", SocietyListView.as_view(), name="societies"),
     path("society/<int:society_id>/", SocietyDetailView.as_view(), name="society-detail"), #M added
     path("society/<int:society_id>/is-member/", SocietyMembershipCheckView.as_view(), name="is-member"), #M added
