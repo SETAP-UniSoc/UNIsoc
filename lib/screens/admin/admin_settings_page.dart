@@ -20,12 +20,60 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   bool obscureNew = true;
   bool obscureConfirm = true;
 
+  // notifications
+  List notificationPrefs = [];
+  bool notificationsLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadNotifications();
+    });
+  }
+
   @override
   void dispose() {
     oldPasswordController.dispose();
     newPasswordController.dispose();
     confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  Future<void> loadNotifications() async {
+    try {
+      final response = await http.get(
+        Uri.parse("${ApiService.baseUrl}/notifications/"),
+        headers: ApiService.headers,
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          notificationPrefs = jsonDecode(response.body);
+          notificationsLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => notificationsLoading = false);
+      print("Error loading notifications: $e");
+    }
+  }
+
+  Future<void> toggleNotification(int societyId, bool currentValue) async {
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiService.baseUrl}/notifications/"),
+        headers: ApiService.headers,
+        body: jsonEncode({
+          "society_id": societyId,
+          "notify": !currentValue,
+        }),
+      );
+      if (response.statusCode == 200) {
+        loadNotifications();
+      }
+    } catch (e) {
+      print("Error toggling notification: $e");
+    }
   }
 
   Future<void> changePassword() async {
@@ -102,7 +150,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // section header card
+            // header card
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -137,20 +185,77 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
 
             const SizedBox(height: 32),
 
-// toggle for emial notifications for event reminders and updates (not implemented yet)
-            
+            // notifications section
+            const Text(
+              "Notifications",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              "Manage email notifications for your societies",
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+            const SizedBox(height: 12),
 
+            notificationsLoading
+                ? const Center(child: CircularProgressIndicator())
+                : notificationPrefs.isEmpty
+                    ? const Text(
+                        "No notification preferences yet",
+                        style: TextStyle(color: Colors.grey),
+                      )
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: notificationPrefs.length,
+                        itemBuilder: (context, index) {
+                          final pref = notificationPrefs[index];
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: SwitchListTile(
+                              title: Text(
+                                pref["society"],
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w500),
+                              ),
+                              subtitle: Text(
+                                pref["notify"]
+                                    ? "Notifications on"
+                                    : "Notifications off",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: pref["notify"]
+                                      ? Colors.purple
+                                      : Colors.grey,
+                                ),
+                              ),
+                              value: pref["notify"] ?? true,
+                              activeColor: Colors.purple,
+                              onChanged: (val) {
+                                toggleNotification(
+                                  pref["society_id"],
+                                  pref["notify"] ?? true,
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+
+            const SizedBox(height: 32),
+
+            // change password section
             const Text(
               "Change Password",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
 
             const SizedBox(height: 16),
 
-            // current password
             TextField(
               controller: oldPasswordController,
               obscureText: obscureOld,
@@ -176,7 +281,6 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
 
             const SizedBox(height: 16),
 
-            // new password
             TextField(
               controller: newPasswordController,
               obscureText: obscureNew,
@@ -202,7 +306,6 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
 
             const SizedBox(height: 16),
 
-            // confirm new password
             TextField(
               controller: confirmPasswordController,
               obscureText: obscureConfirm,
@@ -229,7 +332,6 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
 
             const SizedBox(height: 24),
 
-            // save button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -245,13 +347,12 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
                         "Save Changes",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
+                        style: TextStyle(color: Colors.white, fontSize: 16),
                       ),
               ),
             ),
+
+            const SizedBox(height: 30),
           ],
         ),
       ),
