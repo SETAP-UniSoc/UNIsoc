@@ -19,13 +19,9 @@ urlpatterns = [
     path("society/<int:society_id>/events/", EventListCreateView.as_view(), name="society-events"), #M added
     path("event/<int:event_id>/delete/", CalanderView.as_view(), name="event-detail"), #M added
     path("societies/", SocietyListView.as_view(), name="societies"),
-    path("society/<int:society_id>/", SocietyDetailView.as_view(), name="society-detail"), #M added
     path("society/<int:society_id>/is-member/", SocietyMembershipCheckView.as_view(), name="is-member"), #M added
     path("change-password/", ChangePasswordView.as_view(), name="change-password"), #M added
 ]
-
-
-
 
 
 

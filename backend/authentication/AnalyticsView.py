@@ -98,3 +98,5 @@ class AnalyticsView(APIView):
             "events_stats": list(events_stats),
             "most_popular": most_popular
         })
+
+        
