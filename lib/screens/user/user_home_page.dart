@@ -248,22 +248,37 @@ class _HomeHeaderState extends State<HomeHeader> {
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: featuredSocieties.length,
+                            itemCount: _societies.length,
                             itemBuilder: (context, index) {
-                              final soc = featuredSocieties[index];
+                              final soc =
+                                  _societies[index] as Map<String, dynamic>;
+                              final id = soc['id'] as int? ?? 0;
+                              final name = soc['name'] as String? ?? '';
+                              final description =
+                                  soc['description'] as String? ?? '';
+
                               return ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: soc.color,
+                                leading: const CircleAvatar(
+                                  backgroundColor: Colors.deepPurple,
                                   child: Icon(
-                                    soc.icon,
+                                    Icons.group,
                                     color: Colors.white,
                                     size: 20,
                                   ),
                                 ),
-                                title: Text(soc.name),
-                                subtitle: const Text('Short description here'),
+                                title: Text(name),
+                                subtitle: Text(description),
                                 onTap: () {
-                                  // TODO: navigate to society detail page
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => UserSocietyPage(
+                                        societyId: id,
+                                        societyName: name,
+                                        description: description,
+                                      ),
+                                    ),
+                                  );
                                 },
                               );
                             },
