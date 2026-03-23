@@ -161,35 +161,32 @@ class _HomeHeaderState extends State<HomeHeader> {
                       child: PageView.builder(
                         controller: _societyPageController,
                         scrollDirection: Axis.horizontal,
-                        itemCount: featuredSocieties.length,
-                        // itemBuilder: (context, index) {
-                        //   final soc = featuredSocieties[index];
-                        //   return _SocietyLogoCard(
-                        //     label: soc.name,
-                        //     color: soc.color,
-                        //     icon: soc.icon,
-                        //   );
-                        // },
+                        itemCount: _societies.length,
                         //changing one of the feature socs to be a button that goes to a different page for now
                         itemBuilder: (context, index) {
-                          final soc = featuredSocieties[index];
+                          final soc = _societies[index] as Map<String, dynamic>;
+                          final name = soc['name'] as String? ?? '';
+                          final description =
+                              soc['description'] as String? ?? '';
+                          final id = soc['id'] as int? ?? 0;
+
                           if (index == 0) {
                             return _SocietyLogoCard(
-                              label: soc.name,
-                              color: soc.color,
-                              icon: soc.icon,
-                              UserSocietyPage: const UserSocietyPage(
-                                societyId: 1,
-                                societyName: "Gaming Society",
-                                description:
-                                    "A society for gaming enthusiasts to share and learn about the latest in gaming.",
+                              label: name,
+                              color: Colors.deepPurple, // temp color
+                              icon: Icons.group,
+                              UserSocietyPage: UserSocietyPage(
+                                societyId: id,
+                                societyName: name,
+                                description: description,
                               ),
                             );
                           }
+
                           return _SocietyLogoCard(
-                            label: soc.name,
-                            color: soc.color,
-                            icon: soc.icon,
+                            label: name,
+                            color: Colors.indigo, // temp color
+                            icon: Icons.group,
                           );
                         },
                       ),
