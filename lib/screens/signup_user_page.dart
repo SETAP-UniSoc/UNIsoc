@@ -65,6 +65,11 @@ class _SignupUserPageState extends State<SignupUserPage> {
       return false;
     }
 
+    if (password.length > 20) {
+      _showError("Password must not exceed 20 characters");
+      return false;
+    }
+
     if (!RegExp(r'[A-Z]').hasMatch(password)) {
       _showError("Password must contain one uppercase letter");
       return false;
