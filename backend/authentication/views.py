@@ -1,5 +1,5 @@
 from rest_framework import generics
-from .models import Customer
+from .models import User
 from .serializer import CustomerSerializer
 
 
@@ -7,7 +7,7 @@ class CustomerListView(generics.ListAPIView):
     serializer_class = CustomerSerializer
 
     def get_queryset(self):
-        queryset = Customer.objects.all().order_by('name')
+        queryset = User.objects.all().order_by('name')
 
         search = self.request.query_params.get('search')
         letter = self.request.query_params.get('letter')
