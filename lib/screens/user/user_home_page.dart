@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../navbar.dart';
 import '../../models/soc_model.dart';
 import '../../models/event_model.dart';
+import '../../services/api_services.dart';
 import 'user_society_page.dart'; //importing user society page to be used as a button in the home page
 import 'dart:async';
 
