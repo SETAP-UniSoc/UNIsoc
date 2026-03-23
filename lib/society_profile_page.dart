@@ -345,3 +345,4 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     );
   }
 }
+
