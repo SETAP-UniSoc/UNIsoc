@@ -57,13 +57,14 @@ class _HomeHeaderState extends State<HomeHeader> {
     super.initState();
     _societyPageController = PageController(viewportFraction: 0.35);
 
+    _loadData(); // ← new
+
     // Auto-advance every 5 seconds
     _societyTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      if (!mounted || featuredSocieties.isEmpty) return;
+      if (!mounted || _societies.isEmpty) return;
 
       setState(() {
-        _currentSocietyPage =
-            (_currentSocietyPage + 1) % featuredSocieties.length;
+        _currentSocietyPage = (_currentSocietyPage + 1) % _societies.length;
       });
 
       _societyPageController.animateToPage(
@@ -72,6 +73,25 @@ class _HomeHeaderState extends State<HomeHeader> {
         curve: Curves.easeInOut,
       );
     });
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final societies = await ApiService.getSocieties();
+      // if you later add a "getHomeEvents", call it here too
+      if (!mounted) return;
+      setState(() {
+        _societies = societies;
+        _loading = false;
+        _error = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.toString();
+      });
+    }
   }
 
   @override
