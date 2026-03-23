@@ -113,6 +113,38 @@ final CarouselSliderController _eventController = CarouselSliderController();
     }
   }
 
+  void applyFilters() {
+    List result = [...societies];
+
+    if (selectedCategory != "All") {
+      result = result.where((s) => s["category"] == selectedCategory).toList();
+    }
+
+    if (sortBy == "A-Z") {
+      result.sort((a, b) => a["name"].compareTo(b["name"]));
+    } else if (sortBy == "Z-A") {
+      result.sort((a, b) => b["name"].compareTo(a["name"]));
+    } else if (sortBy == "Most Members") {
+      result.sort((a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0));
+    } else if (sortBy == "Least Members") {
+      result.sort((a, b) => (a["member_count"] ?? 0).compareTo(b["member_count"] ?? 0));
+    }
+
+    setState(() {
+      filteredSocieties = result;
+      showingCategories = false;
+    });
+  }
+
+  void resetToCategories() {
+    setState(() {
+      selectedCategory = "All";
+      sortBy = "A-Z";
+      filteredSocieties = [...societies];
+      showingCategories = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
