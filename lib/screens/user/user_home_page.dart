@@ -47,6 +47,11 @@ class _HomeHeaderState extends State<HomeHeader> {
   int _currentSocietyPage = 0;
   Timer? _societyTimer;
 
+  List<dynamic> _societies = [];
+  List<dynamic> _events = [];
+  bool _loading = true;
+  String? _error;
+
   @override
   void initState() {
     super.initState();
