@@ -16,16 +16,44 @@ class AdminHomepage extends StatefulWidget {
 
 class _AdminHomepageState extends State<AdminHomepage> {
   final CarouselSliderController _societyController = CarouselSliderController();
-  final CarouselSliderController _eventController = CarouselSliderController();
 
   List societies = [];
+  List filteredSocieties = [];
   List events = [];
   bool isLoading = true;
+
+  // browse section state
+  String selectedCategory = "All";
+  String sortBy = "A-Z";
+  bool showingCategories = true;
+
+  final List<String> categories = [
+    "All", "Academic", "Cultural", "Sports", "Religious", "Extra-curricular"
+  ];
+
+  // colour per category
+  final Map<String, Color> categoryColours = {
+    "Academic": const Color(0xFF5C6BC0),       // indigo
+    "Cultural": const Color(0xFF26A69A),        // teal
+    "Sports": const Color(0xFF7E57C2),          // medium purple
+    "Religious": const Color(0xFF8D6E63),       // warm brown purple
+    "Extra-curricular": const Color(0xFF42A5F5), // light blue
+    "All": const Color(0xFF7B1FA2),             // deep purple
+  };
+
+  // carousel card colours — different purple shades
+  final List<Color> carouselColours = [
+    const Color(0xFF7B1FA2), // deep purple
+    const Color(0xFF6A1B9A), // darker purple
+    const Color(0xFF9C27B0), // purple
+    const Color(0xFF8E24AA), // medium purple
+    const Color(0xFF6D1F7B), // darkest purple
+  ];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) { // added so that multiple http requests don't block the initial UI rendering — allows the circular progress indicators to show up while loading instead of a blank screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       loadData();
     });
   }
@@ -45,7 +73,11 @@ class _AdminHomepageState extends State<AdminHomepage> {
         headers: ApiService.headers,
       );
       if (response.statusCode == 200) {
-        setState(() => societies = jsonDecode(response.body));
+        final data = jsonDecode(response.body) as List;
+        setState(() {
+          societies = data;
+          filteredSocieties = data;
+        });
       }
     } catch (e) {
       print("Error loading societies: $e");
@@ -54,24 +86,50 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
   Future<void> loadEvents() async {
     try {
-      final id = ApiService.societyId;
-      if (id == null) return;
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/society/$id/events/"),
+        Uri.parse("${ApiService.baseUrl}/events/"),
         headers: ApiService.headers,
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as List;
-        final now = DateTime.now();
-        setState(() {
-          events = data.where((e) =>
-            DateTime.parse(e["start_time"]).isAfter(now)
-          ).toList();
-        });
+        setState(() => events = data);
       }
     } catch (e) {
       print("Error loading events: $e");
     }
+  }
+
+  // apply sort and filter
+  void applyFilters() {
+    List result = [...societies];
+
+    if (selectedCategory != "All") {
+      result = result.where((s) => s["category"] == selectedCategory).toList();
+    }
+
+    if (sortBy == "A-Z") {
+      result.sort((a, b) => a["name"].compareTo(b["name"]));
+    } else if (sortBy == "Z-A") {
+      result.sort((a, b) => b["name"].compareTo(a["name"]));
+    } else if (sortBy == "Most Members") {
+      result.sort((a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0));
+    } else if (sortBy == "Least Members") {
+      result.sort((a, b) => (a["member_count"] ?? 0).compareTo(b["member_count"] ?? 0));
+    }
+
+    setState(() {
+      filteredSocieties = result;
+      showingCategories = false;
+    });
+  }
+
+  void resetToCategories() {
+    setState(() {
+      selectedCategory = "All";
+      sortBy = "A-Z";
+      filteredSocieties = [...societies];
+      showingCategories = true;
+    });
   }
 
   @override
@@ -83,12 +141,14 @@ class _AdminHomepageState extends State<AdminHomepage> {
           child: Column(
             children: [
               _buildHeader(),
+              const SizedBox(height: 8),
+              _buildSearchBar(),
               const SizedBox(height: 20),
               _buildTopSocietiesCarousel(),
               const SizedBox(height: 30),
               _buildBrowseSocietiesSection(),
               const SizedBox(height: 30),
-              _buildEventsCarousel(),
+              _buildEventsSection(),
               const SizedBox(height: 30),
             ],
           ),
@@ -97,11 +157,18 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
+  // gradient header with UniSoc, welcome and dropdown
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      color: Colors.white,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFCE93D8), Color(0xFF9C27B0)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -110,7 +177,11 @@ class _AdminHomepageState extends State<AdminHomepage> {
             children: const [
               Text(
                 "UniSoc",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
               AdminDropdownMenu(),
             ],
@@ -118,24 +189,38 @@ class _AdminHomepageState extends State<AdminHomepage> {
           const SizedBox(height: 8),
           Text(
             "Welcome — ${ApiService.societyName ?? 'Admin'}",
-            style: const TextStyle(fontSize: 18, color: Colors.grey),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            decoration: InputDecoration(
-              hintText: "Search events or societies",
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
+            style: const TextStyle(
+              fontSize: 18,
+              color: Colors.white70,
             ),
-            onChanged: (value) {},
           ),
         ],
       ),
     );
   }
 
+  // white search bar below gradient header
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: "Search events or societies",
+          prefixIcon: const Icon(Icons.search, color: Color(0xFF9C27B0)),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(24),
+            borderSide: const BorderSide(color: Color(0xFF9C27B0)),
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+        ),
+        onChanged: (value) {},
+      ),
+    );
+  }
+
+  // top 5 societies carousel
   Widget _buildTopSocietiesCarousel() {
     final topSocieties = [...societies]
       ..sort((a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0));
@@ -143,9 +228,15 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
     return Column(
       children: [
-        const Text(
-          "Top Societies",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "Top Societies",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+          ),
         ),
         const SizedBox(height: 12),
         if (isLoading)
@@ -165,10 +256,13 @@ class _AdminHomepageState extends State<AdminHomepage> {
                   enlargeCenterPage: true,
                   viewportFraction: 0.8,
                 ),
-                items: top5.map((society) {
+                items: top5.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final society = entry.value;
+                  final colour = carouselColours[index % carouselColours.length];
+
                   return GestureDetector(
                     onTap: () {
-                      // navigates to that specific society's profile page
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -181,22 +275,33 @@ class _AdminHomepageState extends State<AdminHomepage> {
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.blue,
+                        gradient: LinearGradient(
+                          colors: [colour, colour.withOpacity(0.7)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
                         borderRadius: BorderRadius.circular(16),
+                        image: const DecorationImage(
+                          image: AssetImage("assets/images/society_placeholder.png"),
+                          fit: BoxFit.cover,
+                          opacity: 0.2, // placeholder — replace with real image
+                        ),
                       ),
-                      child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               society["name"],
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 20,
+                                fontSize: 22,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 4),
                             Text(
                               "${society["member_count"]} members",
                               style: const TextStyle(
@@ -231,139 +336,310 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
+  // browse societies with category tabs, sort and filter
   Widget _buildBrowseSocietiesSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // header row with sort and filter dropdowns
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text(
-                'All Societies (A–Z)',
+            children: [
+              const Text(
+                "Browse Societies",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               Row(
                 children: [
-                  Text('Sort by',
-                      style: TextStyle(fontSize: 14, color: Colors.grey)),
-                  SizedBox(width: 16),
-                  Text('Filter by',
-                      style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  // sort by dropdown
+                  PopupMenuButton<String>(
+                    child: const Row(
+                      children: [
+                        Text("Sort by",
+                            style: TextStyle(fontSize: 14, color: Color(0xFF9C27B0))),
+                        Icon(Icons.arrow_drop_down, color: Color(0xFF9C27B0)),
+                      ],
+                    ),
+                    onSelected: (value) {
+                      setState(() => sortBy = value);
+                      applyFilters();
+                    },
+                    itemBuilder: (_) => const [
+                      PopupMenuItem(value: "A-Z", child: Text("A-Z")),
+                      PopupMenuItem(value: "Z-A", child: Text("Z-A")),
+                      PopupMenuItem(value: "Most Members", child: Text("Most Members")),
+                      PopupMenuItem(value: "Least Members", child: Text("Least Members")),
+                    ],
+                  ),
+                  const SizedBox(width: 8),
+                  // filter by dropdown
+                  PopupMenuButton<String>(
+                    child: const Row(
+                      children: [
+                        Text("Filter by",
+                            style: TextStyle(fontSize: 14, color: Color(0xFF9C27B0))),
+                        Icon(Icons.arrow_drop_down, color: Color(0xFF9C27B0)),
+                      ],
+                    ),
+                    onSelected: (value) {
+                      setState(() => selectedCategory = value);
+                      applyFilters();
+                    },
+                    itemBuilder: (_) => categories.map((cat) =>
+                      PopupMenuItem(value: cat, child: Text(cat))
+                    ).toList(),
+                  ),
                 ],
               ),
             ],
           ),
+
           const SizedBox(height: 12),
-          Container(
-            height: 260,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
+
+          // back arrow to return to category default view
+          if (!showingCategories)
+            TextButton.icon(
+              onPressed: resetToCategories,
+              icon: const Icon(Icons.arrow_back, color: Color(0xFF9C27B0)),
+              label: const Text(
+                "Back to Categories",
+                style: TextStyle(color: Color(0xFF9C27B0)),
+              ),
             ),
-            child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : societies.isEmpty
-                    ? const Center(child: Text("No societies found"))
-                    : ListView.builder(
-                        itemCount: societies.length,
-                        itemBuilder: (context, index) {
-                          final soc = societies[index];
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.blue,
-                              child: Text(
-                                soc["name"][0],
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                            title: Text(soc["name"]),
-                            subtitle: Text(soc["category"] ?? ""),
-                            trailing: Text(
-                              "${soc["member_count"]} members",
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.grey),
-                            ),
-                            // navigates to that specific society's profile page
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => SocietyProfilePage(
-                                    societyId: soc["id"],
-                                    isAdmin: false,
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
+
+          const SizedBox(height: 8),
+
+          // default category view — grid of category boxes
+          if (showingCategories)
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.5,
+              children: categories.where((c) => c != "All").map((category) {
+                final colour = categoryColours[category] ?? Colors.purple;
+                final count = societies
+                    .where((s) => s["category"] == category)
+                    .length;
+
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedCategory = category;
+                      showingCategories = false;
+                    });
+                    applyFilters();
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [colour, colour.withOpacity(0.7)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-          ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          category,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "$count societies",
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            )
+          else
+            // filtered/sorted society list
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: filteredSocieties.isEmpty ? 1 : filteredSocieties.length,
+              itemBuilder: (context, index) {
+                if (filteredSocieties.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text("No societies in this category"),
+                    ),
+                  );
+                }
+
+                final soc = filteredSocieties[index];
+                final colour = categoryColours[soc["category"]] ?? Colors.purple;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: colour,
+                      child: Text(
+                        soc["name"][0],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      soc["name"],
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(soc["category"] ?? ""),
+                    trailing: Text(
+                      "${soc["member_count"]} members",
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => SocietyProfilePage(
+                            societyId: soc["id"],
+                            isAdmin: false,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildEventsCarousel() {
-    return Column(
-      children: [
-        const Text(
-          "Events",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-        if (isLoading)
-          const CircularProgressIndicator()
-        else if (events.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Text("No upcoming events"),
-          )
-        else
-          CarouselSlider(
-            carouselController: _eventController,
-            options: CarouselOptions(
-              height: 160,
-              autoPlay: true,
-              autoPlayInterval: const Duration(seconds: 4),
-              enlargeCenterPage: true,
-              viewportFraction: 0.8,
-            ),
-            items: events.map((event) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.deepPurple,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        event["title"],
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        event["location"] ?? "",
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
+  // all events section
+  Widget _buildEventsSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Upcoming Events",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
-      ],
+          const SizedBox(height: 12),
+          if (isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (events.isEmpty)
+            const Text(
+              "No upcoming events",
+              style: TextStyle(color: Colors.grey),
+            )
+          else
+            SizedBox(
+              height: 160,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: events.length,
+                itemBuilder: (context, index) {
+                  final event = events[index];
+                  final startTime = DateTime.parse(event["start_time"]).toLocal();
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => SocietyProfilePage(
+                            societyId: event["society_id"],
+                            isAdmin: false,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 200,
+                      margin: const EdgeInsets.only(right: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            event["title"],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${startTime.day}/${startTime.month}/${startTime.year}",
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                event["location"] ?? "",
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (event["capacity_limit"] != null)
+                                Text(
+                                  "Cap: ${event["capacity_limit"]}",
+                                  style: const TextStyle(
+                                    color: Colors.white60,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
