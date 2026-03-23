@@ -30,6 +30,38 @@ final CarouselSliderController _eventController = CarouselSliderController();
   List events = [];
   bool isLoading = true;
 
+  String selectedCategory = "All";
+  String sortBy = "A-Z";
+  bool showingCategories = true;
+
+  List searchResults = [];
+  Timer? debounce;
+  bool isSearching = false;
+
+  final List<String> categories = [
+    "All",
+    "Academic",
+    "Cultural & Religious",
+    "Sports",
+    "Extra-curricular",
+  ];
+
+  final Map<String, Color> categoryColours = {
+    "Academic": const Color(0xFF5C6BC0), //indgo
+    "Cultural & Religious": const Color(0xFF26A69A), //teal
+    "Sports": const Color(0xFF7E57C2), //medium purple
+    "Extra-curricular": const Color(0xFF42A5F5), //light blue
+    "All": const Color(0xFF7B1FA2), //deep purple
+  };
+
+  final List<Color> carouselColours = [
+    const Color(0xFF7B1FA2), //deep purple
+    const Color(0xFF6A1B9A), //darker purple
+    const Color(0xFF9C27B0), // purple
+    const Color(0xFF8E24AA), // medium purple
+    const Color(0xFF6D1F7B), // darkest purple
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -91,6 +123,8 @@ final CarouselSliderController _eventController = CarouselSliderController();
           child: Column(
             children: [
               _buildHeader(),
+              const SizedBox(height: 8),
+              _buildSearchBar(),
               const SizedBox(height: 20),
               _buildTopSocietiesCarousel(),
               const SizedBox(height: 30),
