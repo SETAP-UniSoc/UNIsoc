@@ -5,6 +5,7 @@ from .AnalyticsView import AnalyticsView
 from .JoinSoc import JoinSocietyView
 from .LeaveSoc import LeaveSocietyView
 from .SocietyDetailView import SocietyDetailView
+from .views import CustomerListCreateView
 
 urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
@@ -13,6 +14,7 @@ urlpatterns = [
     path("society/<int:society_id>/leave/", LeaveSocietyView.as_view(), name="leave-society"),
     path('my-analytics/', AnalyticsView.as_view(), name="society-analytics"),
     path('societies/<int:society_id>/', SocietyDetailView.as_view(), name='society-detail'),
+    path('customers/', CustomerListCreateView.as_view(), name='customer-list-create'),
 ]
 
 
