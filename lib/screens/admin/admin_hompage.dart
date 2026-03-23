@@ -221,8 +221,7 @@ final CarouselSliderController _eventController = CarouselSliderController();
       ),
     );
   }
-
-  //searchbar code
+//searchbar code
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
