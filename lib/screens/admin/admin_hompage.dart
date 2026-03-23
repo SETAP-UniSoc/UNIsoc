@@ -13,12 +13,18 @@ class AdminHomepage extends StatefulWidget {
 }
 
 class _AdminHomepageState extends State<AdminHomepage> {
+<<<<<<< HEAD
   final CarouselSliderController _societyController = CarouselSliderController();
 <<<<<<< HEAD
   final CarouselSliderController _eventController = CarouselSliderController();
 =======
 
 >>>>>>> 2cfcb13 (made changes)
+=======
+  final CarouselSliderController _societyController =
+      CarouselSliderController();
+
+>>>>>>> 95e0df9 (Edit carousel slider)
   List societies = [];
   List filteredSocieties = [];
   List events = [];
@@ -30,7 +36,15 @@ class _AdminHomepageState extends State<AdminHomepage> {
   bool showingCategories = true;
 
   final List<String> categories = [
+<<<<<<< HEAD
     "All", "Academic", "Cultural", "Sports", "Religious", "Extra-curricular"
+=======
+    "All",
+    "Academic",
+    "Cultural & Religious",
+    "Sports",
+    "Extra-curricular",
+>>>>>>> 95e0df9 (Edit carousel slider)
   ];
 
   // colour per category
@@ -62,10 +76,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
   // load societies and events from backend
   Future<void> loadData() async {
-    await Future.wait([
-      loadSocieties(),
-      loadEvents(),
-    ]);
+    await Future.wait([loadSocieties(), loadEvents()]);
     setState(() => isLoading = false);
   }
 
@@ -122,9 +133,13 @@ class _AdminHomepageState extends State<AdminHomepage> {
     } else if (sortBy == "Z-A") {
       result.sort((a, b) => b["name"].compareTo(a["name"]));
     } else if (sortBy == "Most Members") {
-      result.sort((a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0));
+      result.sort(
+        (a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0),
+      );
     } else if (sortBy == "Least Members") {
-      result.sort((a, b) => (a["member_count"] ?? 0).compareTo(b["member_count"] ?? 0));
+      result.sort(
+        (a, b) => (a["member_count"] ?? 0).compareTo(b["member_count"] ?? 0),
+      );
     }
 
     setState(() {
@@ -195,28 +210,138 @@ class _AdminHomepageState extends State<AdminHomepage> {
           // shows society name from login instead of hardcoded name
           Text(
             "Welcome — ${ApiService.societyName ?? 'Admin'}",
-            style: const TextStyle(fontSize: 18, color: Colors.grey),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            decoration: InputDecoration(
-              hintText: "Search events or societies",
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
+            style: const TextStyle(
+              fontSize: 18,
+              color: Colors.white70,
             ),
-            onChanged: (value) {},
           ),
         ],
       ),
     );
   }
+//searchbar code
+  Widget _buildSearchBar() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: TextField(
+      onChanged: (query) {
+        // 🔥 debounce (prevents spam requests)
+        if (debounce?.isActive ?? false) debounce!.cancel();
+
+        debounce = Timer(const Duration(milliseconds: 300), () async {
+          if (query.isEmpty) {
+            setState(() {
+              searchResults = [];
+            });
+            return;
+          }
+
+          setState(() => isSearching = true);
+
+          try {
+            final response = await http.get(
+              Uri.parse("${ApiService.baseUrl}/search?q=$query"),
+              headers: ApiService.headers,
+            );
+
+            if (response.statusCode == 200) {
+              setState(() {
+                searchResults = json.decode(response.body);
+                isSearching = false;
+              });
+            }
+          } catch (e) {
+            print("Search error: $e");
+            setState(() => isSearching = false);
+          }
+        });
+      },
+      decoration: InputDecoration(
+        hintText: "Search events or societies",
+        prefixIcon: const Icon(Icons.search, color: Color(0xFF9C27B0)),
+
+        // 🔥 loading indicator
+        suffixIcon: isSearching
+            ? const Padding(
+                padding: EdgeInsets.all(12),
+                child: SizedBox(
+                  height: 16,
+                  width: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            : null,
+
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
+          borderSide: const BorderSide(color: Color(0xFF9C27B0)),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+      ),
+    ),
+  );
+}
+
+  Widget _buildSearchDropdown() {
+  if (searchResults.isEmpty) return const SizedBox();
+
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 6,
+        ),
+      ],
+    ),
+    child: ListView.builder(
+      shrinkWrap: true,
+      itemCount: searchResults.length,
+      itemBuilder: (context, index) {
+        final item = searchResults[index];
+
+        return ListTile(
+          leading: const Icon(Icons.search),
+          title: Text(item["name"] ?? item["title"] ?? ""),
+          subtitle: Text(item["type"] ?? ""),
+
+          onTap: () {
+            if (item["type"] == "society") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SocietyProfilePage(
+                    societyId: item["id"],
+                    isAdmin: false,
+                  ),
+                ),
+              );
+            }
+
+            setState(() {
+              searchResults = [];
+            });
+          },
+        );
+      },
+    ),
+  );
+}
+
+
+
 
   Widget _buildTopSocietiesCarousel() {
     // sort by member count and take top 5
     final topSocieties = [...societies]
-      ..sort((a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0));
+      ..sort(
+        (a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0),
+      );
     final top5 = topSocieties.take(5).toList();
 
     return Column(
@@ -246,7 +371,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
                 items: top5.asMap().entries.map((entry) {
                   final index = entry.key;
                   final society = entry.value;
-                  final colour = carouselColours[index % carouselColours.length];
+                  final colour =
+                      carouselColours[index % carouselColours.length];
 
                   return GestureDetector(
                     onTap: () {
@@ -341,8 +467,10 @@ class _AdminHomepageState extends State<AdminHomepage> {
                     child: const Row(
                       children: [
                         Text("Sort by",
-                            style: TextStyle(fontSize: 14, color: Color(0xFF9C27B0))),
-                        Icon(Icons.arrow_drop_down, color: Color(0xFF9C27B0)),
+                            style: TextStyle(
+                                fontSize: 14, color: Color(0xFF9C27B0))),
+                        Icon(Icons.arrow_drop_down,
+                            color: Color(0xFF9C27B0)),
                       ],
                     ),
                     onSelected: (value) {
@@ -352,8 +480,12 @@ class _AdminHomepageState extends State<AdminHomepage> {
                     itemBuilder: (_) => const [
                       PopupMenuItem(value: "A-Z", child: Text("A-Z")),
                       PopupMenuItem(value: "Z-A", child: Text("Z-A")),
-                      PopupMenuItem(value: "Most Members", child: Text("Most Members")),
-                      PopupMenuItem(value: "Least Members", child: Text("Least Members")),
+                      PopupMenuItem(
+                          value: "Most Members",
+                          child: Text("Most Members")),
+                      PopupMenuItem(
+                          value: "Least Members",
+                          child: Text("Least Members")),
                     ],
                   ),
                   const SizedBox(width: 8),
@@ -362,17 +494,20 @@ class _AdminHomepageState extends State<AdminHomepage> {
                     child: const Row(
                       children: [
                         Text("Filter by",
-                            style: TextStyle(fontSize: 14, color: Color(0xFF9C27B0))),
-                        Icon(Icons.arrow_drop_down, color: Color(0xFF9C27B0)),
+                            style: TextStyle(
+                                fontSize: 14, color: Color(0xFF9C27B0))),
+                        Icon(Icons.arrow_drop_down,
+                            color: Color(0xFF9C27B0)),
                       ],
                     ),
                     onSelected: (value) {
                       setState(() => selectedCategory = value);
                       applyFilters();
                     },
-                    itemBuilder: (_) => categories.map((cat) =>
-                      PopupMenuItem(value: cat, child: Text(cat))
-                    ).toList(),
+                    itemBuilder: (_) => categories
+                        .map((cat) =>
+                            PopupMenuItem(value: cat, child: Text(cat)))
+                        .toList(),
                   ),
                 ],
               ),
@@ -380,51 +515,145 @@ class _AdminHomepageState extends State<AdminHomepage> {
           ),
 
           const SizedBox(height: 12),
-          Container(
-            height: 260,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
+
+          if (!showingCategories)
+            TextButton.icon(
+              onPressed: resetToCategories,
+              icon: const Icon(Icons.arrow_back,
+                  color: Color(0xFF9C27B0)),
+              label: const Text(
+                "Back to Categories",
+                style: TextStyle(color: Color(0xFF9C27B0)),
+              ),
             ),
-            child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : societies.isEmpty
-                    ? const Center(child: Text("No societies found"))
-                    : ListView.builder(
-                        itemCount: societies.length,
-                        itemBuilder: (context, index) {
-                          final soc = societies[index];
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.blue,
-                              child: Text(
-                                soc["name"][0],
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                            title: Text(soc["name"]),
-                            subtitle: Text(soc["category"] ?? ""),
-                            trailing: Text(
-                              "${soc["member_count"]} members",
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.grey),
-                            ),
-                            // navigates to that specific society's profile page
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => SocietyProfilePage(
-                                    societyId: soc["id"],
-                                    isAdmin: false,
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
+
+          const SizedBox(height: 8),
+
+          if (showingCategories)
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.5,
+              children: categories
+                  .where((c) => c != "All")
+                  .map((category) {
+                final colour =
+                    categoryColours[category] ?? Colors.purple;
+                final count = societies
+                    .where((s) => s["category"] == category)
+                    .length;
+
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedCategory = category;
+                      showingCategories = false;
+                    });
+                    applyFilters();
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [colour, colour.withOpacity(0.7)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-          ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          category,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "$count societies",
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: filteredSocieties.isEmpty
+                  ? 1
+                  : filteredSocieties.length,
+              itemBuilder: (context, index) {
+                if (filteredSocieties.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text("No societies in this category"),
+                    ),
+                  );
+                }
+
+                final soc = filteredSocieties[index];
+                final colour =
+                    categoryColours[soc["category"]] ?? Colors.purple;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: colour,
+                      child: Text(
+                        soc["name"][0],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      soc["name"],
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(soc["category"] ?? ""),
+                    trailing: Text(
+                      "${soc["member_count"]} members",
+                      style: const TextStyle(
+                          fontSize: 12, color: Colors.grey),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => SocietyProfilePage(
+                            societyId: soc["id"],
+                            isAdmin: false,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );
@@ -450,47 +679,100 @@ class _AdminHomepageState extends State<AdminHomepage> {
             carouselController: _eventController,
             options: CarouselOptions(
               height: 160,
-              autoPlay: true,
-              autoPlayInterval: const Duration(seconds: 4),
-              enlargeCenterPage: true,
-              viewportFraction: 0.8,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: events.length,
+                itemBuilder: (context, index) {
+                  final event = events[index];
+                  final startTime =
+                      DateTime.parse(event["start_time"]).toLocal();
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => SocietyProfilePage(
+                            societyId: event["society_id"],
+                            isAdmin: false,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 200,
+                      margin: const EdgeInsets.only(right: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF6A1B9A),
+                            Color(0xFF4A148C)
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            event["title"],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${startTime.day}/${startTime.month}/${startTime.year}",
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                event["location"] ?? "",
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (event["capacity_limit"] != null)
+                                Text(
+                                  "Cap: ${event["capacity_limit"]}",
+                                  style: const TextStyle(
+                                    color: Colors.white60,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
-            items: events.map((event) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.deepPurple,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        event["title"],
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        event["location"] ?? "",
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
+<<<<<<< HEAD
 
 // Temporary Blank Page
 class AdminSocietyPage extends StatelessWidget {
@@ -504,3 +786,5 @@ class AdminSocietyPage extends StatelessWidget {
     );
   }
 }
+=======
+>>>>>>> 95e0df9 (Edit carousel slider)
