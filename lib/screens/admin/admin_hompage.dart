@@ -16,7 +16,6 @@ class AdminHomepage extends StatefulWidget {
 class _AdminHomepageState extends State<AdminHomepage> {
   final CarouselSliderController _societyController = CarouselSliderController();
   final CarouselSliderController _eventController = CarouselSliderController();
-
   List societies = [];
   List events = [];
   bool isLoading = true;
