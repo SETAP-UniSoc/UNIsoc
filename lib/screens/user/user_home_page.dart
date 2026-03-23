@@ -51,146 +51,194 @@ class _HomeHeaderState extends State<HomeHeader> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           color: Colors.white,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'UniSoc',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Welcome ${widget.studentName}',
-                style: const TextStyle(fontSize: 18, color: Colors.grey),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search events or societies',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 0,
-                  ),
-                ),
-                onChanged: (value) {
-                  // TODO: hook up search logic later
-                },
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Featured Societies',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 80,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: featuredSocieties.length,
-                  // itemBuilder: (context, index) {
-                  //   final soc = featuredSocieties[index];
-                  //   return _SocietyLogoCard(
-                  //     label: soc.name,
-                  //     color: soc.color,
-                  //     icon: soc.icon,
-                  //   );
-                  // },
-                  //changing one of the feature socs to be a button that goes to a different page for now
-                  itemBuilder: (context, index) {
-                    final soc = featuredSocieties[index];
-                    if (index == 0) {
-                      return _SocietyLogoCard(
-                        label: soc.name,
-                        color: soc.color,
-                        icon: soc.icon,
-                        UserSocietyPage: const UserSocietyPage(
-                          societyId: 1,
-                          societyName: "Gaming Society",
-                          description:
-                              "A society for gaming enthusiasts to share and learn about the latest in gaming.",
-                        ),
-                      );
-                    }
-                    return _SocietyLogoCard(
-                      label: soc.name,
-                      color: soc.color,
-                      icon: soc.icon,
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // A–Z list header with sort/filter labels
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text(
-                    'All Societies (A–Z)',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        'Sort by',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
+          child: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null
+              ? Center(child: Text('Error: $_error'))
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'UniSoc',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
                       ),
-                      SizedBox(width: 16),
-                      Text(
-                        'Filter by',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Scrollable list of societies A–Z
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: featuredSocieties.length,
-                itemBuilder: (context, index) {
-                  final soc = featuredSocieties[index];
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: soc.color,
-                      child: Icon(soc.icon, color: Colors.white, size: 20),
                     ),
-                    title: Text(soc.name),
-                    subtitle: const Text('Short description here'),
-                    onTap: () {
-                      // TODO: navigate to society detail page
-                    },
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Welcome ${widget.studentName}',
+                      style: const TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search events or societies',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 0,
+                        ),
+                      ),
+                      onChanged: (value) {
+                        // TODO: hook up search logic later
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Featured Societies',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 80,
+                      child: PageView.builder(
+                        controller: _societyPageController,
+                        scrollDirection: Axis.horizontal,
+                        itemCount: featuredSocieties.length,
+                        // itemBuilder: (context, index) {
+                        //   final soc = featuredSocieties[index];
+                        //   return _SocietyLogoCard(
+                        //     label: soc.name,
+                        //     color: soc.color,
+                        //     icon: soc.icon,
+                        //   );
+                        // },
+                        //changing one of the feature socs to be a button that goes to a different page for now
+                        itemBuilder: (context, index) {
+                          final soc = featuredSocieties[index];
+                          if (index == 0) {
+                            return _SocietyLogoCard(
+                              label: soc.name,
+                              color: soc.color,
+                              icon: soc.icon,
+                              UserSocietyPage: const UserSocietyPage(
+                                societyId: 1,
+                                societyName: "Gaming Society",
+                                description:
+                                    "A society for gaming enthusiasts to share and learn about the latest in gaming.",
+                              ),
+                            );
+                          }
+                          return _SocietyLogoCard(
+                            label: soc.name,
+                            color: soc.color,
+                            icon: soc.icon,
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
 
-              // Upcoming events carousel
-              const Text(
-                'Upcoming Events',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 140,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: featuredEvents.length,
-                  itemBuilder: (context, index) {
-                    final event = featuredEvents[index];
-                    return _EventCard(event: event);
-                  },
+              // Box around A–Z section
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                  border: Border.all(color: Colors.grey.shade300),
                 ),
-              ),
-            ],
-          ),
+                child: Column(
+                  children: [
+                    // A–Z list header with sort/filter labels
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text(
+                          'All Societies (A-Z)',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              'Sort by',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Text(
+                              'Filter by',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                          // Scrollable list of societies A–Z
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: featuredSocieties.length,
+                            itemBuilder: (context, index) {
+                              final soc = featuredSocieties[index];
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: soc.color,
+                                  child: Icon(
+                                    soc.icon,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                                title: Text(soc.name),
+                                subtitle: const Text('Short description here'),
+                                onTap: () {
+                                  // TODO: navigate to society detail page
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Upcoming events carousel
+                    const Text(
+                      'Upcoming Events',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 140,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: featuredEvents.length,
+                        itemBuilder: (context, index) {
+                          final event = featuredEvents[index];
+                          return _EventCard(event: event);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
         ),
       ],
     );
