@@ -138,7 +138,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
       showingCategories = true;
     });
   }
-
+// rest of the code is in the build method and widget builders
   @override
   Widget build(BuildContext context) {
     return Scaffold(
