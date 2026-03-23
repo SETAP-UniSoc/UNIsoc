@@ -27,14 +27,13 @@ class _AdminHomepageState extends State<AdminHomepage> {
   bool showingCategories = true;
 
   final List<String> categories = [
-    "All", "Academic", "Cultural", "Sports", "Religious", "Extra-curricular"
+    "All", "Academic", "Cultural & Religious", "Sports", "Extra-curricular"
   ];
 
   final Map<String, Color> categoryColours = {
     "Academic": const Color(0xFF5C6BC0), //indgo
-    "Cultural": const Color(0xFF26A69A), //teal
+    "Cultural & Religious": const Color(0xFF26A69A), //teal
     "Sports": const Color(0xFF7E57C2), //medium purple
-    "Religious": const Color(0xFF8D6E63), //warm brown
     "Extra-curricular": const Color(0xFF42A5F5), //light blue
     "All": const Color(0xFF7B1FA2), //deep purple
   };
