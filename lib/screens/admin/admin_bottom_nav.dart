@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:unisoc/services/api_services.dart';
 import 'admin_hompage.dart';
-import 'admin_events_page.dart';
+import 'admin_Events_page.dart';
 import 'admin_analytics_page.dart';
 
 class AdminBottomNav extends StatelessWidget {
@@ -29,7 +30,11 @@ class AdminBottomNav extends StatelessWidget {
       case 2:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const AdminEventsPage()),
+          MaterialPageRoute(
+            builder: (_) => AdminEventsPage(
+              societyId: ApiService.societyId ?? 1,
+            ),
+          ),
         );
         break;
     }

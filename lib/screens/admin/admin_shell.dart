@@ -16,7 +16,7 @@ class _AdminShellState extends State<AdminShell> {
   final List<Widget> _pages = const [
     AdminAnalyticsPage(),
     AdminHomepage(),
-    AdminEventsPage(),
+    AdminEventsPage(societyId: 1), // Replace 1 with actual society ID
   ];
 
   @override

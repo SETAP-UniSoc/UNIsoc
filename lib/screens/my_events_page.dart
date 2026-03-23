@@ -12,7 +12,7 @@ class MyEventsPage extends StatelessWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
-        children: [
+        children: const [
           EventCard(
             day: '25',
             month: 'FEB',
@@ -66,7 +66,6 @@ class EventCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            // ignore: deprecated_member_use
             color: Colors.grey.withOpacity(0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),

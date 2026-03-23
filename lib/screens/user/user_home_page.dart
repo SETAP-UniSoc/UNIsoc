@@ -182,7 +182,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
                         Text(
-                          'All Societies (A–Z)',
+                          'All Societies (A-Z)',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
