@@ -65,6 +65,11 @@ class _SignupUserPageState extends State<SignupUserPage> {
       return false;
     }
 
+    if (password.length > 20) {
+      _showError("Password must not exceed 20 characters");
+      return false;
+    }
+
     if (!RegExp(r'[A-Z]').hasMatch(password)) {
       _showError("Password must contain one uppercase letter");
       return false;
@@ -91,7 +96,7 @@ class _SignupUserPageState extends State<SignupUserPage> {
     final upnumber = "UP${upnumberController.text.trim()}";
 
     final url =
-        Uri.parse("http://10.128.4.196:8000/api/user/register/");
+        Uri.parse("http://10.128.4.122:8000/api/user/register/");
 
     try {
       final response = await http.post(

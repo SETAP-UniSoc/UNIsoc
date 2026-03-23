@@ -26,7 +26,7 @@ class _AdminSignupScreenState extends State<AdminSignupScreen> {
     final email = emailController.text;
     final password = passwordController.text;
 
-    final url = Uri.parse("http://10.0.2.2:8000/api/admin/signup");
+    final url = Uri.parse("http://10.128.4.1:8000/api/admin/signup");
 
   final response = await http.post(
     url,

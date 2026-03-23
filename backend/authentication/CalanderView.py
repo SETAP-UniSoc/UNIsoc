@@ -7,7 +7,7 @@ from .models import Event, Society
 class EventListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, society_id):  #gets all eventts for socities doesnt include canceled and removed events 
+    def get(self, request, society_id):   #gets all eventts for socities doesnt include canceled and removed events 
         events = Event.objects.filter(
             society_id=society_id
         ).exclude(status='cancelled')
@@ -77,3 +77,30 @@ class EventDetailView(APIView):
         event.save()
 
         return Response({"message": "Event removed"}, status=200)
+
+
+class EventEditView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, event_id):
+        if request.user.role != 'admin':
+            return Response({"error": "Admin only"}, status=403)
+
+        try:
+            event = Event.objects.get(id=event_id)
+        except Event.DoesNotExist:
+            return Response({"error": "Event not found"}, status=404)
+
+        event.title = request.data.get("title", event.title)
+        event.description = request.data.get("description", event.description)
+        event.location = request.data.get("location", event.location)
+        event.start_time = request.data.get("start_time", event.start_time)
+        event.end_time = request.data.get("end_time", event.end_time)
+        event.capacity_limit = request.data.get("capacity_limit", event.capacity_limit)
+        event.save()
+
+        return Response({
+            "id": event.id,
+            "title": event.title,
+            "message": "Event updated successfully"
+        }, status=200)
