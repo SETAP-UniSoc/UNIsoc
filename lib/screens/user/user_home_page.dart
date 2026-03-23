@@ -114,7 +114,12 @@ class _HomeHeaderState extends State<HomeHeader> {
           child: _loading
               ? const Center(child: CircularProgressIndicator())
               : _error != null
-              ? Center(child: Text('Error: $_error'))
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text('Error: $_error', textAlign: TextAlign.center),
+                  ),
+                )
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
