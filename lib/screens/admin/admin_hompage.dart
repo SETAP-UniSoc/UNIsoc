@@ -211,8 +211,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
       ),
     );
   }
-
-  //searchbar code
+//searchbar code important for both admin and user homepages
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
