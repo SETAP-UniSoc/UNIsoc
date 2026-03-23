@@ -17,6 +17,70 @@ class _AdminHomepageState extends State<AdminHomepage> {
   final CarouselSliderController _societyController = CarouselSliderController();
 final CarouselSliderController _eventController = CarouselSliderController();
   String adminName = "John Smith"; // Later from backend
+=======
+  final CarouselSliderController _societyController =
+      CarouselSliderController();
+  final CarouselSliderController _eventController = CarouselSliderController();
+  String adminName = "John Smith"; // Later from backend
+  final CarouselSliderController _societyController =
+      CarouselSliderController();
+  final CarouselSliderController _eventController = CarouselSliderController();
+
+  List societies = [];
+  List events = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  // load societies and events from backend
+  Future<void> loadData() async {
+    await Future.wait([loadSocieties(), loadEvents()]);
+    setState(() => isLoading = false);
+  }
+
+  // fetch all societies
+  Future<void> loadSocieties() async {
+    try {
+      final response = await http.get(
+        Uri.parse("${ApiService.baseUrl}/societies/"),
+        headers: ApiService.headers,
+      );
+      if (response.statusCode == 200) {
+        setState(() => societies = jsonDecode(response.body));
+      }
+    } catch (e) {
+      print("Error loading societies: $e");
+    }
+  }
+
+  // fetch events for admin's society
+  Future<void> loadEvents() async {
+    try {
+      final id = ApiService.societyId;
+      if (id == null) return;
+      final response = await http.get(
+        Uri.parse("${ApiService.baseUrl}/society/$id/events/"),
+        headers: ApiService.headers,
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as List;
+        final now = DateTime.now();
+        // filter out past events
+        setState(() {
+          events = data
+              .where((e) => DateTime.parse(e["start_time"]).isAfter(now))
+              .toList();
+        });
+      }
+    } catch (e) {
+      print("Error loading events: $e");
+    }
+  }
+>>>>>>> b3dbb94 (Accept admin homepage changes)
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +128,6 @@ final CarouselSliderController _eventController = CarouselSliderController();
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
                 ),
               ),
               AdminDropdownMenu(),
@@ -75,15 +138,18 @@ final CarouselSliderController _eventController = CarouselSliderController();
           // shows society name from login instead of hardcoded name
           Text(
             "Welcome $adminName",
+<<<<<<< HEAD
             style: const TextStyle(
               fontSize: 18,
               color: Colors.grey,
             ),
+=======
+            "Welcome — ${ApiService.societyName ?? 'Admin'}",
+            style: const TextStyle(fontSize: 18, color: Colors.grey),
+>>>>>>> b3dbb94 (Accept admin homepage changes)
           ),
 
           const SizedBox(height: 16),
-
-          // Search bar
           TextField(
             decoration: InputDecoration(
               hintText: "Search events or societies",
@@ -225,14 +291,11 @@ final CarouselSliderController _eventController = CarouselSliderController();
 
     return Column(
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              "Top Societies",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
+        const Text(
+          "Top Societies",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: 12),
@@ -333,6 +396,7 @@ final CarouselSliderController _eventController = CarouselSliderController();
 
   // browse soc
 
+<<<<<<< HEAD
  Widget _buildBrowseSocietiesSection() {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -357,6 +421,28 @@ final CarouselSliderController _eventController = CarouselSliderController();
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey,
+=======
+  // all societies A-Z
+  Widget _buildBrowseSocietiesSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row (MATCHES USER PAGE STYLE)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Text(
+                'All Societies (A–Z)',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+              Row(
+                children: [
+                  Text(
+                    'Sort by',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+>>>>>>> b3dbb94 (Accept admin homepage changes)
                   ),
                 ),
                 SizedBox(width: 16),
@@ -366,6 +452,7 @@ final CarouselSliderController _eventController = CarouselSliderController();
                     fontSize: 14,
                     color: Colors.grey,
                   ),
+<<<<<<< HEAD
                 ),
               ],
             ),
@@ -403,118 +490,135 @@ final CarouselSliderController _eventController = CarouselSliderController();
     ),
   );
 }
-
-  Widget _buildEventsSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Upcoming Events",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+=======
+                  Text(
+                    'Sort by',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                  SizedBox(width: 16),
+                  Text(
+                    'Filter by',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          if (isLoading)
-            const Center(child: CircularProgressIndicator())
-          else if (events.isEmpty)
-            const Text(
-              "No upcoming events",
-              style: TextStyle(color: Colors.grey),
-            )
-          else
-            SizedBox(
-              height: 160,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: events.length,
-                itemBuilder: (context, index) {
-                  final event = events[index];
-                  final startTime = DateTime.parse(
-                    event["start_time"],
-                  ).toLocal();
 
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => SocietyProfilePage(
-                            societyId: event["society_id"],
-                            isAdmin: false,
+          const SizedBox(height: 12),
+
+          // Scrollable box (ADMIN ONLY DIFFERENCE)
+          const SizedBox(height: 12),
+          Container(
+            height: 260,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: ListView.builder(
+              itemCount: 10,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.blue,
+                    child: Text(
+                      "${index + 1}",
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  title: Text("Society ${index + 1}"),
+                  subtitle: const Text("Short description here"),
+                  onTap: () {},
+                );
+              },
+            ),
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : societies.isEmpty
+                ? const Center(child: Text("No societies found"))
+                : ListView.builder(
+                    itemCount: societies.length,
+                    itemBuilder: (context, index) {
+                      final soc = societies[index];
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.blue,
+                          child: Text(
+                            soc["name"][0], // first letter of society name
+                            style: const TextStyle(color: Colors.white),
                           ),
                         ),
+                        title: Text(soc["name"]),
+                        subtitle: Text(soc["category"] ?? ""),
+                        trailing: Text(
+                          "${soc["member_count"]} members",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        onTap: () {},
                       );
                     },
-                    child: Container(
-                      width: 200,
-                      margin: const EdgeInsets.only(right: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            event["title"],
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "${startTime.day}/${startTime.month}/${startTime.year}",
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                event["location"] ?? "",
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              if (event["capacity_limit"] != null)
-                                Text(
-                                  "Cap: ${event["capacity_limit"]}",
-                                  style: const TextStyle(
-                                    color: Colors.white60,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+                  ),
+          ),
         ],
       ),
     );
   }
+>>>>>>> b3dbb94 (Accept admin homepage changes)
+
+  // events
+
+  Widget _buildEventsCarousel() {
+    List<String> topEvents = [
+      "Hackathon 2024",
+      "Gaming Tournament",
+      "Art Exhibition",
+    ];
+
+    return Column(
+      children: [
+        const Text(
+          "Events",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        CarouselSlider(
+          carouselController: _eventController,
+          options: CarouselOptions(
+            height: 160,
+            autoPlay: true,
+            autoPlayInterval: const Duration(seconds: 4),
+            enlargeCenterPage: true,
+            viewportFraction: 0.8,
+          ),
+          items: topEvents.map((event) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.deepPurple,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Center(
+                child: Text(
+                  event,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
 }
-<<<<<<< HEAD
 
 // Temporary Blank Page
 class AdminSocietyPage extends StatelessWidget {
