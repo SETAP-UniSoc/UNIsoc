@@ -1,6 +1,4 @@
 from django.urls import path
-
-from UNIsoc.backend.authentication.views import CustomerListView
 from .RegisterView import RegisterView
 from .LoginView import LoginView
 from .AnalyticsView import AnalyticsView
@@ -18,6 +16,11 @@ urlpatterns = [
     path('societies/<int:society_id>/', SocietyDetailView.as_view(), name='society-detail'),
     path('customers/', CustomerListView.as_view(), name='customer-list-create'),
 ]
+
+
+
+
+
 
 
 
