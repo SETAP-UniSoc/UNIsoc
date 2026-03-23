@@ -395,7 +395,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
     final password = passwordController.text;
 
     if (upNumber.isEmpty || password.isEmpty) {
-      _showError("Please enter UP number and password");
+      _showError("Please enter all fields");
       return;
     }
 
