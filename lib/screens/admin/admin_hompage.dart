@@ -31,6 +31,12 @@ class _AdminHomepageState extends State<AdminHomepage> {
   Timer? debounce;
   bool isSearching = false;
 
+  @override
+  void dispose() {
+  debounce?.cancel();
+  super.dispose();
+}
+
   final List<String> categories = [
     "All", "Academic", "Cultural", "Sports", "Religious", "Extra-curricular"
   ];
@@ -143,7 +149,12 @@ class _AdminHomepageState extends State<AdminHomepage> {
             children: [
               _buildHeader(),
               const SizedBox(height: 8),
-              _buildSearchBar(),
+              Column(
+                children: [
+                  _buildSearchBar(),
+                  _buildSearchDropdown(),
+                  ],
+                  ),
               const SizedBox(height: 20),
               _buildTopSocietiesCarousel(),
               const SizedBox(height: 30),
