@@ -20,10 +20,14 @@ from .ChangePasswordView import ChangePasswordView #M added
 =======
 from .SocietyDetailView import SocietyDetailView
 <<<<<<< HEAD
+<<<<<<< HEAD
 from .views import CustomerListView
 >>>>>>> c58e0ce2a04e1a656a1de5f17a638a5d99df0022
 =======
 >>>>>>> 2f9f065 (made chages)
+=======
+from .views import CustomerListCreateView
+>>>>>>> 0ce5e3a (made urls correct)
 
 urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
@@ -40,10 +44,14 @@ urlpatterns = [
 =======
     path('societies/<int:society_id>/', SocietyDetailView.as_view(), name='society-detail'),
 <<<<<<< HEAD
+<<<<<<< HEAD
     path('customers/', CustomerListView.as_view(), name='customer-list-create'),
 >>>>>>> c58e0ce2a04e1a656a1de5f17a638a5d99df0022
 =======
 >>>>>>> 2f9f065 (made chages)
+=======
+    path('customers/', CustomerListCreateView.as_view(), name='customer-list-create'),
+>>>>>>> 0ce5e3a (made urls correct)
 ]
 
 
