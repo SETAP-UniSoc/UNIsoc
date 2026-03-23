@@ -361,6 +361,7 @@
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:unisoc/home_page.dart';
 import 'login_screen.admin.dart';
@@ -394,13 +395,13 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
     final password = passwordController.text;
 
     if (upNumber.isEmpty || password.isEmpty) {
-      _showError("Please enter UP number and password");
+      _showError("Please enter all fields");
       return;
     }
 
     setState(() => isLoading = true);
 
-    final url = Uri.parse("http://10.128.4.196:8000/api/login/");
+    final url = Uri.parse("http://10.128.4.122:8000/api/login/");
 
     try {
       final response = await http
@@ -414,6 +415,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
       print("HTTP Status: ${response.statusCode}, Body: ${response.body}");
 
       if (!mounted) return;
+
 
       if (response.statusCode == 200) {
          final responseData = jsonDecode(response.body);
@@ -454,14 +456,18 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
 
             // UP Number
             TextField(
-              controller: upnumberController,
-              decoration: const InputDecoration(
-                labelText: "UP number",
-                prefixText: "UP",
-                border: UnderlineInputBorder(),
+                controller: upnumberController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(7),
+                ],
+                decoration: const InputDecoration(
+                  labelText: "UP Number",
+                  prefixText: "UP",
+                  border: UnderlineInputBorder(),
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
 
             // Password
             TextField(

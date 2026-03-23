@@ -4,10 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:unisoc/services/api_services.dart';
 import 'package:unisoc/screens/admin/admin_bottom_nav.dart';
-<<<<<<< HEAD
-
-=======
->>>>>>> 495c1ca7b53d19b3599765ed7ff7b13e6dd146ff
 //society profile page used by both users and admins — shows society details and upcoming events. Admins can also edit the description
 class SocietyProfilePage extends StatefulWidget {
   final int societyId;
@@ -91,15 +87,9 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         final data = jsonDecode(response.body) as List;
         final now = DateTime.now();
         setState(() {
-<<<<<<< HEAD
-          events = data
-              .where((e) => DateTime.parse(e["start_time"]).isAfter(now))
-              .toList();
-=======
           events = data.where((e) =>
             DateTime.parse(e["start_time"]).isAfter(now)
           ).toList();
->>>>>>> 495c1ca7b53d19b3599765ed7ff7b13e6dd146ff
         });
       }
     } catch (e) {
@@ -111,13 +101,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   Future<void> checkMembership() async {
     try {
       final response = await http.get(
-<<<<<<< HEAD
-        Uri.parse(
-          "${ApiService.baseUrl}/society/${widget.societyId}/is-member/",
-        ),
-=======
         Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/is-member/"),
->>>>>>> 495c1ca7b53d19b3599765ed7ff7b13e6dd146ff
         headers: ApiService.headers,
       );
       if (response.statusCode == 200) {
@@ -139,15 +123,9 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
       );
       if (response.statusCode == 200) {
         setState(() => isEditing = false);
-<<<<<<< HEAD
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Description updated ✅")));
-=======
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Description updated ✅")),
         );
->>>>>>> 495c1ca7b53d19b3599765ed7ff7b13e6dd146ff
         loadSociety();
       }
     } catch (e) {
@@ -170,17 +148,9 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         setState(() => isMember = !isMember);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-<<<<<<< HEAD
-            content: Text(
-              isMember
-                  ? "Successfully joined society 🎉"
-                  : "Successfully left society",
-            ),
-=======
             content: Text(isMember
                 ? "Successfully joined society 🎉"
                 : "Successfully left society"),
->>>>>>> 495c1ca7b53d19b3599765ed7ff7b13e6dd146ff
           ),
         );
       }
@@ -216,10 +186,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-<<<<<<< HEAD
-=======
 
->>>>>>> 495c1ca7b53d19b3599765ed7ff7b13e6dd146ff
                   // society header card
                   Container(
                     width: double.infinity,
@@ -260,15 +227,10 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                       child: ElevatedButton(
                         onPressed: toggleJoinSociety,
                         style: ElevatedButton.styleFrom(
-<<<<<<< HEAD
-                          backgroundColor: isMember ? Colors.red : Colors.blue,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-=======
                           backgroundColor:
                               isMember ? Colors.red : Colors.blue,
                           padding:
                               const EdgeInsets.symmetric(vertical: 14),
->>>>>>> 495c1ca7b53d19b3599765ed7ff7b13e6dd146ff
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -288,14 +250,10 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                   // about section
                   const Text(
                     "About",
-<<<<<<< HEAD
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-=======
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
->>>>>>> 495c1ca7b53d19b3599765ed7ff7b13e6dd146ff
                   ),
                   const SizedBox(height: 8),
 
@@ -303,29 +261,21 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                       ? TextField(
                           controller: descController,
                           maxLines: 4,
+                          autofocus: true,
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-<<<<<<< HEAD
-                            hintText: "Write a description for your society...",
-=======
                             hintText:
                                 "Write a description for your society...",
->>>>>>> 495c1ca7b53d19b3599765ed7ff7b13e6dd146ff
                           ),
                         )
                       : Text(
                           societyData["description"]?.isNotEmpty == true
                               ? societyData["description"]
                               : widget.isAdmin
-<<<<<<< HEAD
-                              ? "No description yet — tap edit to add one."
-                              : "No description yet.",
-=======
                                   ? "No description yet — tap edit to add one."
                                   : "No description yet.",
->>>>>>> 495c1ca7b53d19b3599765ed7ff7b13e6dd146ff
                           style: const TextStyle(
                             fontSize: 15,
                             color: Colors.black87,
@@ -338,14 +288,10 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                   // upcoming events section
                   const Text(
                     "Upcoming Events",
-<<<<<<< HEAD
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-=======
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
->>>>>>> 495c1ca7b53d19b3599765ed7ff7b13e6dd146ff
                   ),
                   const SizedBox(height: 12),
 
@@ -360,15 +306,9 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                           itemCount: events.length,
                           itemBuilder: (context, index) {
                             final event = events[index];
-<<<<<<< HEAD
-                            final startTime = DateTime.parse(
-                              event["start_time"],
-                            ).toLocal();
-=======
                             final startTime =
                                 DateTime.parse(event["start_time"])
                                     .toLocal();
->>>>>>> 495c1ca7b53d19b3599765ed7ff7b13e6dd146ff
                             return Card(
                               margin: const EdgeInsets.only(bottom: 10),
                               shape: RoundedRectangleBorder(
@@ -404,8 +344,5 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
           : null,
     );
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 495c1ca7b53d19b3599765ed7ff7b13e6dd146ff
+
