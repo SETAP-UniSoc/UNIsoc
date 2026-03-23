@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -25,6 +26,10 @@ class _AdminHomepageState extends State<AdminHomepage> {
   String selectedCategory = "All";
   String sortBy = "A-Z";
   bool showingCategories = true;
+
+  List searchResults = [];
+  Timer? debounce;
+  bool isSearching = false;
 
   final List<String> categories = [
     "All", "Academic", "Cultural", "Sports", "Religious", "Extra-curricular"
@@ -193,26 +198,122 @@ class _AdminHomepageState extends State<AdminHomepage> {
       ),
     );
   }
-
+//searchbar code
   Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: "Search events or societies",
-          prefixIcon: const Icon(Icons.search, color: Color(0xFF9C27B0)),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
-            borderSide: const BorderSide(color: Color(0xFF9C27B0)),
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: TextField(
+      onChanged: (query) {
+        // 🔥 debounce (prevents spam requests)
+        if (debounce?.isActive ?? false) debounce!.cancel();
+
+        debounce = Timer(const Duration(milliseconds: 300), () async {
+          if (query.isEmpty) {
+            setState(() {
+              searchResults = [];
+            });
+            return;
+          }
+
+          setState(() => isSearching = true);
+
+          try {
+            final response = await http.get(
+              Uri.parse("${ApiService.baseUrl}/search?q=$query"),
+              headers: ApiService.headers,
+            );
+
+            if (response.statusCode == 200) {
+              setState(() {
+                searchResults = json.decode(response.body);
+                isSearching = false;
+              });
+            }
+          } catch (e) {
+            print("Search error: $e");
+            setState(() => isSearching = false);
+          }
+        });
+      },
+      decoration: InputDecoration(
+        hintText: "Search events or societies",
+        prefixIcon: const Icon(Icons.search, color: Color(0xFF9C27B0)),
+
+        // 🔥 loading indicator
+        suffixIcon: isSearching
+            ? const Padding(
+                padding: EdgeInsets.all(12),
+                child: SizedBox(
+                  height: 16,
+                  width: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            : null,
+
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
+          borderSide: const BorderSide(color: Color(0xFF9C27B0)),
         ),
-        onChanged: (value) {},
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
       ),
-    );
-  }
+    ),
+  );
+}
+
+  Widget _buildSearchDropdown() {
+  if (searchResults.isEmpty) return const SizedBox();
+
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 6,
+        ),
+      ],
+    ),
+    child: ListView.builder(
+      shrinkWrap: true,
+      itemCount: searchResults.length,
+      itemBuilder: (context, index) {
+        final item = searchResults[index];
+
+        return ListTile(
+          leading: const Icon(Icons.search),
+          title: Text(item["name"] ?? item["title"] ?? ""),
+          subtitle: Text(item["type"] ?? ""),
+
+          onTap: () {
+            if (item["type"] == "society") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SocietyProfilePage(
+                    societyId: item["id"],
+                    isAdmin: false,
+                  ),
+                ),
+              );
+            }
+
+            setState(() {
+              searchResults = [];
+            });
+          },
+        );
+      },
+    ),
+  );
+}
+
+
+
 
   Widget _buildTopSocietiesCarousel() {
     final topSocieties = [...societies]
@@ -334,6 +435,12 @@ class _AdminHomepageState extends State<AdminHomepage> {
       ],
     );
   }
+
+
+
+
+
+
 
   Widget _buildBrowseSocietiesSection() {
     return Padding(
