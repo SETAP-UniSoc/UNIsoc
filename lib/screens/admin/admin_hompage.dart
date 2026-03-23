@@ -14,13 +14,12 @@ class AdminHomepage extends StatefulWidget {
 }
 
 class _AdminHomepageState extends State<AdminHomepage> {
-<<<<<<< HEAD
   final CarouselSliderController _societyController =
       CarouselSliderController();
   final CarouselSliderController _eventController = CarouselSliderController();
   String adminName = "John Smith"; // Later from backend
-=======
-  final CarouselSliderController _societyController = CarouselSliderController();
+  final CarouselSliderController _societyController =
+      CarouselSliderController();
   final CarouselSliderController _eventController = CarouselSliderController();
 
   List societies = [];
@@ -35,10 +34,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
   // load societies and events from backend
   Future<void> loadData() async {
-    await Future.wait([
-      loadSocieties(),
-      loadEvents(),
-    ]);
+    await Future.wait([loadSocieties(), loadEvents()]);
     setState(() => isLoading = false);
   }
 
@@ -71,16 +67,15 @@ class _AdminHomepageState extends State<AdminHomepage> {
         final now = DateTime.now();
         // filter out past events
         setState(() {
-          events = data.where((e) =>
-            DateTime.parse(e["start_time"]).isAfter(now)
-          ).toList();
+          events = data
+              .where((e) => DateTime.parse(e["start_time"]).isAfter(now))
+              .toList();
         });
       }
     } catch (e) {
       print("Error loading events: $e");
     }
   }
->>>>>>> main
 
   @override
   Widget build(BuildContext context) {
@@ -127,11 +122,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
           // shows society name from login instead of hardcoded name
           Text(
-<<<<<<< HEAD
             "Welcome $adminName",
-=======
             "Welcome — ${ApiService.societyName ?? 'Admin'}",
->>>>>>> main
             style: const TextStyle(fontSize: 18, color: Colors.grey),
           ),
 
@@ -155,7 +147,9 @@ class _AdminHomepageState extends State<AdminHomepage> {
   Widget _buildTopSocietiesCarousel() {
     // sort by member count and take top 5
     final topSocieties = [...societies]
-      ..sort((a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0));
+      ..sort(
+        (a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0),
+      );
     final top5 = topSocieties.take(5).toList();
 
     return Column(
@@ -244,22 +238,16 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-<<<<<<< HEAD
   // browse soc
 
-=======
   // all societies A-Z
->>>>>>> main
   Widget _buildBrowseSocietiesSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-<<<<<<< HEAD
           // Header row (MATCHES USER PAGE STYLE)
-=======
->>>>>>> main
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
@@ -269,7 +257,6 @@ class _AdminHomepageState extends State<AdminHomepage> {
               ),
               Row(
                 children: [
-<<<<<<< HEAD
                   Text(
                     'Sort by',
                     style: TextStyle(fontSize: 14, color: Colors.grey),
@@ -279,32 +266,30 @@ class _AdminHomepageState extends State<AdminHomepage> {
                     'Filter by',
                     style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
-=======
-                  Text('Sort by',
-                      style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  Text(
+                    'Sort by',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
                   SizedBox(width: 16),
-                  Text('Filter by',
-                      style: TextStyle(fontSize: 14, color: Colors.grey)),
->>>>>>> main
+                  Text(
+                    'Filter by',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
                 ],
               ),
             ],
           ),
-<<<<<<< HEAD
 
           const SizedBox(height: 12),
 
           // Scrollable box (ADMIN ONLY DIFFERENCE)
-=======
           const SizedBox(height: 12),
->>>>>>> main
           Container(
             height: 260,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.grey.shade300),
             ),
-<<<<<<< HEAD
             child: ListView.builder(
               itemCount: 10,
               itemBuilder: (context, index) {
@@ -322,45 +307,42 @@ class _AdminHomepageState extends State<AdminHomepage> {
                 );
               },
             ),
-=======
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : societies.isEmpty
-                    ? const Center(child: Text("No societies found"))
-                    : ListView.builder(
-                        itemCount: societies.length,
-                        itemBuilder: (context, index) {
-                          final soc = societies[index];
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.blue,
-                              child: Text(
-                                soc["name"][0], // first letter of society name
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                            title: Text(soc["name"]),
-                            subtitle: Text(soc["category"] ?? ""),
-                            trailing: Text(
-                              "${soc["member_count"]} members",
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.grey),
-                            ),
-                            onTap: () {},
-                          );
-                        },
-                      ),
->>>>>>> main
+                ? const Center(child: Text("No societies found"))
+                : ListView.builder(
+                    itemCount: societies.length,
+                    itemBuilder: (context, index) {
+                      final soc = societies[index];
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.blue,
+                          child: Text(
+                            soc["name"][0], // first letter of society name
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        title: Text(soc["name"]),
+                        subtitle: Text(soc["category"] ?? ""),
+                        trailing: Text(
+                          "${soc["member_count"]} members",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        onTap: () {},
+                      );
+                    },
+                  ),
           ),
         ],
       ),
     );
   }
-<<<<<<< HEAD
 
   // events
-=======
->>>>>>> main
 
   // events carousel for admin's society
   Widget _buildEventsCarousel() {
@@ -436,8 +418,4 @@ class AdminSocietyPage extends StatelessWidget {
       body: const Center(child: Text("Blank for now")),
     );
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> main
