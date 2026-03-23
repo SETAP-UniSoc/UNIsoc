@@ -1,10 +1,13 @@
 from django.urls import path
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 from UNIsoc.backend.authentication import CalanderView
 =======
 from UNIsoc.backend.authentication.views import CustomerListView
 >>>>>>> c58e0ce2a04e1a656a1de5f17a638a5d99df0022
+=======
+>>>>>>> 2f9f065 (made chages)
 from .RegisterView import RegisterView
 from .LoginView import LoginView
 from .AnalyticsView import AnalyticsView
@@ -15,8 +18,11 @@ from .SocietyView import SocietyListView, SocietyDetailView, SocietyMembershipCh
 from .ChangePasswordView import ChangePasswordView #M added
 =======
 from .SocietyDetailView import SocietyDetailView
+<<<<<<< HEAD
 from .views import CustomerListView
 >>>>>>> c58e0ce2a04e1a656a1de5f17a638a5d99df0022
+=======
+>>>>>>> 2f9f065 (made chages)
 
 urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
@@ -30,6 +36,10 @@ urlpatterns = [
     path("society/<int:society_id>/", SocietyDetailView.as_view(), name="society-detail"), #M added
     path("society/<int:society_id>/is-member/", SocietyMembershipCheckView.as_view(), name="is-member"), #M added
     path("change-password/", ChangePasswordView.as_view(), name="change-password"), #M added
+=======
+    path('societies/<int:society_id>/', SocietyDetailView.as_view(), name='society-detail'),
+    path('customers/', CustomerListView.as_view(), name='customer-list-create'),
+>>>>>>> c58e0ce2a04e1a656a1de5f17a638a5d99df0022
 ]
 
 
@@ -37,3 +47,8 @@ urlpatterns = [
 
 
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 2f9f065 (made chages)
