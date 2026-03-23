@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:unisoc/services/api_services.dart';
 import 'package:unisoc/screens/admin/admin_bottom_nav.dart';
 
+//society profile page used by both users and admins — shows society details and upcoming events. Admins can also edit the description
 class SocietyProfilePage extends StatefulWidget {
   final int societyId;
   final bool isAdmin;
@@ -88,9 +89,9 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         final data = jsonDecode(response.body) as List;
         final now = DateTime.now();
         setState(() {
-          events = data.where((e) =>
-            DateTime.parse(e["start_time"]).isAfter(now)
-          ).toList();
+          events = data
+              .where((e) => DateTime.parse(e["start_time"]).isAfter(now))
+              .toList();
         });
       }
     } catch (e) {
@@ -102,7 +103,9 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   Future<void> checkMembership() async {
     try {
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/is-member/"),
+        Uri.parse(
+          "${ApiService.baseUrl}/society/${widget.societyId}/is-member/",
+        ),
         headers: ApiService.headers,
       );
       if (response.statusCode == 200) {
@@ -124,9 +127,9 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
       );
       if (response.statusCode == 200) {
         setState(() => isEditing = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Description updated ✅")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Description updated ✅")));
         loadSociety();
       }
     } catch (e) {
@@ -149,9 +152,11 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         setState(() => isMember = !isMember);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isMember
-                ? "Successfully joined society 🎉"
-                : "Successfully left society"),
+            content: Text(
+              isMember
+                  ? "Successfully joined society 🎉"
+                  : "Successfully left society",
+            ),
           ),
         );
       }
@@ -187,7 +192,6 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   // society header card
                   Container(
                     width: double.infinity,
@@ -228,10 +232,8 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                       child: ElevatedButton(
                         onPressed: toggleJoinSociety,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              isMember ? Colors.red : Colors.blue,
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 14),
+                          backgroundColor: isMember ? Colors.red : Colors.blue,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -251,10 +253,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                   // about section
                   const Text(
                     "About",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 8),
 
@@ -266,16 +265,15 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            hintText:
-                                "Write a description for your society...",
+                            hintText: "Write a description for your society...",
                           ),
                         )
                       : Text(
                           societyData["description"]?.isNotEmpty == true
                               ? societyData["description"]
                               : widget.isAdmin
-                                  ? "No description yet — tap edit to add one."
-                                  : "No description yet.",
+                              ? "No description yet — tap edit to add one."
+                              : "No description yet.",
                           style: const TextStyle(
                             fontSize: 15,
                             color: Colors.black87,
@@ -288,10 +286,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                   // upcoming events section
                   const Text(
                     "Upcoming Events",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 12),
 
@@ -306,9 +301,9 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                           itemCount: events.length,
                           itemBuilder: (context, index) {
                             final event = events[index];
-                            final startTime =
-                                DateTime.parse(event["start_time"])
-                                    .toLocal();
+                            final startTime = DateTime.parse(
+                              event["start_time"],
+                            ).toLocal();
                             return Card(
                               margin: const EdgeInsets.only(bottom: 10),
                               shape: RoundedRectangleBorder(
