@@ -2,13 +2,41 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
+from django.contrib.auth.base_user import BaseUserManager
+from django.conf import settings
 
+
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("The Email field must be set")
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
+
+        return self.create_user(email, password, **extra_fields)
 
 class User(AbstractUser):
+    username = None  
+
     ROLE_CHOICES = [
         ('user', 'User'),
         ('admin', 'Admin'),
     ]
+
+    email = models.EmailField(unique=True)
 
     up_number = models.CharField(
         max_length=20,
@@ -22,111 +50,89 @@ class User(AbstractUser):
         choices=ROLE_CHOICES,
         default='user'
     )
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-    
+
+    objects = CustomUserManager()
+
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    # first_name, last_name, email, password
 
     def __str__(self):
-        return self.username
+        return self.email
 
 class Society(models.Model):
     name = models.CharField(max_length=100, unique=True)
     category = models.CharField(max_length=50, blank=True)
     description = models.TextField(blank=True)
 
+    admin = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        limit_choices_to={'role': 'admin'},
+        null=True,
+        blank=True
+    )
+
     is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def member_count(self):
+        return self.membership_set.filter(left_at__isnull=True).count()
+
     def __str__(self):
         return self.name
+    
+# class SocietyAdmin(models.Model):
+#     ROLE_CHOICES = [
+#         ('president', 'President'),
+#         ('vice_president', 'Vice President'),
+#         ('treasurer', 'Treasurer'),
+#         ('moderator', 'Moderator'),
+#     ]
 
-class SocietyAdmin(models.Model):
-    ROLE_CHOICES = [
-        ('president', 'President'),
-        ('vice_president', 'Vice President'),
-        ('treasurer', 'Treasurer'),
-        ('moderator', 'Moderator'),
-    ]
+#     society = models.ForeignKey(
+#         Society,
+#         on_delete=models.CASCADE,
+#         related_name='admins'
+#     )
 
-    society = models.ForeignKey(
-        Society,
-        on_delete=models.CASCADE,
-        related_name='admins'
-    )
+#     user = models.ForeignKey(
+#         settings.AUTH_USER_MODEL,
+#         on_delete=models.CASCADE,
+#         related_name='admin_societies'
+#     )
 
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='admin_societies'
-    )
+    # class Meta:
+    #     unique_together = ('society', 'user')
 
-    role = models.CharField(max_length=50, choices=ROLE_CHOICES)
+    # def __str__(self):
+    #     return f"{self.user.email} - {self.role}"
 
-    class Meta:
-        unique_together = ('society', 'user')
-
-    def __str__(self):
-        return f"{self.user.username} - {self.role}"
-
-
-class MembershipRequest(models.Model):
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
-    ]
-
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE
-    )
-
-    society = models.ForeignKey(
-        Society,
-        on_delete=models.CASCADE
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='pending'
-    )
-
-    request_timestamp = models.DateTimeField(auto_now_add=True)
-    approval_timestamp = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        unique_together = ('user', 'society')
-
-    def __str__(self):
-        return f"{self.user} -> {self.society} ({self.status})"
 
 class Membership(models.Model):
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='memberships'
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
     )
-
     society = models.ForeignKey(
         Society,
-        on_delete=models.CASCADE,
-        related_name='members'
+        on_delete=models.CASCADE
     )
 
     joined_at = models.DateTimeField(auto_now_add=True)
+    left_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = ('user', 'society')
 
     def __str__(self):
-        return f"{self.user} in {self.society}"
+        return f"{self.user} -> {self.society}"
 
 class Event(models.Model):
     STATUS_CHOICES = [
@@ -223,6 +229,7 @@ class NotificationPreference(models.Model):
     )
 
     notify = models.BooleanField(default=True)
+    event_notifications = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ('user', 'society')
@@ -264,6 +271,14 @@ class AuditLog(models.Model):
         return self.action
 
 
+class EventAttendance(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    joined_at = models.DateTimeField(auto_now_add=True)
+    left_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ("user", "event")
 
 #run in terminal 
 #python manage.py makemigrations

@@ -19,7 +19,6 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
   final TextEditingController emailController = TextEditingController();
 
   void resetPassword() {
-    print(emailController.text);
   }
 
 //email input field only with a verify button

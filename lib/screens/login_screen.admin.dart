@@ -188,6 +188,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:unisoc/screens/admin/admin_hompage.dart';
+//import 'package:unisoc/screens/admin/admin_hompage.dart';
 import 'forgotten_password_screen.dart';
 import 'signup_user_page.dart';
 import 'package:unisoc/services/api_services.dart'; 
@@ -211,7 +212,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
 
     final name = nameController.text.trim();
     final email = emailController.text.trim();
-    final password = passwordController.text.trim();
+    final password = passwordController.text;
 
     // ✅ Basic frontend validation only
     if (email.isEmpty || password.isEmpty) {
@@ -264,7 +265,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     ),
   );
 }else if (response.statusCode == 401) {
-        // ✅ Generic message (backend unchanged)
+        // backend is unchanged
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Invalid email or password"),

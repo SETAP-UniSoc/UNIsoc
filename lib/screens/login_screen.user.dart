@@ -83,7 +83,6 @@
 //   }
 // }
 
- 
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
@@ -135,7 +134,6 @@
 
 //             const SizedBox(height: 10),
 
-            
 //             isLoading
 //                 ? const CircularProgressIndicator()
 //                 : ElevatedButton(
@@ -174,19 +172,6 @@
 //     );
 //   }
 // }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import 'dart:convert';
 // import 'package:flutter/material.dart';
@@ -354,16 +339,11 @@
 //   }
 // }
 
-
-
-
-
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:unisoc/screens/home_page.dart';
+import 'package:unisoc/screens/user/user_home_page.dart';
 import 'login_screen.admin.dart';
 import 'forgotten_password_screen.dart';
 import 'signup_user_page.dart';
@@ -385,9 +365,9 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
   // Minimal error display
   void _showError(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> loginUser() async {
@@ -418,8 +398,8 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
 
 
       if (response.statusCode == 200) {
-         final responseData = jsonDecode(response.body);
-         ApiService.authToken = responseData["token"];
+        final responseData = jsonDecode(response.body);
+        ApiService.authToken = responseData["token"];
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
