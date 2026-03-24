@@ -29,7 +29,6 @@ class _AdminShellState extends State<AdminShell> {
           PopupMenuButton<String>(
             onSelected: (value) {
               if (value == "settings") {
-                // TODO: Navigate to settings page
               } else if (value == "logout") {
                 Navigator.pop(context); // or navigate to login
               }

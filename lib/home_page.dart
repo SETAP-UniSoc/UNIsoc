@@ -76,7 +76,7 @@ class HomeHeader extends StatelessWidget {
                   ),
                 ),
                 onChanged: (value) {
-                  // TODO: hook up search logic later
+                  
                 },
               ),
               const SizedBox(height: 24),
@@ -163,7 +163,7 @@ class HomeHeader extends StatelessWidget {
                     title: Text(soc.name),
                     subtitle: const Text('Short description here'),
                     onTap: () {
-                      // TODO: navigate to society detail page
+                    
                     },
                   );
                 },
