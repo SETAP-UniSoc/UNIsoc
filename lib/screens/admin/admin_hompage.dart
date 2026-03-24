@@ -16,8 +16,7 @@ class AdminHomepage extends StatefulWidget {
 }
 
 class _AdminHomepageState extends State<AdminHomepage> {
-  final CarouselSliderController _societyController =
-      CarouselSliderController();
+  final CarouselSliderController _societyController = CarouselSliderController();
 
   List societies = [];
   List filteredSocieties = [];
@@ -46,6 +45,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
     "Cultural ": const Color(0xFF26A69A), //teal
     "Sports": const Color(0xFF7E57C2), //medium purple
+    "Religious": const Color(0xFF8D6E63), //warm brown
     "Extra-curricular": const Color(0xFF42A5F5), //light blue
     "All": const Color(0xFF7B1FA2), //deep purple     
     };
@@ -67,7 +67,10 @@ class _AdminHomepageState extends State<AdminHomepage> {
   }
 
   Future<void> loadData() async {
-    await Future.wait([loadSocieties(), loadEvents()]);
+    await Future.wait([
+      loadSocieties(),
+      loadEvents(),
+    ]);
     setState(() => isLoading = false);
   }
 
@@ -117,13 +120,9 @@ class _AdminHomepageState extends State<AdminHomepage> {
     } else if (sortBy == "Z-A") {
       result.sort((a, b) => b["name"].compareTo(a["name"]));
     } else if (sortBy == "Most Members") {
-      result.sort(
-        (a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0),
-      );
+      result.sort((a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0));
     } else if (sortBy == "Least Members") {
-      result.sort(
-        (a, b) => (a["member_count"] ?? 0).compareTo(b["member_count"] ?? 0),
-      );
+      result.sort((a, b) => (a["member_count"] ?? 0).compareTo(b["member_count"] ?? 0));
     }
 
     setState(() {
@@ -202,7 +201,10 @@ class _AdminHomepageState extends State<AdminHomepage> {
           const SizedBox(height: 8),
           Text(
             "Welcome — ${ApiService.societyName ?? 'Admin'}",
-            style: const TextStyle(fontSize: 18, color: Colors.white70),
+            style: const TextStyle(
+              fontSize: 18,
+              color: Colors.white70,
+            ),
           ),
         ],
       ),
@@ -210,116 +212,124 @@ class _AdminHomepageState extends State<AdminHomepage> {
   }
 //searchbar code important for both admin and user homepages
   Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: TextField(
-        onChanged: (query) {
-          // 🔥 debounce (prevents spam requests)
-          if (debounce?.isActive ?? false) debounce!.cancel();
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: TextField(
+      onChanged: (query) {
+        // 🔥 debounce (prevents spam requests)
+        if (debounce?.isActive ?? false) debounce!.cancel();
 
-          debounce = Timer(const Duration(milliseconds: 300), () async {
-            if (query.isEmpty) {
+        debounce = Timer(const Duration(milliseconds: 300), () async {
+          if (query.isEmpty) {
+            setState(() {
+              searchResults = [];
+            });
+            return;
+          }
+
+          setState(() => isSearching = true);
+
+          try {
+            final response = await http.get(
+              Uri.parse("${ApiService.baseUrl}/search?q=$query"),
+              headers: ApiService.headers,
+            );
+
+            if (response.statusCode == 200) {
               setState(() {
-                searchResults = [];
+                searchResults = json.decode(response.body);
+                isSearching = false;
               });
-              return;
             }
+          } catch (e) {
+            print("Search error: $e");
+            setState(() => isSearching = false);
+          }
+        });
+      },
+      decoration: InputDecoration(
+        hintText: "Search events or societies",
+        prefixIcon: const Icon(Icons.search, color: Color(0xFF9C27B0)),
 
-            setState(() => isSearching = true);
+        // 🔥 loading indicator
+        suffixIcon: isSearching
+            ? const Padding(
+                padding: EdgeInsets.all(12),
+                child: SizedBox(
+                  height: 16,
+                  width: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            : null,
 
-            try {
-              final response = await http.get(
-                Uri.parse("${ApiService.baseUrl}/search?q=$query"),
-                headers: ApiService.headers,
-              );
-
-              if (response.statusCode == 200) {
-                setState(() {
-                  searchResults = json.decode(response.body);
-                  isSearching = false;
-                });
-              }
-            } catch (e) {
-              print("Search error: $e");
-              setState(() => isSearching = false);
-            }
-          });
-        },
-        decoration: InputDecoration(
-          hintText: "Search events or societies",
-          prefixIcon: const Icon(Icons.search, color: Color(0xFF9C27B0)),
-
-          // 🔥 loading indicator
-          suffixIcon: isSearching
-              ? const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: SizedBox(
-                    height: 16,
-                    width: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                )
-              : null,
-
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
-            borderSide: const BorderSide(color: Color(0xFF9C27B0)),
-          ),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
+          borderSide: const BorderSide(color: Color(0xFF9C27B0)),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSearchDropdown() {
-    if (searchResults.isEmpty) return const SizedBox();
+  if (searchResults.isEmpty) return const SizedBox();
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
-      ),
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: searchResults.length,
-        itemBuilder: (context, index) {
-          final item = searchResults[index];
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 6,
+        ),
+      ],
+    ),
+    child: ListView.builder(
+      shrinkWrap: true,
+      itemCount: searchResults.length,
+      itemBuilder: (context, index) {
+        final item = searchResults[index];
 
-          return ListTile(
-            leading: const Icon(Icons.search),
-            title: Text(item["name"] ?? item["title"] ?? ""),
-            subtitle: Text(item["type"] ?? ""),
+        return ListTile(
+          leading: const Icon(Icons.search),
+          title: Text(item["name"] ?? item["title"] ?? ""),
+          subtitle: Text(item["type"] ?? ""),
 
-            onTap: () {
-              if (item["type"] == "society") {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => SocietyProfilePage(
-                      societyId: item["id"],
-                      isAdmin: false,
-                    ),
+          onTap: () {
+            if (item["type"] == "society") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SocietyProfilePage(
+                    societyId: item["id"],
+                    isAdmin: false,
                   ),
-                );
-              }
+                ),
+              );
+            }
 
-              setState(() {
-                searchResults = [];
-              });
-            },
-          );
-        },
-      ),
-    );
-  }
+            setState(() {
+              searchResults = [];
+            });
+          },
+        );
+      },
+    ),
+  );
+}
+
+
+
 
   Widget _buildTopSocietiesCarousel() {
     final topSocieties = [...societies]
-      ..sort(
-        (a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0),
-      );
+      ..sort((a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0));
     final top5 = topSocieties.take(5).toList();
 
     return Column(
@@ -355,8 +365,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
                 items: top5.asMap().entries.map((entry) {
                   final index = entry.key;
                   final society = entry.value;
-                  final colour =
-                      carouselColours[index % carouselColours.length];
+                  final colour = carouselColours[index % carouselColours.length];
 
                   return GestureDetector(
                     onTap: () {
@@ -439,6 +448,12 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
+
+
+
+
+
+
   Widget _buildBrowseSocietiesSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -457,14 +472,11 @@ class _AdminHomepageState extends State<AdminHomepage> {
                   PopupMenuButton<String>(
                     child: const Row(
                       children: [
-                        Text(
-                          "Sort by",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF9C27B0),
-                          ),
-                        ),
-                        Icon(Icons.arrow_drop_down, color: Color(0xFF9C27B0)),
+                        Text("Sort by",
+                            style: TextStyle(
+                                fontSize: 14, color: Color(0xFF9C27B0))),
+                        Icon(Icons.arrow_drop_down,
+                            color: Color(0xFF9C27B0)),
                       ],
                     ),
                     onSelected: (value) {
@@ -475,27 +487,22 @@ class _AdminHomepageState extends State<AdminHomepage> {
                       PopupMenuItem(value: "A-Z", child: Text("A-Z")),
                       PopupMenuItem(value: "Z-A", child: Text("Z-A")),
                       PopupMenuItem(
-                        value: "Most Members",
-                        child: Text("Most Members"),
-                      ),
+                          value: "Most Members",
+                          child: Text("Most Members")),
                       PopupMenuItem(
-                        value: "Least Members",
-                        child: Text("Least Members"),
-                      ),
+                          value: "Least Members",
+                          child: Text("Least Members")),
                     ],
                   ),
                   const SizedBox(width: 8),
                   PopupMenuButton<String>(
                     child: const Row(
                       children: [
-                        Text(
-                          "Filter by",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF9C27B0),
-                          ),
-                        ),
-                        Icon(Icons.arrow_drop_down, color: Color(0xFF9C27B0)),
+                        Text("Filter by",
+                            style: TextStyle(
+                                fontSize: 14, color: Color(0xFF9C27B0))),
+                        Icon(Icons.arrow_drop_down,
+                            color: Color(0xFF9C27B0)),
                       ],
                     ),
                     onSelected: (value) {
@@ -503,9 +510,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
                       applyFilters();
                     },
                     itemBuilder: (_) => categories
-                        .map(
-                          (cat) => PopupMenuItem(value: cat, child: Text(cat)),
-                        )
+                        .map((cat) =>
+                            PopupMenuItem(value: cat, child: Text(cat)))
                         .toList(),
                   ),
                 ],
@@ -518,7 +524,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
           if (!showingCategories)
             TextButton.icon(
               onPressed: resetToCategories,
-              icon: const Icon(Icons.arrow_back, color: Color(0xFF9C27B0)),
+              icon: const Icon(Icons.arrow_back,
+                  color: Color(0xFF9C27B0)),
               label: const Text(
                 "Back to Categories",
                 style: TextStyle(color: Color(0xFF9C27B0)),
@@ -535,8 +542,11 @@ class _AdminHomepageState extends State<AdminHomepage> {
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
               childAspectRatio: 1.5,
-              children: categories.where((c) => c != "All").map((category) {
-                final colour = categoryColours[category] ?? Colors.purple;
+              children: categories
+                  .where((c) => c != "All")
+                  .map((category) {
+                final colour =
+                    categoryColours[category] ?? Colors.purple;
                 final count = societies
                     .where((s) => s["category"] == category)
                     .length;
@@ -561,7 +571,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           category,
@@ -624,12 +635,14 @@ class _AdminHomepageState extends State<AdminHomepage> {
                     ),
                     title: Text(
                       soc["name"],
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(soc["category"] ?? ""),
                     trailing: Text(
                       "${soc["member_count"]} members",
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      style: const TextStyle(
+                          fontSize: 12, color: Colors.grey),
                     ),
                     onTap: () {
                       Navigator.push(
@@ -677,9 +690,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
                 itemCount: events.length,
                 itemBuilder: (context, index) {
                   final event = events[index];
-                  final startTime = DateTime.parse(
-                    event["start_time"],
-                  ).toLocal();
+                  final startTime =
+                      DateTime.parse(event["start_time"]).toLocal();
 
                   return GestureDetector(
                     onTap: () {
@@ -699,7 +711,10 @@ class _AdminHomepageState extends State<AdminHomepage> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)],
+                          colors: [
+                            Color(0xFF6A1B9A),
+                            Color(0xFF4A148C)
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -707,7 +722,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             event["title"],
@@ -720,7 +736,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
                             children: [
                               Text(
                                 "${startTime.day}/${startTime.month}/${startTime.year}",
