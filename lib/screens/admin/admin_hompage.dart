@@ -110,6 +110,7 @@ final CarouselSliderController _eventController = CarouselSliderController();
       }
     } catch (e) {
       print("Error loading events: $e");
+      setState(() => events = []);
     }
   }
 
