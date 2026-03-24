@@ -28,20 +28,23 @@ class _AdminSignupScreenState extends State<AdminSignupScreen> {
 
     final url = Uri.parse("http://10.0.2.2:8000/api/admin/signup");
 
-  final response = await http.post(
-    url,
-    headers: {"Content-Type": "application/json", "Accept": "application/json"},
-    body: jsonEncode({"name": username, "email": email, "password": password}),
-  );
-  
-    print("Response Status: ${response.statusCode}");
-    print("Response Body: ${response.body}");
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json", "Accept": "application/json"},
+      body: jsonEncode({"name": username, "email": email, "password": password}),
+    );
 
-
-    print(usernameController.text);
-    print(emailController.text);
-    print(passwordController.text);
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Signup successful!")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Signup failed: ${response.statusCode}")),
+      );
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {

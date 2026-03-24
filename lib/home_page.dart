@@ -106,7 +106,7 @@ class HomeHeader extends StatelessWidget {
                         label: soc.name,
                         color: soc.color,
                         icon: soc.icon,
-                        UserSocietyPage: const UserSocietyPage(
+                        userSocietyPage: const UserSocietyPage(
                           societyId: 1,
                           societyName: "Gaming Society",
                           description: "A society for gaming enthusiasts to share and learn about the latest in gaming.",
@@ -199,24 +199,24 @@ class _SocietyLogoCard extends StatelessWidget {
   final String label;
   final Color color;
   final IconData icon;
-  final Widget? UserSocietyPage;
+  final Widget? userSocietyPage;
 
   const _SocietyLogoCard({
     required this.label,
     required this.color,
     required this.icon,
-    this.UserSocietyPage,
+    this.userSocietyPage,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: UserSocietyPage == null
+      onTap: userSocietyPage == null
           ? null
           : () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => UserSocietyPage!),
+                MaterialPageRoute(builder: (_) => userSocietyPage!),
               );
             },
       child: Container(

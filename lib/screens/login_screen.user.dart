@@ -411,8 +411,6 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
           )
           .timeout(const Duration(seconds: 10));
 
-      print("HTTP Status: ${response.statusCode}, Body: ${response.body}");
-
       if (!mounted) return;
 
       if (response.statusCode == 200) {
@@ -431,7 +429,6 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
       }
     } catch (e) {
       _showError("Network or server error");
-      print("Error during login: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }

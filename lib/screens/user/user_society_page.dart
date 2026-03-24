@@ -82,31 +82,37 @@ class _UserSocietyPageState extends State<UserSocietyPage> {
         joinedSociety = true;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Successfully joined society 🎉"),
           duration: Duration(seconds: 2),
         ),
-      );
+        );
+      }
     } 
     else if (response.statusCode == 200) {
       setState(() {
         joinedSociety = false;
       });
 
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Successfully left society"),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  } catch (e) {
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Successfully left society"),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text("Network error: $e"),
         ),
       );
     }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Network error: $e"),
-      ),
-    );
   }
 }
 
