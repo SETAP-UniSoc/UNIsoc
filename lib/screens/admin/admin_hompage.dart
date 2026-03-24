@@ -77,9 +77,12 @@ class _AdminHomepageState extends State<AdminHomepage> {
   Future<void> loadSocieties() async {
     try {
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/societies/"),
+        Uri.parse("${ApiService.baseUrl}/api/societies/"),
         headers: ApiService.headers,
       );
+      print("SOC RESPONESE: ${response.statusCode}");
+      print("SOC BODY: ${response.body}");
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as List;
         setState(() {
@@ -89,13 +92,13 @@ class _AdminHomepageState extends State<AdminHomepage> {
       }
     } catch (e) {
       print("Error loading societies: $e");
-    }
+    }print("SOC DATA: $societies");
   }
 
   Future<void> loadEvents() async {
     try {
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/events/"),
+        Uri.parse("${ApiService.baseUrl}/api/events/"),
         headers: ApiService.headers,
       );
       if (response.statusCode == 200) {
@@ -105,7 +108,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
     } catch (e) {
       print("Error loading events: $e");
       setState(() => events = []);
-    }
+    } print("societies legnth: ${societies.length}");
   }
 
   void applyFilters() {
