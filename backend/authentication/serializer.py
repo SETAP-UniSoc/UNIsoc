@@ -8,11 +8,8 @@ class UserSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SocietySerializer(serializers.ModelSerializer):
-    member_count = serializers.SerializerMethodField()
+    admin_email = serializers.EmailField(source='admin.email', read_only=True)
 
     class Meta:
         model = Society
-        fields = '__all__'
-
-    def get_member_count(self, obj):
-        return obj.member_count
+        fields = ['id', 'name', 'category', 'description', 'admin_email']
