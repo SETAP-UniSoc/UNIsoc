@@ -20,6 +20,7 @@ def seed():
             defaults={
                 "category": soc["category"],
                 "description": f"{soc['name']} Society"
+                
             }
         )
 
