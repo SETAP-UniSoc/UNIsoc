@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .models import Society, User
+from .models import Society
 
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,8 +8,11 @@ class CustomerSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SocietySerializer(serializers.ModelSerializer):
-    admin_email = serializers.EmailField(source='admin.email', read_only=True)
+    member_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Society
-        fields = ['id', 'name', 'category', 'description', 'admin_email']
+        fields = '__all__'
+
+    def get_member_count(self, obj):
+        return obj.member_count
