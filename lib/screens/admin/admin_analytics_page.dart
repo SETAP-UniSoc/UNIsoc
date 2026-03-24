@@ -235,8 +235,10 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
                 show: true,
                 gradient: LinearGradient(
                   colors: [
-                    Colors.purple.withOpacity(0.4),
-                    Colors.purple.withOpacity(0.05),
+                    Colors.purple
+                        .withOpacity(0.4),
+                    Colors.purple
+                        .withOpacity(0.05),
                   ],
                 ),
               ),
