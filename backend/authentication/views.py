@@ -1,13 +1,13 @@
 from rest_framework import generics
 from .models import User
 from .models import Society
-from .serializer import CustomerSerializer
+from .serializer import UserSerializer
 from .serializer import SocietySerializer
 
 
 
-class CustomerListView(generics.ListAPIView):
-    serializer_class = CustomerSerializer
+class UserListView(generics.ListAPIView):
+    serializer_class = UserSerializer
 
     def get_queryset(self):
         queryset = User.objects.all().order_by('name')
