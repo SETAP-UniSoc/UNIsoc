@@ -1,6 +1,9 @@
 from rest_framework import generics
 from .models import User
+from .models import Society
 from .serializer import UserSerializer
+from .serializer import SocietySerializer
+
 
 
 class UserListView(generics.ListAPIView):
@@ -19,4 +22,9 @@ class UserListView(generics.ListAPIView):
             queryset = queryset.filter(name__istartswith=letter)
 
         return queryset
+    
+class SocietyListView(generics.ListAPIView):
+    queryset = Society.objects.all().order_by('name')
+    serializer_class = SocietySerializer
+
     
