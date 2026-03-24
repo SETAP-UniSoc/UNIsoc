@@ -93,7 +93,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
       }
     } catch (e) {
       print("Error loading societies: $e");
-    }
+    }print("SOC DATA: $societies");
   }
 
   Future<void> loadEvents() async {
