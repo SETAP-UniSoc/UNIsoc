@@ -1,6 +1,7 @@
-from authentication.models import Society
+from authentication.models import Society, User
 
 def seed():
+    admin = User.objects.filter(role='admin').first()
     societies = [
         {"name": "Football", "category": "Sports"},
         {"name": "Christianity", "category": "Religious"},
@@ -19,7 +20,8 @@ def seed():
             name=soc["name"],
             defaults={
                 "category": soc["category"],
-                "description": f"{soc['name']} Society"
+                "description": f"{soc['name']} Society",
+                "admin": admin  
             }
         )
 
