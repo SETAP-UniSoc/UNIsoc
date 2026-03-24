@@ -1,6 +1,7 @@
-from authentication.models import Society
+from authentication.models import Society, User
 
 def seed():
+    admin = User.objects.filter(role='admin').first()
     societies = [
         {"name": "Football", "category": "Sports"},
         {"name": "Christianity", "category": "Religious"},
@@ -15,13 +16,15 @@ def seed():
     ]
 
     for soc in societies:
+        defaults = {
+            "category": soc["category"],
+            "description": f"{soc['name']} Society",
+        }
+        if admin:
+            defaults["admin"] = admin
         Society.objects.get_or_create(
             name=soc["name"],
-            defaults={
-                "category": soc["category"],
-                "description": f"{soc['name']} Society"
-                
-            }
+            defaults=defaults
         )
 
     print("Societies seeded successfully.")
