@@ -49,7 +49,6 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
                 );
                 break;
               case _MenuAction.logout:
-                // TODO: implement logout
                 break;
             }
           },
@@ -125,8 +124,6 @@ class HomeHeader extends StatelessWidget {
                   ),
                 ),
                 onChanged: (value) {
-                  // TODO: hook up search logic later
-                  // print(value);
                 },
               ),
             ],
