@@ -7,7 +7,7 @@ import 'package:unisoc/services/api_services.dart';
 import 'package:unisoc/screens/society_profile_page.dart';
 import 'admin_bottom_nav.dart';
 import 'admin_dropdown_menu.dart';
-
+//admin hompage with a carousel of top societies, a section to browse societies by category and a section for upcoming events. Also includes a search bar that searches both events and societies and shows results in a dropdown as the user types. Admin can also filter and sort societies in the browse section. This is the default page when admin logs in
 class AdminHomepage extends StatefulWidget {
   const AdminHomepage({super.key});
 
@@ -32,21 +32,23 @@ class _AdminHomepageState extends State<AdminHomepage> {
   Timer? debounce;
   bool isSearching = false;
 
+  @override
+  void dispose() {
+  debounce?.cancel();
+  super.dispose();
+}
+
   final List<String> categories = [
-    "All",
-    "Academic",
-    "Cultural & Religious",
-    "Sports",
-    "Extra-curricular",
-  ];
+    "All", "Academic", "Cultural", "Sports", "Religious", "Extra-curricular" ]; // list of catergies 
 
   final Map<String, Color> categoryColours = {
     "Academic": const Color(0xFF5C6BC0), //indgo
-    "Cultural & Religious": const Color(0xFF26A69A), //teal
+
+    "Cultural ": const Color(0xFF26A69A), //teal
     "Sports": const Color(0xFF7E57C2), //medium purple
     "Extra-curricular": const Color(0xFF42A5F5), //light blue
-    "All": const Color(0xFF7B1FA2), //deep purple
-  };
+    "All": const Color(0xFF7B1FA2), //deep purple     
+    };
 
   final List<Color> carouselColours = [
     const Color(0xFF7B1FA2), //deep purple
@@ -99,6 +101,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
       }
     } catch (e) {
       print("Error loading events: $e");
+      setState(() => events = []);
     }
   }
 
@@ -137,7 +140,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
       showingCategories = true;
     });
   }
-
+// rest of the code is in the build method and widget builders
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -148,7 +151,12 @@ class _AdminHomepageState extends State<AdminHomepage> {
             children: [
               _buildHeader(),
               const SizedBox(height: 8),
-              _buildSearchBar(),
+              Column(
+                children: [
+                  _buildSearchBar(),
+                  _buildSearchDropdown(),
+                  ],
+                  ),
               const SizedBox(height: 20),
               _buildTopSocietiesCarousel(),
               const SizedBox(height: 30),
@@ -200,8 +208,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
       ),
     );
   }
-
-  //searchbar code
+//searchbar code important for both admin and user homepages
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
