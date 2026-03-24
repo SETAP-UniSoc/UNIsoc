@@ -81,29 +81,33 @@ class Society(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def member_count(self):
+        return self.membership_set.filter(left_at__isnull=True).count()
+
     def __str__(self):
         return self.name
 
     
-class SocietyAdmin(models.Model):
-    ROLE_CHOICES = [
-        ('president', 'President'),
-        ('vice_president', 'Vice President'),
-        ('treasurer', 'Treasurer'),
-        ('moderator', 'Moderator'),
-    ]
+# class SocietyAdmin(models.Model):
+#     ROLE_CHOICES = [
+#         ('president', 'President'),
+#         ('vice_president', 'Vice President'),
+#         ('treasurer', 'Treasurer'),
+#         ('moderator', 'Moderator'),
+#     ]
 
-    society = models.ForeignKey(
-        Society,
-        on_delete=models.CASCADE,
-        related_name='admins'
-    )
+#     society = models.ForeignKey(
+#         Society,
+#         on_delete=models.CASCADE,
+#         related_name='admins'
+#     )
 
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='admin_societies'
-    )
+#     user = models.ForeignKey(
+#         settings.AUTH_USER_MODEL,
+#         on_delete=models.CASCADE,
+#         related_name='admin_societies'
+#     )
 
     class Meta:
         unique_together = ('society', 'user')
