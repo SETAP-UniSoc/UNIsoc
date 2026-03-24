@@ -9,7 +9,9 @@ class UserSerializer(serializers.ModelSerializer):
 
 class SocietySerializer(serializers.ModelSerializer):
     admin_email = serializers.EmailField(source='admin.email', read_only=True)
-
+    member_count = serializers.IntegerField(source='members.count', read_only=True)
+    
     class Meta:
         model = Society
-        fields = ['id', 'name', 'category', 'description', 'admin_email']
+        fields = ['id', 'name', 'category', 'description', 'admin_email', 'member_count']
+
