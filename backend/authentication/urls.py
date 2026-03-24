@@ -19,7 +19,11 @@ from .SocietyView import SocietyListView, SocietyDetailView, SocietyMembershipCh
 from .ChangePasswordView import ChangePasswordView #M added
 =======
 from .SocietyDetailView import SocietyDetailView
+<<<<<<< HEAD
 from .views import CustomerListCreateView
+=======
+from .views import CustomerListView, SocietyListView
+>>>>>>> 62d4619 (made chnages so url and added path to import socs)
 
 urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
@@ -35,7 +39,12 @@ urlpatterns = [
     path("change-password/", ChangePasswordView.as_view(), name="change-password"), #M added
 =======
     path('societies/<int:society_id>/', SocietyDetailView.as_view(), name='society-detail'),
+<<<<<<< HEAD
     path('customers/', CustomerListCreateView.as_view(), name='customer-list-create'),
+=======
+    path('customers/', CustomerListView.as_view(), name='customer-list-create'),
+    path('societies/', SocietyListView.as_view(), name='society-list-create'),
+>>>>>>> 62d4619 (made chnages so url and added path to import socs)
 ]
 
 
@@ -47,4 +56,8 @@ urlpatterns = [
 =======
 
 
+<<<<<<< HEAD
 >>>>>>> 2f9f065 (made chages)
+=======
+
+>>>>>>> 62d4619 (made chnages so url and added path to import socs)
