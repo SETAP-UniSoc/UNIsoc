@@ -226,6 +226,7 @@ class NotificationPreference(models.Model):
     )
 
     notify = models.BooleanField(default=True)
+    event_notifications = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ('user', 'society')
