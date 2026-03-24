@@ -16,11 +16,6 @@ class AdminHomepage extends StatefulWidget {
 }
 
 class _AdminHomepageState extends State<AdminHomepage> {
-<<<<<<< HEAD
-  final CarouselSliderController _societyController = CarouselSliderController();
-final CarouselSliderController _eventController = CarouselSliderController();
-  String adminName = "John Smith"; // Later from backend
-=======
   final CarouselSliderController _societyController =
       CarouselSliderController();
 
@@ -51,6 +46,7 @@ final CarouselSliderController _eventController = CarouselSliderController();
     "Academic": const Color(0xFF5C6BC0), //indgo
     "Cultural": const Color(0xFF26A69A), //teal
     "Sports": const Color(0xFF7E57C2), //medium purple
+    "Religious": const Color(0xFF8D6E63), //warm brown
     "Extra-curricular": const Color(0xFF42A5F5), //light blue
     "All": const Color(0xFF7B1FA2), //deep purple     
     };
@@ -72,7 +68,10 @@ final CarouselSliderController _eventController = CarouselSliderController();
   }
 
   Future<void> loadData() async {
-    await Future.wait([loadSocieties(), loadEvents()]);
+    await Future.wait([
+      loadSocieties(),
+      loadEvents(),
+    ]);
     setState(() => isLoading = false);
   }
 
@@ -200,19 +199,7 @@ final CarouselSliderController _eventController = CarouselSliderController();
           Text(
             "Welcome $adminName",
             "Welcome — ${ApiService.societyName ?? 'Admin'}",
-            style: const TextStyle(fontSize: 18, color: Colors.grey),
-          ),
-
-          const SizedBox(height: 16),
-          TextField(
-            decoration: InputDecoration(
-              hintText: "Search events or societies",
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-            ),
-            onChanged: (value) {},
+            style: const TextStyle(fontSize: 18, color: Colors.white70),
           ),
         ],
       ),
@@ -220,116 +207,124 @@ final CarouselSliderController _eventController = CarouselSliderController();
   }
 //searchbar code
   Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: TextField(
-        onChanged: (query) {
-          // 🔥 debounce (prevents spam requests)
-          if (debounce?.isActive ?? false) debounce!.cancel();
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: TextField(
+      onChanged: (query) {
+        // 🔥 debounce (prevents spam requests)
+        if (debounce?.isActive ?? false) debounce!.cancel();
 
-          debounce = Timer(const Duration(milliseconds: 300), () async {
-            if (query.isEmpty) {
+        debounce = Timer(const Duration(milliseconds: 300), () async {
+          if (query.isEmpty) {
+            setState(() {
+              searchResults = [];
+            });
+            return;
+          }
+
+          setState(() => isSearching = true);
+
+          try {
+            final response = await http.get(
+              Uri.parse("${ApiService.baseUrl}/search?q=$query"),
+              headers: ApiService.headers,
+            );
+
+            if (response.statusCode == 200) {
               setState(() {
-                searchResults = [];
+                searchResults = json.decode(response.body);
+                isSearching = false;
               });
-              return;
             }
+          } catch (e) {
+            print("Search error: $e");
+            setState(() => isSearching = false);
+          }
+        });
+      },
+      decoration: InputDecoration(
+        hintText: "Search events or societies",
+        prefixIcon: const Icon(Icons.search, color: Color(0xFF9C27B0)),
 
-            setState(() => isSearching = true);
+        // 🔥 loading indicator
+        suffixIcon: isSearching
+            ? const Padding(
+                padding: EdgeInsets.all(12),
+                child: SizedBox(
+                  height: 16,
+                  width: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            : null,
 
-            try {
-              final response = await http.get(
-                Uri.parse("${ApiService.baseUrl}/search?q=$query"),
-                headers: ApiService.headers,
-              );
-
-              if (response.statusCode == 200) {
-                setState(() {
-                  searchResults = json.decode(response.body);
-                  isSearching = false;
-                });
-              }
-            } catch (e) {
-              print("Search error: $e");
-              setState(() => isSearching = false);
-            }
-          });
-        },
-        decoration: InputDecoration(
-          hintText: "Search events or societies",
-          prefixIcon: const Icon(Icons.search, color: Color(0xFF9C27B0)),
-
-          // 🔥 loading indicator
-          suffixIcon: isSearching
-              ? const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: SizedBox(
-                    height: 16,
-                    width: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                )
-              : null,
-
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
-            borderSide: const BorderSide(color: Color(0xFF9C27B0)),
-          ),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
+          borderSide: const BorderSide(color: Color(0xFF9C27B0)),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSearchDropdown() {
-    if (searchResults.isEmpty) return const SizedBox();
+  if (searchResults.isEmpty) return const SizedBox();
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
-      ),
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: searchResults.length,
-        itemBuilder: (context, index) {
-          final item = searchResults[index];
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 6,
+        ),
+      ],
+    ),
+    child: ListView.builder(
+      shrinkWrap: true,
+      itemCount: searchResults.length,
+      itemBuilder: (context, index) {
+        final item = searchResults[index];
 
-          return ListTile(
-            leading: const Icon(Icons.search),
-            title: Text(item["name"] ?? item["title"] ?? ""),
-            subtitle: Text(item["type"] ?? ""),
+        return ListTile(
+          leading: const Icon(Icons.search),
+          title: Text(item["name"] ?? item["title"] ?? ""),
+          subtitle: Text(item["type"] ?? ""),
 
-            onTap: () {
-              if (item["type"] == "society") {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => SocietyProfilePage(
-                      societyId: item["id"],
-                      isAdmin: false,
-                    ),
+          onTap: () {
+            if (item["type"] == "society") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SocietyProfilePage(
+                    societyId: item["id"],
+                    isAdmin: false,
                   ),
-                );
-              }
+                ),
+              );
+            }
 
-              setState(() {
-                searchResults = [];
-              });
-            },
-          );
-        },
-      ),
-    );
-  }
+            setState(() {
+              searchResults = [];
+            });
+          },
+        );
+      },
+    ),
+  );
+}
+
+
+
 
   Widget _buildTopSocietiesCarousel() {
     final topSocieties = [...societies]
-      ..sort(
-        (a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0),
-      );
+      ..sort((a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0));
     final top5 = topSocieties.take(5).toList();
 
     return Column(
@@ -359,8 +354,7 @@ final CarouselSliderController _eventController = CarouselSliderController();
                 items: top5.asMap().entries.map((entry) {
                   final index = entry.key;
                   final society = entry.value;
-                  final colour =
-                      carouselColours[index % carouselColours.length];
+                  final colour = carouselColours[index % carouselColours.length];
 
                   return GestureDetector(
                     onTap: () {
@@ -443,6 +437,12 @@ final CarouselSliderController _eventController = CarouselSliderController();
     );
   }
 
+
+
+
+
+
+
   // browse soc
 
   // all societies A-Z
@@ -461,23 +461,59 @@ final CarouselSliderController _eventController = CarouselSliderController();
               ),
               Row(
                 children: [
-                  Text(
-                    'Sort by',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  PopupMenuButton<String>(
+                    child: const Row(
+                      children: [
+                        Text(
+                          "Sort by",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF9C27B0),
+                          ),
+                        ),
+                        Icon(Icons.arrow_drop_down, color: Color(0xFF9C27B0)),
+                      ],
+                    ),
+                    onSelected: (value) {
+                      setState(() => sortBy = value);
+                      applyFilters();
+                    },
+                    itemBuilder: (_) => const [
+                      PopupMenuItem(value: "A-Z", child: Text("A-Z")),
+                      PopupMenuItem(value: "Z-A", child: Text("Z-A")),
+                      PopupMenuItem(
+                        value: "Most Members",
+                        child: Text("Most Members"),
+                      ),
+                      PopupMenuItem(
+                        value: "Least Members",
+                        child: Text("Least Members"),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 16),
-                  Text(
-                    'Filter by',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                  Text(
-                    'Sort by',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                  SizedBox(width: 16),
-                  Text(
-                    'Filter by',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  const SizedBox(width: 8),
+                  PopupMenuButton<String>(
+                    child: const Row(
+                      children: [
+                        Text(
+                          "Filter by",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF9C27B0),
+                          ),
+                        ),
+                        Icon(Icons.arrow_drop_down, color: Color(0xFF9C27B0)),
+                      ],
+                    ),
+                    onSelected: (value) {
+                      setState(() => selectedCategory = value);
+                      applyFilters();
+                    },
+                    itemBuilder: (_) => categories
+                        .map(
+                          (cat) => PopupMenuItem(value: cat, child: Text(cat)),
+                        )
+                        .toList(),
                   ),
                 ],
               ),
@@ -489,7 +525,8 @@ final CarouselSliderController _eventController = CarouselSliderController();
           if (!showingCategories)
             TextButton.icon(
               onPressed: resetToCategories,
-              icon: const Icon(Icons.arrow_back, color: Color(0xFF9C27B0)),
+              icon: const Icon(Icons.arrow_back,
+                  color: Color(0xFF9C27B0)),
               label: const Text(
                 "Back to Categories",
                 style: TextStyle(color: Color(0xFF9C27B0)),
@@ -506,8 +543,11 @@ final CarouselSliderController _eventController = CarouselSliderController();
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
               childAspectRatio: 1.5,
-              children: categories.where((c) => c != "All").map((category) {
-                final colour = categoryColours[category] ?? Colors.purple;
+              children: categories
+                  .where((c) => c != "All")
+                  .map((category) {
+                final colour =
+                    categoryColours[category] ?? Colors.purple;
                 final count = societies
                     .where((s) => s["category"] == category)
                     .length;
@@ -532,7 +572,8 @@ final CarouselSliderController _eventController = CarouselSliderController();
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           category,
@@ -595,12 +636,14 @@ final CarouselSliderController _eventController = CarouselSliderController();
                     ),
                     title: Text(
                       soc["name"],
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(soc["category"] ?? ""),
                     trailing: Text(
                       "${soc["member_count"]} members",
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      style: const TextStyle(
+                          fontSize: 12, color: Colors.grey),
                     ),
                     onTap: () {
                       Navigator.push(
@@ -646,64 +689,92 @@ final CarouselSliderController _eventController = CarouselSliderController();
             carouselController: _eventController,
             options: CarouselOptions(
               height: 160,
-              autoPlay: true,
-              autoPlayInterval: const Duration(seconds: 4),
-              enlargeCenterPage: true,
-              viewportFraction: 0.8,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: events.length,
+                itemBuilder: (context, index) {
+                  final event = events[index];
+                  final startTime = DateTime.parse(
+                    event["start_time"],
+                  ).toLocal();
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => SocietyProfilePage(
+                            societyId: event["society_id"],
+                            isAdmin: false,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 200,
+                      margin: const EdgeInsets.only(right: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            event["title"],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${startTime.day}/${startTime.month}/${startTime.year}",
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                event["location"] ?? "",
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (event["capacity_limit"] != null)
+                                Text(
+                                  "Cap: ${event["capacity_limit"]}",
+                                  style: const TextStyle(
+                                    color: Colors.white60,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
-            items: events.map((event) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.deepPurple,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        event["title"],
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        event["location"] ?? "",
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
-
-// Temporary Blank Page
-class AdminSocietyPage extends StatelessWidget {
-  const AdminSocietyPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Admin Society Page")),
-      body: const Center(child: Text("Blank for now")),
-    );
-  }
-}
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
->>>>>>> Maya-up2266552
-=======
->>>>>>> b3dbb94 (Accept admin homepage changes)
