@@ -42,7 +42,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
   final Map<String, Color> categoryColours = {
     "Academic": const Color(0xFF5C6BC0), //indgo
-    "Cultural": const Color(0xFF26A69A), //teal
+
+    "Cultural ": const Color(0xFF26A69A), //teal
     "Sports": const Color(0xFF7E57C2), //medium purple
     "Religious": const Color(0xFF8D6E63), //warm brown
     "Extra-curricular": const Color(0xFF42A5F5), //light blue
