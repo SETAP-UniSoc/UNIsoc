@@ -107,6 +107,9 @@ class _AdminHomepageState extends State<AdminHomepage> {
       print("Error loading events: $e");
       setState(() => events = []);
     } print("societies legnth: ${societies.length}");
+    if (ApiService.societyId != null) {
+      print("socID  is null- skipping evenst load");
+    }
   }
 
   void applyFilters() {
