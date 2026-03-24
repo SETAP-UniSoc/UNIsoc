@@ -76,7 +76,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
   Future<void> loadSocieties() async {
     try {
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/api/societies/"),
+        Uri.parse("${ApiService.baseUrl}/societies/"),
         headers: ApiService.headers,
       );
       print("SOC RESPONESE: ${response.statusCode}");
