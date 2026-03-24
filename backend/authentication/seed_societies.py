@@ -16,15 +16,13 @@ def seed():
     ]
 
     for soc in societies:
-        defaults = {
-            "category": soc["category"],
-            "description": f"{soc['name']} Society",
-        }
-        if admin:
-            defaults["admin"] = admin
         Society.objects.get_or_create(
             name=soc["name"],
-            defaults=defaults
+            defaults={
+                "category": soc["category"],
+                "description": f"{soc['name']} Society",
+                "admin": admin  
+            }
         )
 
     print("Societies seeded successfully.")
