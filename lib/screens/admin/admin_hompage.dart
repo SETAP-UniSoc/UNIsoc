@@ -105,6 +105,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
       }
     } catch (e) {
       print("Error loading events: $e");
+      setState(() => events = []);
     }
   }
 
