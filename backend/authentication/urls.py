@@ -19,10 +19,14 @@ from .ChangePasswordView import ChangePasswordView #M added
 =======
 from .SocietyDetailView import SocietyDetailView
 <<<<<<< HEAD
+<<<<<<< HEAD
 from .views import CustomerListCreateView
 =======
 from .views import CustomerListView, SocietyListView
 >>>>>>> 62d4619 (made chnages so url and added path to import socs)
+=======
+from .views import UserListView, SocietyListView
+>>>>>>> cb3eb00 (made chnages sos guys it will work now)
 
 urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
@@ -38,7 +42,12 @@ urlpatterns = [
     path("change-password/", ChangePasswordView.as_view(), name="change-password"), #M added
 =======
     path('societies/<int:society_id>/', SocietyDetailView.as_view(), name='society-detail'),
+<<<<<<< HEAD
     path('customers/', CustomerListCreateView.as_view(), name='customer-list-create'),
+=======
+    path('customers/', CustomerListView.as_view(), name='customer-list-create'),
+    path('societies/', SocietyListView.as_view(), name='society-list-create'),
+>>>>>>> 62d4619 (made chnages so url and added path to import socs)
 ]
 
 
