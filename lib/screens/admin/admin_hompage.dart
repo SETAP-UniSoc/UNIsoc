@@ -44,11 +44,7 @@ final CarouselSliderController _eventController = CarouselSliderController();
 }
 
   final List<String> categories = [
-    "All",
-    "Academic",
-    "Cultural & Religious",
-    "Sports",
-    "Extra-curricular",
+    "All", "Academic", "Cultural", "Sports", "Religious", "Extra-curricular"
   ];
 
   final Map<String, Color> categoryColours = {
@@ -56,8 +52,8 @@ final CarouselSliderController _eventController = CarouselSliderController();
     "Cultural & Religious": const Color(0xFF26A69A), //teal
     "Sports": const Color(0xFF7E57C2), //medium purple
     "Extra-curricular": const Color(0xFF42A5F5), //light blue
-    "All": const Color(0xFF7B1FA2), //deep purple
-  };
+    "All": const Color(0xFF7B1FA2), //deep purple     
+    };
 
   final List<Color> carouselColours = [
     const Color(0xFF7B1FA2), //deep purple
