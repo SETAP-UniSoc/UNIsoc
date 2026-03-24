@@ -68,10 +68,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
   }
 
   Future<void> loadData() async {
-    await Future.wait([
-      loadSocieties(),
-      loadEvents(),
-    ]);
+    await loadSocieties();
+    await loadEvents();
     setState(() => isLoading = false);
   }
 
@@ -99,7 +97,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
   Future<void> loadEvents() async {
     try {
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/api/events/"),
+        Uri.parse("${ApiService.baseUrl}/society/${ApiService.societyId}/api/events/"),
         headers: ApiService.headers,
       );
       if (response.statusCode == 200) {
