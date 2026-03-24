@@ -31,8 +31,9 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
       fetchAnalytics(selectedPeriod);
     });
     
-    //startLiveUpdates();  temporarily commnted out live updates until we have the event attendance data to show on the second graph. No point refreshing the member count every 5 seconds if the event attendance graph just shows "No data yet"
+    startLiveUpdates(); // was  temporarily commnted out live updates until we have the event attendance data to show on the second graph. No point refreshing the member count every 5 seconds if the event attendance graph just shows "No data yet"
   }
+
 
   @override
   void dispose() {
@@ -65,6 +66,11 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
               .map((e) => (e as num).toDouble())
               .toList();
           liveCount = data["live_count"] ?? 0;
+
+           if (values.isNotEmpty) {
+    values[values.length - 1] = liveCount.toDouble();
+  }
+
         });
       }
     } catch (e) {
