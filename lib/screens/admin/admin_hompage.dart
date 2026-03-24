@@ -81,6 +81,9 @@ class _AdminHomepageState extends State<AdminHomepage> {
         Uri.parse("${ApiService.baseUrl}/api/societies/"),
         headers: ApiService.headers,
       );
+      print("SOC RESPONESE: ${response.statusCode}");
+      print("SOC BODY: ${response.body}");
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as List;
         setState(() {
