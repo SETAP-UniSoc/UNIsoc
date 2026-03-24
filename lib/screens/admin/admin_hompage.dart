@@ -38,8 +38,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
 }
 
   final List<String> categories = [
-    "All", "Academic", "Cultural", "Sports", "Religious", "Extra-curricular"
-  ];
+    "All", "Academic", "Cultural", "Sports", "Religious", "Extra-curricular" ]; // list of catergies 
 
   final Map<String, Color> categoryColours = {
     "Academic": const Color(0xFF5C6BC0), //indgo
@@ -47,8 +46,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
     "Sports": const Color(0xFF7E57C2), //medium purple
     "Religious": const Color(0xFF8D6E63), //warm brown
     "Extra-curricular": const Color(0xFF42A5F5), //light blue
-    "All": const Color(0xFF7B1FA2), //deep purple
-  };
+    "All": const Color(0xFF7B1FA2), //deep purple     
+    };
 
   final List<Color> carouselColours = [
     const Color(0xFF7B1FA2), //deep purple
