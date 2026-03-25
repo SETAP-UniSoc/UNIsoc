@@ -30,7 +30,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) { //added temporatily to delay the initial fetch until after the first frame so that the circular progress indicator shows up while loading instead of a blank screen. Can remove this once we have the event attendance data to show on the second graph, as then the initial fetch will be fast enough that the loading indicator isn't needed
       fetchAnalytics(selectedPeriod);
     });
-    
+   
     startLiveUpdates(); // was  temporarily commnted out live updates until we have the event attendance data to show on the second graph. No point refreshing the member count every 5 seconds if the event attendance graph just shows "No data yet"
   }
 
@@ -235,10 +235,8 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
                 show: true,
                 gradient: LinearGradient(
                   colors: [
-                    Colors.purple
-                        .withOpacity(0.4),
-                    Colors.purple
-                        .withOpacity(0.05),
+                    Colors.purple.withOpacity(0.4),
+                    Colors.purple.withOpacity(0.05),
                   ],
                 ),
               ),
@@ -281,3 +279,18 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
