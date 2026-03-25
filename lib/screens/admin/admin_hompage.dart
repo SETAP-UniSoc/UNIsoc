@@ -348,7 +348,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 50),
         if (isLoading)
           const CircularProgressIndicator()
         else if (top5.isEmpty)

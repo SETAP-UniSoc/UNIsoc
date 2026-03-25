@@ -28,10 +28,10 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   Future<void> loadEvents() async {
   print("SOCIETY ID: ${widget.societyId}");  // ← move to here
   print("TOKEN: ${ApiService.authToken}");    // ← move to here
-  print("URL: ${ApiService.baseUrl}/society/${widget.societyId}/events/");
+  print("URL: ${ApiService.baseUrl}/society/${widget.societyId}/api/events/");
   try {
     final response = await http.get(
-      Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
+      Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/api/events/"),
       headers: ApiService.headers,
     );
 
@@ -60,6 +60,57 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     print("LOAD EVENTS ERROR: $e");
   }
 }
+
+
+
+
+
+
+
+
+
+// Future<void> loadEvents() async {
+//     try {
+//       final response = await http.get(
+//         Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
+//         headers: ApiService.headers,
+//       );
+
+//       if (response.statusCode == 200) {
+//         final List data = jsonDecode(response.body);
+//         final now = DateTime.now().toUtc();
+
+//         final filtered = data.where((e) =>
+//           DateTime.parse(e["start_time"]).toUtc().isAfter(now)
+//         ).map((e) => Map<String, dynamic>.from(e)).toList();
+
+//         setState(() {
+//           eventData = filtered;
+//           calendarEvents = filtered.map((e) {
+//             // convert start time to local for display
+//             final start = DateTime.parse(e["start_time"]).toLocal();
+//             final end = DateTime.parse(e["end_time"]).toLocal();
+//             return Event(
+//               eventName: e["title"],
+//               dates: [start],
+//               color: Colors.blue,
+//               // optionally store end time if package supports multi-hour
+//             );
+//           }).toList();
+//         });
+//       } else {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(content: Text("Failed to load events: ${response.statusCode}")),
+//         );
+//       }
+//     } catch (e) {
+//       print("LOAD EVENTS ERROR: $e");
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text("Error loading events")),
+//       );
+//     }
+//   }
+
 
   // show popup when admin taps a date
   // void onDateTapped(DateTime date) {
@@ -261,7 +312,7 @@ void onDateTapped(DateTime date) {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
+        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/api/events/"),
         headers: ApiService.headers,
         body: jsonEncode({
           "title": title,
