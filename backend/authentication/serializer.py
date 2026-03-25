@@ -15,3 +15,8 @@ class SocietySerializer(serializers.ModelSerializer):
         model = Society
         fields = ['id', 'name', 'category', 'description', 'admin_email', 'member_count']
 
+    def get_member_count(self, obj):
+        return obj.member_count
+
+
+        
