@@ -27,4 +27,8 @@ class SocietyListView(generics.ListAPIView):
     queryset = Society.objects.all().order_by('name')
     serializer_class = SocietySerializer
 
-    
+class AddEventView(generics.CreateAPIView):
+    serializer_class = SocietySerializer
+
+class DeleteEventView(generics.DestroyAPIView):
+    serializer_class = SocietySerializer
