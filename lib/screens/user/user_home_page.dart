@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import '../../navbar.dart';
 import '../../models/soc_model.dart';
 import '../../models/event_model.dart';
-import '../../services/api_services.dart';
 import 'user_society_page.dart'; //importing user society page to be used as a button in the home page
-import 'dart:async';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -43,64 +41,6 @@ class HomeHeader extends StatefulWidget {
 }
 
 class _HomeHeaderState extends State<HomeHeader> {
-  late final PageController _societyPageController;
-  int _currentSocietyPage = 0;
-  Timer? _societyTimer;
-
-  List<dynamic> _societies = [];
-  List<dynamic> _events = [];
-  bool _loading = true;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _societyPageController = PageController(viewportFraction: 0.35);
-
-    _loadData(); // ← new
-
-    // Auto-advance every 5 seconds
-    _societyTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      if (!mounted || _societies.isEmpty) return;
-
-      setState(() {
-        _currentSocietyPage = (_currentSocietyPage + 1) % _societies.length;
-      });
-
-      _societyPageController.animateToPage(
-        _currentSocietyPage,
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
-    });
-  }
-
-  Future<void> _loadData() async {
-    try {
-      final societies = await ApiService.getSocieties();
-      // if you later add a "getHomeEvents", call it here too
-      if (!mounted) return;
-      setState(() {
-        _societies = societies;
-        _loading = false;
-        _error = null;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _loading = false;
-        _error = e.toString();
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _societyTimer?.cancel();
-    _societyPageController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -161,124 +101,113 @@ class _HomeHeaderState extends State<HomeHeader> {
                       child: PageView.builder(
                         controller: _societyPageController,
                         scrollDirection: Axis.horizontal,
-                        itemCount: _societies.length,
+                        itemCount: featuredSocieties.length,
+                        // itemBuilder: (context, index) {
+                        //   final soc = featuredSocieties[index];
+                        //   return _SocietyLogoCard(
+                        //     label: soc.name,
+                        //     color: soc.color,
+                        //     icon: soc.icon,
+                        //   );
+                        // },
                         //changing one of the feature socs to be a button that goes to a different page for now
                         itemBuilder: (context, index) {
-                          final soc = _societies[index] as Map<String, dynamic>;
-                          final name = soc['name'] as String? ?? '';
-                          final description =
-                              soc['description'] as String? ?? '';
-                          final id = soc['id'] as int? ?? 0;
-
+                          final soc = featuredSocieties[index];
                           if (index == 0) {
                             return _SocietyLogoCard(
-                              label: name,
-                              color: Colors.deepPurple, // temp color
-                              icon: Icons.group,
-                              UserSocietyPage: UserSocietyPage(
-                                societyId: id,
-                                societyName: name,
-                                description: description,
+                              label: soc.name,
+                              color: soc.color,
+                              icon: soc.icon,
+                              UserSocietyPage: const UserSocietyPage(
+                                societyId: 1,
+                                societyName: "Gaming Society",
+                                description:
+                                    "A society for gaming enthusiasts to share and learn about the latest in gaming.",
                               ),
                             );
                           }
-
                           return _SocietyLogoCard(
-                            label: name,
-                            color: Colors.indigo, // temp color
-                            icon: Icons.group,
+                            label: soc.name,
+                            color: soc.color,
+                            icon: soc.icon,
                           );
                         },
                       ),
                     ),
                     const SizedBox(height: 24),
 
-                    // Box around A–Z section
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+              // Box around A–Z section
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Column(
+                  children: [
+                    // A–Z list header with sort/filter labels
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text(
+                          'All Societies (A-Z)',
+                          'All Societies (A-Z)',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
                           ),
-                        ],
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: Column(
-                        children: [
-                          // A–Z list header with sort/filter labels
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              Text(
-                                'All Societies (A-Z)',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              'Sort by',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
                               ),
-                              Row(
-                                children: [
-                                  Text(
-                                    'Sort by',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  SizedBox(width: 16),
-                                  Text(
-                                    'Filter by',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ],
+                            ),
+                            SizedBox(width: 16),
+                            Text(
+                              'Filter by',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
 
                           // Scrollable list of societies A–Z
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _societies.length,
+                            itemCount: featuredSocieties.length,
                             itemBuilder: (context, index) {
-                              final soc =
-                                  _societies[index] as Map<String, dynamic>;
-                              final id = soc['id'] as int? ?? 0;
-                              final name = soc['name'] as String? ?? '';
-                              final description =
-                                  soc['description'] as String? ?? '';
-
+                              final soc = featuredSocieties[index];
                               return ListTile(
-                                leading: const CircleAvatar(
-                                  backgroundColor: Colors.deepPurple,
+                                leading: CircleAvatar(
+                                  backgroundColor: soc.color,
                                   child: Icon(
-                                    Icons.group,
+                                    soc.icon,
                                     color: Colors.white,
                                     size: 20,
                                   ),
                                 ),
-                                title: Text(name),
-                                subtitle: Text(description),
+                                title: Text(soc.name),
+                                subtitle: const Text('Short description here'),
                                 onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => UserSocietyPage(
-                                        societyId: id,
-                                        societyName: name,
-                                        description: description,
-                                      ),
-                                    ),
-                                  );
+                                  // TODO: navigate to society detail page
                                 },
                               );
                             },
@@ -288,7 +217,30 @@ class _HomeHeaderState extends State<HomeHeader> {
                     ),
 
                     const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
+                    // Upcoming events carousel
+                    const Text(
+                      'Upcoming Events',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 140,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: featuredEvents.length,
+                        itemBuilder: (context, index) {
+                          final event = featuredEvents[index];
+                          return _EventCard(event: event);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
                     // Upcoming events carousel
                     const Text(
                       'Upcoming Events',

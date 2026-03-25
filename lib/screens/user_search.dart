@@ -14,7 +14,7 @@ class _CustomerSearchPageState extends State<CustomerSearchPage> {
 
   Future<void> searchCustomers(String query) async {
     final response = await http.get(
-      Uri.parse('http://10.128.4.100:8000/api/customers/?search=$query'),
+      Uri.parse('http://10.128.4.122:8000/api/customers/?search=$query'),
     );
 
     if (response.statusCode == 200) {

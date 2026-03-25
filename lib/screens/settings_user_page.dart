@@ -10,8 +10,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool notificationsEnabled = true;
   bool emailUpdates = true;
-  final TextEditingController currentPasswordController =
-      TextEditingController();
+  final TextEditingController currentPasswordController = TextEditingController();
   final TextEditingController newPasswordController = TextEditingController();
 
   @override
@@ -26,6 +25,7 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
       body: ListView(
         children: [
+          // Notifications Section
           Padding(
             padding: const EdgeInsets.only(left: 16, top: 20, bottom: 8),
             child: Text(
@@ -64,6 +64,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           const Divider(),
+          
+          // Password Section
           Padding(
             padding: const EdgeInsets.only(left: 16, top: 20, bottom: 8),
             child: Text(
@@ -85,8 +87,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ),
               ),
             ),
           ),
@@ -100,8 +104,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ),
               ),
             ),
           ),
@@ -110,7 +116,8 @@ class _SettingsPageState extends State<SettingsPage> {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4A235A),
                   foregroundColor: Colors.white,
