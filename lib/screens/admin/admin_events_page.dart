@@ -28,10 +28,10 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   Future<void> loadEvents() async {
   print("SOCIETY ID: ${widget.societyId}");  // ← move to here
   print("TOKEN: ${ApiService.authToken}");    // ← move to here
-  print("URL: ${ApiService.baseUrl}/society/${widget.societyId}/api/events/");
+  print("URL: ${ApiService.baseUrl}/society/${widget.societyId}/events/");
   try {
     final response = await http.get(
-      Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/api/events/"),
+      Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
       headers: ApiService.headers,
     );
 
@@ -46,6 +46,15 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
       final filtered = data.where((e) =>
         DateTime.parse(e["start_time"]).isAfter(now)
       ).toList();
+
+//       setState(() {
+//   eventData = data;
+//   calendarEvents = data.map((e) => Event(
+//     eventName: e["title"],
+//     dates: [DateTime.parse(e["start_time"]).toLocal()],
+//     color: Colors.blue,
+//   )).toList();
+// });
 
       setState(() {
         eventData = filtered;
@@ -312,7 +321,7 @@ void onDateTapped(DateTime date) {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/api/events/"),
+        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
         headers: ApiService.headers,
         body: jsonEncode({
           "title": title,
