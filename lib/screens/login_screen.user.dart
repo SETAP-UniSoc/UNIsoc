@@ -343,7 +343,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:unisoc/screens/user/user_home_page.dart';
+import 'package:unisoc/home_page.dart';
 import 'login_screen.admin.dart';
 import 'forgotten_password_screen.dart';
 import 'signup_user_page.dart';
@@ -392,8 +392,6 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
           )
           .timeout(const Duration(seconds: 10));
 
-      print("HTTP Status: ${response.statusCode}, Body: ${response.body}");
-
       if (!mounted) return;
 
 
@@ -413,7 +411,6 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
       }
     } catch (e) {
       _showError("Network or server error");
-      print("Error during login: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }

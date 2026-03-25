@@ -51,13 +51,6 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
                 break;
               case _MenuAction.logout:
                 // TODO: implement logout
-                // For now: return to login screen and clear navigation stack
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                    builder: (context) => const LoginScreenUser(),
-                  ),
-                  (route) => false,
-                );
                 break;
             }
           },
@@ -133,8 +126,6 @@ class HomeHeader extends StatelessWidget {
                   ),
                 ),
                 onChanged: (value) {
-                  // TODO: hook up search logic later
-                  // print(value);
                 },
               ),
             ],

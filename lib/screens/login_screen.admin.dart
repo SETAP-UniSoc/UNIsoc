@@ -80,7 +80,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     ),
   );
 }else if (response.statusCode == 401) {
-        // backend is unchanged
+        // ✅ Generic message (backend unchanged)
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Invalid email or password"),

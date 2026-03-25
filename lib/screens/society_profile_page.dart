@@ -192,6 +192,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+
                   // society header card
                   Container(
                     width: double.infinity,
@@ -340,3 +341,6 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     );
   }
 }
+
+
+
