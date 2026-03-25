@@ -59,8 +59,8 @@ class AnalyticsView(APIView):
             total = Membership.objects.filter(
                 society=society,
                 joined_at__lte=current_date
-            ).exclude(
-                left_at__lte=current_date
+            ).filter(
+                Q(left_at__isnull=True) | Q(left_at__gt=current_date)
             ).count()
 
             labels.append(current_date.strftime(label_format))
@@ -75,7 +75,7 @@ class AnalyticsView(APIView):
                 "eventattendance",
                 filter = Q(eventattendance__left_at__isnull=True)
             )
-        ).values("name", "attendee_count")
+        ).values("title", "attendee_count")
 
         #most popular event
         most_popular = society.events.annotate(
@@ -83,7 +83,7 @@ class AnalyticsView(APIView):
                 "eventattendance",
                 filter = Q(eventattendance__left_at__isnull=True)
             )
-        ).order_by("-attendee_count").values("name", "attendee_count").first()
+        ).order_by("-attendee_count").values("title", "attendee_count").first()
 
 
         return Response({
