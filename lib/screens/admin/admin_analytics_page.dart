@@ -1,3 +1,9 @@
+
+
+
+
+
+
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -27,9 +33,13 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   @override
   void initState() {
     super.initState();
-    fetchAnalytics(selectedPeriod, isInitial: true);
-    startLiveUpdates();
+    WidgetsBinding.instance.addPostFrameCallback((_) { //added temporatily to delay the initial fetch until after the first frame so that the circular progress indicator shows up while loading instead of a blank screen. Can remove this once we have the event attendance data to show on the second graph, as then the initial fetch will be fast enough that the loading indicator isn't needed
+      fetchAnalytics(selectedPeriod);
+    });
+    
+    startLiveUpdates(); // was  temporarily commnted out live updates until we have the event attendance data to show on the second graph. No point refreshing the member count every 5 seconds if the event attendance graph just shows "No data yet"
   }
+
 
   @override
   void dispose() {
@@ -38,15 +48,15 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   }
 
   void startLiveUpdates() {
+    // live member count refreshes every 5 seconds
     liveTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       fetchAnalytics(selectedPeriod);
     });
   }
 
-  Future<void> fetchAnalytics(String period, {bool isInitial = false}) async {
-    if (isInitial) {
-      setState(() => isLoading = true);
-    }
+  // single endpoint for all analytics — uses logged in admin's token automatically
+  Future<void> fetchAnalytics(String period) async {
+    setState(() => isLoading = true);
 
     try {
       final response = await http.get(
@@ -56,34 +66,27 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
-        final newLabels = List<String>.from(data["labels"] ?? []);
-        final newValues = List<dynamic>.from(data["totals"] ?? [])
-            .map((e) => (e as num).toDouble())
-            .toList();
-
-        final newLiveCount = data["live_count"] ?? 0;
-
-        // 🔥 Ensure last point always equals live count
-        if (newValues.isNotEmpty) {
-          newValues[newValues.length - 1] = newLiveCount.toDouble();
-        }
-
         setState(() {
-          labels = newLabels;
-          values = newValues;
-          liveCount = newLiveCount;
+          labels = List<String>.from(data["labels"] ?? []);
+          values = List<dynamic>.from(data["totals"] ?? [])
+              .map((e) => (e as num).toDouble())
+              .toList();
+          liveCount = data["live_count"] ?? 0;
+
+           if (values.isNotEmpty) {
+    values[values.length - 1] = liveCount.toDouble();
+  }
+
         });
       }
     } catch (e) {
       print("Analytics error: $e");
     } finally {
-      if (isInitial) {
-        setState(() => isLoading = false);
-      }
+      setState(() => isLoading = false);
     }
   }
 
+  // export analytics as PDF
   Future<void> exportPdf() async {
     final pdf = pw.Document();
 
@@ -144,7 +147,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
 
             const SizedBox(height: 30),
 
-            // current member count (latest point)
+            // current member count
             if (values.isNotEmpty)
               Text(
                 values.last.toStringAsFixed(0),
@@ -154,7 +157,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
 
             const SizedBox(height: 20),
 
-            // membership graph
+            // membership trend graph
             SizedBox(
               height: 250,
               child: isLoading
@@ -180,6 +183,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
 
             const SizedBox(height: 40),
 
+            // event attendance graph — shows "No data" until events have attendance
             const Text(
               "Event Attendance",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -258,11 +262,8 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
 
     return GestureDetector(
       onTap: () {
-        setState(() {
-          selectedPeriod = value;
-          isLoading = true;
-        });
-        fetchAnalytics(value, isInitial: true);
+        setState(() => selectedPeriod = value);
+        fetchAnalytics(value);
       },
       child: Column(
         children: [
