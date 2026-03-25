@@ -1,5 +1,4 @@
 from django.urls import path
-from authentication import CreateEventView
 from .RegisterView import RegisterView
 from .LoginView import LoginView
 from .AnalyticsView import AnalyticsView
@@ -8,6 +7,7 @@ from .LeaveSoc import LeaveSocietyView
 from .SocietyDetailView import SocietyDetailView
 from .views import UserListView, SocietyListView
 from .views import AddEventView, DeleteEventView
+from .views import CreateEventView
 
 urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
