@@ -28,10 +28,10 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   Future<void> loadEvents() async {
   print("SOCIETY ID: ${widget.societyId}");  // ← move to here
   print("TOKEN: ${ApiService.authToken}");    // ← move to here
-  print("URL: ${ApiService.baseUrl}/society/${widget.societyId}/events/");
+  print("URL: ${ApiService.baseUrl}/society/${widget.societyId}/api/events/");
   try {
     final response = await http.get(
-      Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
+      Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/api/events/"),
       headers: ApiService.headers,
     );
 
@@ -81,7 +81,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
 // Future<void> loadEvents() async {
 //     try {
 //       final response = await http.get(
-//         Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
+//         Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/api/events/"),
 //         headers: ApiService.headers,
 //       );
 
