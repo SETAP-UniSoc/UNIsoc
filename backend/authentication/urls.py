@@ -20,7 +20,7 @@ urlpatterns = [
     path('societies/', SocietyListView.as_view(), name='society-list-create'),
     path('societies/<int:society_id>/events/', AddEventView.as_view(), name='society-events'),
     path('event/<int:event_id>/delete/', DeleteEventView.as_view(), name='delete-event'),
-    path('events/', CreateEventView.ListEventsView.as_view(), name='event-list'),
+    path('events/', CreateEventView.as_view(), name='event-list'),
     path('events/create/', CreateEventView.as_view(), name='create-event'),
 ]
 
