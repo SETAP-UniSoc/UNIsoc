@@ -10,7 +10,7 @@ import 'admin_dropdown_menu.dart';
 //admin hompage with a carousel of top societies, a section to browse societies by category and a section for upcoming events. Also includes a search bar that searches both events and societies and shows results in a dropdown as the user types. Admin can also filter and sort societies in the browse section. This is the default page when admin logs in
 class AdminHomepage extends StatefulWidget {
   const AdminHomepage({super.key});
-
+//this is the default page when admin logs in
   @override
   State<AdminHomepage> createState() => _AdminHomepageState();
 }
