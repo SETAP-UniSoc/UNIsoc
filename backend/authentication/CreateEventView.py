@@ -32,10 +32,10 @@ class CreateEventView(APIView):
         return Response(serializer.errors, status=400)
     
 
-    class ListEventsView(APIView):
-        permission_classes = [IsAuthenticated]
+class ListEventsView(APIView):
+    permission_classes = [IsAuthenticated]
 
-        def get(self, request):
+    def get(self, request):
 
             if request.user.role == "admin":
             # Admin sees their own society events
