@@ -15,3 +15,4 @@ class SocietySerializer(serializers.ModelSerializer):
 
     def get_member_count(self, obj):
         return obj.member_count
+    
