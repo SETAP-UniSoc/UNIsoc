@@ -85,10 +85,15 @@ class AnalyticsView(APIView):
             )
         ).order_by("-attendee_count").values("title", "attendee_count").first()
 
+        live_count = Membership.objects.filter(
+            society=society,
+            left_at__isnull=True
+        ).count()
 
         return Response({
             "labels": labels,
             "totals": totals,
+            "live_count": live_count,
             "total_events": total_events,
             "events_stats": list(events_stats),
             "most_popular": most_popular
