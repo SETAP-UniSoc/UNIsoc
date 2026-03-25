@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import Event, Society
 from .serializer import EventSerializer
+from backend.authentication import serializer
 
 class CreateEventView(APIView):
     permission_classes = [IsAuthenticated]
@@ -29,3 +30,23 @@ class CreateEventView(APIView):
             return Response(serializer.data, status=201)
 
         return Response(serializer.errors, status=400)
+    
+
+    class ListEventsView(APIView):
+        permission_classes = [IsAuthenticated]
+
+        def get(self, request):
+
+            if request.user.role == "admin":
+            # Admin sees their own society events
+                society = Society.objects.get(admin=request.user)
+                events = Event.objects.filter(society=society)
+
+            else:
+            # Users see events of societies they belong to
+                events = Event.objects.filter(
+                    society__membership__user=request.user
+                ).distinct()
+
+            serializer = EventSerializer(events, many=True)
+            return Response(serializer.data)
