@@ -16,9 +16,6 @@ class SocietySerializer(serializers.ModelSerializer):
 
     def get_member_count(self, obj):
         return obj.member_count
-<<<<<<< HEAD
-    
-=======
 
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,4 +25,3 @@ class EventSerializer(serializers.ModelSerializer):
         
 
         
->>>>>>> stuti-up2199677
