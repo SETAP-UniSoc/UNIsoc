@@ -43,27 +43,40 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
 
       final now = DateTime.now();
 
-      final filtered = data.where((e) =>
-        DateTime.parse(e["start_time"]).isAfter(now)
-      ).toList();
+//       final filtered = data.where((e) =>
+//         DateTime.parse(e["start_time"]).isAfter(now)
+//       ).toList();
+
+// //       setState(() {
+// //   eventData = data;
+// //   calendarEvents = data.map((e) => Event(
+// //     eventName: e["title"],
+// //     dates: [DateTime.parse(e["start_time"]).toLocal()],
+// //     color: Colors.blue,
+// //   )).toList();
+// // });
 
 //       setState(() {
-//   eventData = data;
-//   calendarEvents = data.map((e) => Event(
-//     eventName: e["title"],
-//     dates: [DateTime.parse(e["start_time"]).toLocal()],
-//     color: Colors.blue,
-//   )).toList();
-// });
+//         eventData = filtered;
+//         calendarEvents = filtered.map((e) => Event(
+//           eventName: e["title"],
+//           dates: [DateTime.parse(e["start_time"])],
+//           color: Colors.blue,
+//         )).toList();
+//       });
+    setState(() {
+  eventData = data; // keep ALL events (past + future)
 
-      setState(() {
-        eventData = filtered;
-        calendarEvents = filtered.map((e) => Event(
-          eventName: e["title"],
-          dates: [DateTime.parse(e["start_time"])],
-          color: Colors.blue,
-        )).toList();
-      });
+  calendarEvents = data.map((e) {
+    final start = DateTime.parse(e["start_time"]).toLocal();
+
+    return Event(
+      eventName: e["title"],
+      dates: [DateTime(start.year, start.month, start.day)], // normalize
+      color: Colors.blue,
+    );
+  }).toList();
+});
     }
   } catch (e) {
     print("LOAD EVENTS ERROR: $e");
@@ -145,18 +158,69 @@ void onDateTapped(DateTime date) {
 
   final existing = eventData.where((e) {
     final eventDate = DateTime.parse(e["start_time"]).toLocal();
-    final normalizedEventDate =
+    final normalized =
         DateTime(eventDate.year, eventDate.month, eventDate.day);
 
-    return normalizedEventDate == selectedDate;
+    return normalized == selectedDate;
   }).toList();
 
   if (existing.isNotEmpty) {
-    _showEventDetails(existing.first);
+    _showEventsList(existing, date);
   } else {
     _showCreateEventDialog(date);
   }
 }
+
+  void _showEventsList(List events, DateTime date) {
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: Text("Events on ${date.day}/${date.month}/${date.year}"),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: events.length,
+          itemBuilder: (_, i) {
+            final event = events[i];
+            final start =
+                DateTime.parse(event["start_time"]).toLocal();
+            final end =
+                DateTime.parse(event["end_time"]).toLocal();
+
+            return ListTile(
+              title: Text(event["title"]),
+              subtitle: Text(
+                "${start.hour}:${start.minute.toString().padLeft(2, '0')} - "
+                "${end.hour}:${end.minute.toString().padLeft(2, '0')}",
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _showEventDetails(event);
+              },
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Close"),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+            _showCreateEventDialog(date);
+          },
+          child: const Text("Add Event"),
+        ),
+      ],
+    ),
+  );
+}
+
+
+
 
   // popup to view and remove an existing event
   void _showEventDetails(Map event) {
