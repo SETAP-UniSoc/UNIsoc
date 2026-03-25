@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import Event, Society
 from .serializer import EventSerializer
-from backend.authentication import serializer
+from . import serializer
 
 class CreateEventView(APIView):
     permission_classes = [IsAuthenticated]
