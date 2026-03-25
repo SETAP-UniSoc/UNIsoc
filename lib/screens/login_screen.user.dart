@@ -381,7 +381,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
 
     setState(() => isLoading = true);
 
-    final url = Uri.parse("http://10.128.4.122:8000/api/login/");
+    final url = Uri.parse("${ApiService.baseUrl}/login/");
 
     try {
       final response = await http
@@ -395,7 +395,6 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
       print("HTTP Status: ${response.statusCode}, Body: ${response.body}");
 
       if (!mounted) return;
-
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -436,18 +435,18 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
 
             // UP Number
             TextField(
-                controller: upnumberController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(7),
-                ],
-                decoration: const InputDecoration(
-                  labelText: "UP Number",
-                  prefixText: "UP",
-                  border: UnderlineInputBorder(),
-                ),
+              controller: upnumberController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(7),
+              ],
+              decoration: const InputDecoration(
+                labelText: "UP Number",
+                prefixText: "UP",
+                border: UnderlineInputBorder(),
               ),
+            ),
 
             // Password
             TextField(
