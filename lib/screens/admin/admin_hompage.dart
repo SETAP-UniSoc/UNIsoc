@@ -5,7 +5,7 @@ import 'admin_dropdown_menu.dart';
 
 class AdminHomepage extends StatefulWidget {
   const AdminHomepage({super.key});
-
+//this is the default page when admin logs in
   @override
   State<AdminHomepage> createState() => _AdminHomepageState();
 }
