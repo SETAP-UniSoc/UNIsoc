@@ -2,16 +2,16 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = "http://10.128.4.122:8000/api";
+  static const String baseUrl = "http://10.0.2.2:8000/api";
 
   static String? authToken;
-  static int? societyId;      // ← added
+  static int? societyId; // ← added
   static String? societyName; // ← added
 
   static Map<String, String> get headers => {
-        "Content-Type": "application/json",
-        if (authToken != null) "Authorization": "Token $authToken",
-      };
+    "Content-Type": "application/json",
+    if (authToken != null) "Authorization": "Token $authToken",
+  };
 
   // -------- PUBLIC ENDPOINTS --------
 
@@ -42,10 +42,7 @@ class ApiService {
   // -------- JOIN / LEAVE --------
 
   static Future<http.Response> joinSociety(int id) {
-    return http.post(
-      Uri.parse("$baseUrl/society/$id/join/"),
-      headers: headers,
-    );
+    return http.post(Uri.parse("$baseUrl/society/$id/join/"), headers: headers);
   }
 
   static Future<http.Response> leaveSociety(int id) {
