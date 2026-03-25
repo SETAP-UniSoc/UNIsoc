@@ -249,16 +249,6 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
       if (!mounted) return;
 
       if (response.statusCode == 200) {
-<<<<<<< HEAD
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            //chnaging  page it goes to as error wih adminhomepage
-            builder: (context) => const AdminHomepage(),
-          ),
-        );
-      } else if (response.statusCode == 401) {
-=======
   final responseData = jsonDecode(response.body);
 
   print("Full response: $responseData");
@@ -275,7 +265,6 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     ),
   );
 }else if (response.statusCode == 401) {
->>>>>>> Maya-up2266552
         // ✅ Generic message (backend unchanged)
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
