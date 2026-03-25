@@ -23,7 +23,7 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
-  static Future<List> getSocietyEvents(int id) async {
+  /*static Future<List> getSocietyEvents(int id) async {
     final response = await http.get(
       Uri.parse("$baseUrl/society/$id/events/"),
       headers: headers,
@@ -37,7 +37,7 @@ class ApiService {
       headers: headers,
     );
     return jsonDecode(response.body);
-  }
+  } */
 
   // -------- JOIN / LEAVE --------
 
