@@ -15,7 +15,7 @@ def seed():
         return
 
     for soc in societies:
-        for i in range(2):  # 2 events per society
+        for i in range(2):  
             Event.objects.get_or_create(
                 title=f"{soc.name} Event {i+1}",
                 society=soc,
