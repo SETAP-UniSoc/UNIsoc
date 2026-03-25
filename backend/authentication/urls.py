@@ -1,6 +1,5 @@
 from django.urls import path
-
-from backend.authentication import CreateEventView
+from authentication import CreateEventView
 from .RegisterView import RegisterView
 from .LoginView import LoginView
 from .AnalyticsView import AnalyticsView
