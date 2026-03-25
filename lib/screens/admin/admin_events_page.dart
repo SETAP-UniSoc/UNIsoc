@@ -141,16 +141,15 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
 
   // show popup when admin taps a date
 void onDateTapped(DateTime date) {
-  print("Tapped: $date");
-  print("Events: $eventData");
+  final selectedDate = DateTime(date.year, date.month, date.day);
 
-  final existing = eventData.where((e) =>
-    DateTime.parse(e["start_time"]).toLocal().day == date.day &&
-    DateTime.parse(e["start_time"]).toLocal().month == date.month &&
-    DateTime.parse(e["start_time"]).toLocal().year == date.year
-  ).toList();
+  final existing = eventData.where((e) {
+    final eventDate = DateTime.parse(e["start_time"]).toLocal();
+    final normalizedEventDate =
+        DateTime(eventDate.year, eventDate.month, eventDate.day);
 
-  print("Matching events: $existing");
+    return normalizedEventDate == selectedDate;
+  }).toList();
 
   if (existing.isNotEmpty) {
     _showEventDetails(existing.first);
