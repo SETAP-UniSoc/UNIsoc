@@ -55,7 +55,6 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
 
       if (!mounted) return;
 
-
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         ApiService.authToken = responseData["token"];
@@ -95,18 +94,18 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
 
             // UP Number
             TextField(
-                controller: upnumberController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(7),
-                ],
-                decoration: const InputDecoration(
-                  labelText: "UP Number",
-                  prefixText: "UP",
-                  border: UnderlineInputBorder(),
-                ),
+              controller: upnumberController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(7),
+              ],
+              decoration: const InputDecoration(
+                labelText: "UP Number",
+                prefixText: "UP",
+                border: UnderlineInputBorder(),
               ),
+            ),
 
             // Password
             TextField(
