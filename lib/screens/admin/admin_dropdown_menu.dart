@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:unisoc/screens/society_profile_page.dart';
-import 'package:unisoc/services/api_services.dart';
 
 class AdminDropdownMenu extends StatelessWidget {
   const AdminDropdownMenu({super.key});
@@ -23,9 +21,10 @@ class AdminDropdownMenu extends StatelessWidget {
             );
             break;
           case "settings":
-            // settings page later
+            // Navigate to Settings page later
             break;
           case "logout":
+            // Handle logout later
             break;
         }
       },

@@ -6,7 +6,6 @@ class MyEventsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-<<<<<<< HEAD
       appBar: AppBar(
         title: const Text('My Events'),
         backgroundColor: const Color(0xFF4A235A),
@@ -125,10 +124,3 @@ class EventCard extends StatelessWidget {
     );
   }
 }
-=======
-      appBar: AppBar(title: const Text('My Events')),
-      body: const Center(child: Text('My Events Page')),
-    );
-  }
-}
->>>>>>> Maya-up2266552

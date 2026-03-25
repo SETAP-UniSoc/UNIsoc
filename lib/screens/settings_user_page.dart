@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-<<<<<<< HEAD
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -9,6 +8,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  bool notificationsEnabled = true;
   bool emailUpdates = true;
   final TextEditingController currentPasswordController = TextEditingController();
   final TextEditingController newPasswordController = TextEditingController();
@@ -35,6 +35,19 @@ class _SettingsPageState extends State<SettingsPage> {
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[700],
               ),
+            ),
+          ),
+          ListTile(
+            title: const Text('Enable Notifications'),
+            subtitle: const Text('Receive event and society notifications'),
+            trailing: Switch(
+              value: notificationsEnabled,
+              onChanged: (value) {
+                setState(() {
+                  notificationsEnabled = value;
+                });
+              },
+              activeThumbColor: const Color(0xFF4A235A),
             ),
           ),
           ListTile(
@@ -126,16 +139,6 @@ class _SettingsPageState extends State<SettingsPage> {
           const Divider(),
         ],
       ),
-=======
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: const Center(child: Text('Settings Page')),
->>>>>>> Maya-up2266552
     );
   }
 }
