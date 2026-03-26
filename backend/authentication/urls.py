@@ -46,7 +46,7 @@ urlpatterns = [
     path('events/my/', MyCreatedEventsView.as_view(), name='my-events'),
 
     # Analytics
-    path("analytics/", AnalyticsView.as_view(), name="analytics"),
+    path("my-analytics/", AnalyticsView.as_view(), name="analytics"),
     # Users 
     path('users/', UserListView.as_view(), name='user-list-create'),
     # search and filter societies
