@@ -93,7 +93,6 @@ class _AdminHomepageState extends State<AdminHomepage> {
     }
   }
 
-  // FIXED: Correct endpoint for events
   Future<void> loadEvents() async {
     if (ApiService.societyId == null) {
       print("⚠️ Society ID is null - skipping events load");
@@ -111,7 +110,6 @@ class _AdminHomepageState extends State<AdminHomepage> {
         final data = jsonDecode(response.body) as List;
         final now = DateTime.now();
         setState(() {
-          // Only show upcoming events
           events = data
               .where((e) => DateTime.parse(e["start_time"]).isAfter(now))
               .toList();
@@ -154,6 +152,26 @@ class _AdminHomepageState extends State<AdminHomepage> {
       filteredSocieties = [...societies];
       showingCategories = true;
     });
+  }
+
+  // Helper method to navigate to society page with correct isAdmin flag
+  void navigateToSociety(int societyId, String societyName) {
+    // Check if this is the admin's own society
+    final bool isOwnSociety = societyId == ApiService.societyId;
+    
+    print("🔍 Navigating to society: $societyName (ID: $societyId)");
+    print("👤 Admin's own society ID: ${ApiService.societyId}");
+    print("🏷️ Setting isAdmin: $isOwnSociety");
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SocietyProfilePage(
+          societyId: societyId,
+          isAdmin: isOwnSociety,  // Only true if it's their own society
+        ),
+      ),
+    );
   }
 
   @override
@@ -309,20 +327,18 @@ class _AdminHomepageState extends State<AdminHomepage> {
           final item = searchResults[index];
 
           return ListTile(
-            leading: const Icon(Icons.search),
+            leading: item["type"] == "society" 
+                ? const Icon(Icons.business, color: Color(0xFF9C27B0))
+                : const Icon(Icons.event, color: Color(0xFF3B82F6)),
             title: Text(item["name"] ?? item["title"] ?? ""),
-            subtitle: Text(item["type"] ?? ""),
+            subtitle: Text(item["type"] == "society" 
+                ? "Society • ${item["category"] ?? ''}" 
+                : "Event • ${item["society_name"] ?? ''}"),
             onTap: () {
               if (item["type"] == "society") {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => SocietyProfilePage(
-                      societyId: item["id"],
-                      isAdmin: false,
-                    ),
-                  ),
-                );
+                navigateToSociety(item["id"], item["name"]);
+              } else if (item["type"] == "event") {
+                navigateToSociety(item["society_id"], item["society_name"]);
               }
               setState(() {
                 searchResults = [];
@@ -376,15 +392,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
                   return GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => SocietyProfilePage(
-                            societyId: society["id"],
-                            isAdmin: false,
-                          ),
-                        ),
-                      );
+                      navigateToSociety(society["id"], society["name"]);
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -420,14 +428,14 @@ class _AdminHomepageState extends State<AdminHomepage> {
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              "${society["member_count"]} members",
-                              style: const TextStyle(
-                                color: Colors.white60,
-                                fontSize: 13,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
+                            // Text(
+                            //   "${society["member_count"]} members",
+                            //   style: const TextStyle(
+                            //     color: Colors.white60,
+                            //     fontSize: 13,
+                            //   ),
+                            //   textAlign: TextAlign.center,
+                            // ),
                           ],
                         ),
                       ),
@@ -634,15 +642,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
                       style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => SocietyProfilePage(
-                            societyId: soc["id"],
-                            isAdmin: false,
-                          ),
-                        ),
-                      );
+                      navigateToSociety(soc["id"], soc["name"]);
                     },
                   ),
                 );
@@ -683,15 +683,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
                   return GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => SocietyProfilePage(
-                            societyId: event["society_id"],
-                            isAdmin: false,
-                          ),
-                        ),
-                      );
+                      navigateToSociety(event["society_id"], event["society_name"]);
                     },
                     child: Container(
                       width: 200,
