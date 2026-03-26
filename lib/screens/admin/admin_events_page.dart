@@ -163,6 +163,7 @@ void onDateTapped(DateTime date) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
+<<<<<<< HEAD
         title: Text(event["title"]),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -176,6 +177,36 @@ void onDateTapped(DateTime date) {
             if (event["capacity_limit"] != null)
               Text("🔒 Capacity: ${event["capacity_limit"]}"),
           ],
+=======
+        title: Text("Events (${events.length})"),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: events.length,
+            itemBuilder: (_, i) {
+              final e = events[i];
+              final time = DateTime.parse(e["start_time"]).toLocal();
+
+              return ListTile(
+                title: Text(e["title"]),
+                subtitle: Text(
+                    "${time.hour}:${time.minute} • ${e["location"] ?? ""} • ${e["capacity"] != null ? "Cap: ${e["capacity"]}" : "No Cap"}"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showEditDialog(e); // 🔥 EDIT
+                },
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    await _deleteEvent(e["id"]);
+                  },
+                ),
+              );
+            },
+          ),
+>>>>>>> main
         ),
         actions: [
           TextButton(
@@ -195,6 +226,7 @@ void onDateTapped(DateTime date) {
     );
   }
 
+<<<<<<< HEAD
   // popup form to create a new event
   void _showCreateEventDialog(DateTime selectedDate) {
     final titleController = TextEditingController();
@@ -203,6 +235,17 @@ void onDateTapped(DateTime date) {
     final capacityController = TextEditingController();
     TimeOfDay startTime = const TimeOfDay(hour: 9, minute: 0);
     TimeOfDay endTime = const TimeOfDay(hour: 10, minute: 0);
+=======
+  // ✅ CREATE EVENT
+  void _showCreateDialog(DateTime date) {
+    final title = TextEditingController();
+    final desc = TextEditingController();
+    final loc = TextEditingController();
+    final cap = TextEditingController();  
+
+    TimeOfDay start = const TimeOfDay(hour: 9, minute: 0);
+    TimeOfDay end = const TimeOfDay(hour: 10, minute: 0);
+>>>>>>> main
 
     showDialog(
       context: context,
@@ -229,6 +272,7 @@ void onDateTapped(DateTime date) {
                 ),
                 const SizedBox(height: 10),
 
+<<<<<<< HEAD
                 // start time picker
                 ListTile(
                   contentPadding: EdgeInsets.zero,
@@ -268,6 +312,30 @@ void onDateTapped(DateTime date) {
                 ),
               ],
             ),
+=======
+              TextField( controller: cap,
+                decoration: const InputDecoration(labelText: "Capacity (optional)"),
+                keyboardType: TextInputType.number,
+              ),
+
+              ListTile(
+                title: const Text("Start Time"),
+                subtitle: Text(start.format(context)),
+                onTap: () async {
+                  final picked = await showTimePicker(context: context, initialTime: start);
+                  if (picked != null) setStateDialog(() => start = picked);
+                },
+              ),
+              ListTile(
+                title: const Text("End Time"),
+                subtitle: Text(end.format(context)),
+                onTap: () async {
+                  final picked = await showTimePicker(context: context, initialTime: end);
+                  if (picked != null) setStateDialog(() => end = picked);
+                },
+              ),
+            ],
+>>>>>>> main
           ),
           actions: [
             TextButton(
@@ -289,6 +357,7 @@ void onDateTapped(DateTime date) {
                 );
 
                 await _createEvent(
+<<<<<<< HEAD
                   title: titleController.text,
                   description: descController.text,
                   location: locationController.text,
@@ -297,6 +366,14 @@ void onDateTapped(DateTime date) {
                   capacity: capacityController.text.isEmpty
                       ? null
                       : int.tryParse(capacityController.text),
+=======
+                  title: title.text,
+                  description: desc.text,
+                  location: loc.text,
+                  startTime: startDT.toIso8601String(),
+                  endTime: endDT.toIso8601String(),
+                  capacity: cap.text.isEmpty ? null : int.tryParse(cap.text),
+>>>>>>> main
                 );
 
                 Navigator.pop(context);
@@ -309,7 +386,48 @@ void onDateTapped(DateTime date) {
     );
   }
 
+<<<<<<< HEAD
   // POST new event to backend
+=======
+  // ✅ EDIT EVENT
+  void _showEditDialog(Map event) {
+    final title = TextEditingController(text: event["title"]);
+    final desc = TextEditingController(text: event["description"]);
+    final loc = TextEditingController(text: event["location"]);
+    final cap = TextEditingController(text: event["capacity"].toString());
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Edit Event"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: title),
+            TextField(controller: desc),
+            TextField(controller: loc),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () async {
+              await _updateEvent(event["id"], {
+                "title": title.text,
+                "description": desc.text,
+                "location": loc.text,
+                "start_time": event["start_time"],
+                "end_time": event["end_time"],
+              });
+              Navigator.pop(context);
+            },
+            child: const Text("Save"),
+          )
+        ],
+      ),
+    );
+  }
+
+>>>>>>> main
   Future<void> _createEvent({
     required String title,
     required String description,
@@ -318,6 +436,7 @@ void onDateTapped(DateTime date) {
     required String endTime,
     int? capacity,
   }) async {
+<<<<<<< HEAD
     try {
       final response = await http.post(
         Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
@@ -331,6 +450,21 @@ void onDateTapped(DateTime date) {
           if (capacity != null) "capacity_limit": capacity,
         }),
       );
+=======
+    final res = await http.post(
+      Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
+      headers: ApiService.headers,
+      body: jsonEncode({
+        "title": title,
+        "description": description,
+        "location": location,
+        "start_time": startTime,
+        "end_time": endTime,
+        "capacity_limit" : capacity ??0,
+    
+      }),
+    );
+>>>>>>> main
 
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
