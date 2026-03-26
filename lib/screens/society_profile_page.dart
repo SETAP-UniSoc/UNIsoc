@@ -91,9 +91,15 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         final data = jsonDecode(response.body) as List;
         final now = DateTime.now();
         setState(() {
-          events = data
-              .where((e) => DateTime.parse(e["start_time"]).isAfter(now))
-              .toList();
+          final upcoming = data
+.where((e) => DateTime.parse(e["start_time"]).isAfter(now))
+.toList();
+
+upcoming.sort((a, b) =>
+DateTime.parse(a["start_time"])
+.compareTo(DateTime.parse(b["start_time"])));
+
+events = upcoming;
         });
         print("✅ Loaded ${events.length} events");
       }
