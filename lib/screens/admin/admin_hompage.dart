@@ -646,41 +646,55 @@ print("Error loading events: $e");
     );
   }
 
-  Widget _buildEventsSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+ Widget _buildEventsSection() {
+  // Create a controller for the events carousel
+  final CarouselSliderController _eventsController = CarouselSliderController();
+  
+  // Only show upcoming events (future dates)
+  final now = DateTime.now();
+  final upcomingEvents = events.where((e) => 
+    DateTime.parse(e["start_time"]).isAfter(now)
+  ).toList();
+  
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Upcoming Events",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        if (isLoading)
+          const Center(child: CircularProgressIndicator())
+        else if (upcomingEvents.isEmpty)
           const Text(
-            "Upcoming Events",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 12),
-          if (isLoading)
-            const Center(child: CircularProgressIndicator())
-          else if (events.isEmpty)
-            const Text(
-              "No upcoming events",
-              style: TextStyle(color: Colors.grey),
-            )
-          else
-            SizedBox(
-              height: 160,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: events.length,
-                itemBuilder: (context, index) {
-                  final event = events[index];
+            "No upcoming events",
+            style: TextStyle(color: Colors.grey),
+          )
+        else
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              CarouselSlider(
+                carouselController: _eventsController,
+                options: CarouselOptions(
+                  height: 160, // Keep original height
+                  autoPlay: true,
+                  autoPlayInterval: const Duration(seconds: 4),
+                  enlargeCenterPage: true,
+                  viewportFraction: 0.8,
+                ),
+                items: upcomingEvents.map((event) {
                   final startTime = DateTime.parse(event["start_time"]).toLocal();
-
+                  
                   return GestureDetector(
                     onTap: () {
                       navigateToSociety(event["society_id"], event["society_name"]);
                     },
                     child: Container(
-                      width: 200,
-                      margin: const EdgeInsets.only(right: 12),
+                      width: 200, // Keep original width
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
@@ -738,11 +752,27 @@ print("Error loading events: $e");
                       ),
                     ),
                   );
-                },
+                }).toList(),
               ),
-            ),
-        ],
-      ),
-    );
-  }
+              Positioned(
+                left: 0,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios, color: Colors.purple),
+                  onPressed: () => _eventsController.previousPage(),
+                ),
+              ),
+              Positioned(
+                right: 0,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_forward_ios, color: Colors.purple),
+                  onPressed: () => _eventsController.nextPage(),
+                ),
+              ),
+            ],
+          ),
+      ],
+    ),
+  );
+}
+
 }
