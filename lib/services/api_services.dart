@@ -5,25 +5,16 @@ class ApiService {
   static const String baseUrl = "http://10.128.4.122:8000/api";
 
   static String? authToken;
-<<<<<<< HEAD
-  static int? societyId; // ← added
-  static String? societyName; // ← added
-=======
   static int? societyId; // Admin's society ID
   static String? societyName; // Admin's society name
->>>>>>> Maya-up2266552
 
   static Map<String, String> get headers => {
     "Content-Type": "application/json",
     if (authToken != null) "Authorization": "Token $authToken",
   };
-<<<<<<< HEAD
-=======
 
   // Save login data after admin login
   static void saveAdminLogin(String token, int id, String name) {
-    authToken = token;
-    societyId = id;
     societyName = name;
   }
 
@@ -33,12 +24,10 @@ class ApiService {
     societyId = null;
     societyName = null;
   }
->>>>>>> Maya-up2266552
 
   // -------- PUBLIC ENDPOINTS --------
 
   static Future<List> getSocieties() async {
-    final response = await http.get(
       Uri.parse("$baseUrl/societies/"),
       headers: headers,
     );
@@ -65,14 +54,10 @@ class ApiService {
   // -------- JOIN / LEAVE --------
 
   static Future<http.Response> joinSociety(int id) {
-<<<<<<< HEAD
-    return http.post(Uri.parse("$baseUrl/society/$id/join/"), headers: headers);
-=======
     return http.post(
       Uri.parse("$baseUrl/societies/$id/join/"),
       headers: headers,
     );
->>>>>>> Maya-up2266552
   }
 
   static Future<http.Response> leaveSociety(int id) {
@@ -81,9 +66,6 @@ class ApiService {
       headers: headers,
     );
   }
-<<<<<<< HEAD
-}
-=======
 
   // -------- SOCIETY DETAILS --------
 
@@ -103,4 +85,3 @@ class ApiService {
     );
   }
 }
->>>>>>> Maya-up2266552

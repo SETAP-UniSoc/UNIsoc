@@ -220,20 +220,8 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-<<<<<<< HEAD
-
-                  // society header card
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-=======
                   // SOCIETY LOGO/IMAGE
                   Center(
->>>>>>> Maya-up2266552
                     child: Column(
                       children: [
                         societyData["image_url"] != null && societyData["image_url"].toString().isNotEmpty
