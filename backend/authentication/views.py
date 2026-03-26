@@ -51,7 +51,7 @@ class AddEventView(generics.CreateAPIView):
 
 class DeleteEventView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
-    queryset = Event.objects.all()
+    serializer_class = EventSerializer
     lookup_field = 'id'
 
     def get_queryset(self):
@@ -167,5 +167,22 @@ class MyEventsView(APIView):
 
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data)
+
+class AllEventsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        events = Event.objects.all().order_by('-created_at')[:5]
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+    
+class MyCreatedEventsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        events = Event.objects.filter(created_by=request.user).order_by('-created_at')
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+    
     
     
