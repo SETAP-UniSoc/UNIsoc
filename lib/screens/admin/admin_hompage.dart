@@ -646,7 +646,7 @@ print("Error loading events: $e");
     );
   }
 
- Widget _buildEventsSection() {
+  Widget _buildEventsSection() {
   // Create a controller for the events carousel
   final CarouselSliderController _eventsController = CarouselSliderController();
   
@@ -680,7 +680,7 @@ print("Error loading events: $e");
               CarouselSlider(
                 carouselController: _eventsController,
                 options: CarouselOptions(
-                  height: 160, // Keep original height
+                  height: 160,
                   autoPlay: true,
                   autoPlayInterval: const Duration(seconds: 4),
                   enlargeCenterPage: true,
@@ -694,7 +694,8 @@ print("Error loading events: $e");
                       navigateToSociety(event["society_id"], event["society_name"]);
                     },
                     child: Container(
-                      width: 200, // Keep original width
+                      width: 200,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
@@ -773,6 +774,4 @@ print("Error loading events: $e");
       ],
     ),
   );
-}
-
 }
