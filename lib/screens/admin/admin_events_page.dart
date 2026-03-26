@@ -376,7 +376,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   }) async {
     try {
       final response = await http.put(
-        Uri.parse("${ApiService.baseUrl}/event/$eventId/"),
+        Uri.parse("${ApiService.baseUrl}/event/$eventId/update/"),
         headers: ApiService.headers,
         body: jsonEncode({
           "title": title,
@@ -384,24 +384,22 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
           "location": location,
           "start_time": startTime,
           "end_time": endTime,
-          if (capacity != null) "capacity_limit": capacity,
+          "capacity_limit": capacity,
         }),
       );
 
-      print("✏️ Update event response: ${response.statusCode}");
-
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 204) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Event updated successfully! ✅")),
+          const SnackBar(content: Text("Event updated successfully")),
         );
-        loadEvents();
+        await loadEvents();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed to update event: ${response.statusCode}")),
         );
       }
     } catch (e) {
-      print("❌ Error updating event: $e");
+      print("Error updating event: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error updating event")),
       );
@@ -582,7 +580,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         );
       }
     } catch (e) {
-      print("❌ Error creating event: $e");
+      print("Error creating event: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error creating event")),
       );
@@ -603,12 +601,14 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         );
         loadEvents(); // Auto-refresh after delete
       } else {
-        print("❌ Failed to delete event: ${response.statusCode}");
+        print("Failed to delete event: ${response.statusCode}");
       }
     } catch (e) {
-      print("❌ Error deleting event: $e");
+      print("Error deleting event: $e");
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
