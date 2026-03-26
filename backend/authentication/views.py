@@ -10,6 +10,7 @@ from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from .serializer import EventSerializer
 from .import serializer
+from django.utils.timezone import now
 
 
 
@@ -172,7 +173,10 @@ class AllEventsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        events = Event.objects.all().order_by('-created_at')[:5]
+        events = Event.objects.filter(
+            start_time__gte=now()   # ✅ ONLY FUTURE EVENTS
+        ).order_by('start_time')[:5]  # ✅ SOONEST FIRST
+
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data)
     
