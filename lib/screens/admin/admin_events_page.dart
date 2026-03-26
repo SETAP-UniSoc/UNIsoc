@@ -46,36 +46,46 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         final now = DateTime.now();
         
         // Only show upcoming events (future dates)
-        final upcomingEvents = data.where((e) =>
-          DateTime.parse(e["start_time"]).isAfter(now)
-        ).toList();
+        // final upcomingEvents = data.where((e) =>
+        //   DateTime.parse(e["start_time"]).isAfter(now)
+        // ).toList();
+
+        final upcomingEvents = data; // Show all events for now, even past ones, since admins might want to edit them or see attendance stats 
 
         print("✅ Loaded ${upcomingEvents.length} upcoming events");
 
         setState(() {
           eventData = upcomingEvents;
-          calendarEvents = upcomingEvents.map((e) => Event(
-            eventName: e["title"],
-            dates: [DateTime.parse(e["start_time"]).toLocal()],
-            color: const Color(0xFF8B5CF6), // Purple to match theme
-          )).toList();
+          calendarEvents = upcomingEvents.map((e) {
+            final parsedDate = DateTime.parse(e["start_time"]).toLocal();
+            final normalizedDate = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+            print("Event DATE RAW: ${e["start_time"]}");
+            print("Event DATE LOCAL: $parsedDate");
+            return Event(
+              eventName: e["title"],
+              dates: [normalizedDate],
+              color: const Color(0xFF8B5CF6), // Purple to match theme
+            );
+          }).toList();
           isLoading = false;
         });
+
       } else {
-        print("❌ Failed to load events: ${response.statusCode}");
+        print("Failed to load events: ${response.statusCode}");
         setState(() => isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed to load events: ${response.statusCode}")),
         );
       }
     } catch (e) {
-      print("❌ LOAD EVENTS ERROR: $e");
+      print("LOAD EVENTS ERROR: $e");
       setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error loading events")),
       );
     }
   }
+  
 
   // Show popup when admin taps a date - shows ALL events on that date
   void onDateTapped(DateTime date) {
