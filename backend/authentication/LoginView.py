@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
+from .models import Society  # ✅ IMPORT THIS
 
 User = get_user_model()
 
@@ -20,6 +21,7 @@ class LoginView(APIView):
             )
 
         try:
+            # 🔍 FIND USER
             if email:
                 user = User.objects.get(email__iexact=email)
             elif up_number:
@@ -33,23 +35,29 @@ class LoginView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
+            # 🔐 CHECK PASSWORD
             if user.check_password(password):
                 token, _ = Token.objects.get_or_create(user=user)
-                society_id = None #M added
-                society_name = None #M added
-                from .models import Society #M added
-                society = Society.objects.filter(admin=user).first() #M added
-                if society: #M added
-                    society_id = society.id #M added
-                    society_name = society.name #M added
-                
+
+                society_id = None
+                society_name = None
+
+                # ✅ CRITICAL FIX: LINK ADMIN TO SOCIETY
+                if user.role == "admin":
+                    try:
+                        society = Society.objects.get(admin=user)
+                        society_id = society.id
+                        society_name = society.name
+                    except Society.DoesNotExist:
+                        pass
+
                 return Response({
                     "token": token.key,
                     "role": user.role,
                     "email": user.email,
                     "up_number": user.up_number,
-                    "society_id": society_id, #M added
-                    "society_name": society_name, #M added
+                    "society_id": society_id,      # ✅ REQUIRED
+                    "society_name": society_name   # ✅ REQUIRED
                 })
 
         except User.DoesNotExist:
