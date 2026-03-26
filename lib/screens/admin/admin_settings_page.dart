@@ -20,17 +20,8 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   bool obscureNew = true;
   bool obscureConfirm = true;
 
-  // notifications
-  List notificationPrefs = [];
-  bool notificationsLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-     // loadNotifications();
-    });
-  }
+  // ✅ simple toggle (no backend)
+  bool notificationsEnabled = true;
 
   @override
   void dispose() {
@@ -38,42 +29,6 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
     newPasswordController.dispose();
     confirmPasswordController.dispose();
     super.dispose();
-  }
-
-  Future<void> loadNotifications() async {
-    try {
-      final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/notifications/"),
-        headers: ApiService.headers,
-      );
-      if (response.statusCode == 200) {
-        setState(() {
-          notificationPrefs = jsonDecode(response.body);
-          notificationsLoading = false;
-        });
-      }
-    } catch (e) {
-      setState(() => notificationsLoading = false);
-      print("Error loading notifications: $e");
-    }
-  }
-
-  Future<void> toggleNotification(int societyId, bool currentValue) async {
-    try {
-      final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}/notifications/"),
-        headers: ApiService.headers,
-        body: jsonEncode({
-          "society_id": societyId,
-          "notify": !currentValue,
-        }),
-      );
-      if (response.statusCode == 200) {
-        loadNotifications();
-      }
-    } catch (e) {
-      print("Error toggling notification: $e");
-    }
   }
 
   Future<void> changePassword() async {
@@ -185,66 +140,40 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
 
             const SizedBox(height: 32),
 
-            // notifications section
+            // notification toggle with zero functionality 
             const Text(
               "Notifications",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             const Text(
-              "Manage email notifications for your societies",
+              "Toggle notifications on or off",
               style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 12),
 
-            notificationsLoading
-                ? const Center(child: CircularProgressIndicator())
-                : notificationPrefs.isEmpty
-                    ? const Text(
-                        "No notification preferences yet",
-                        style: TextStyle(color: Colors.grey),
-                      )
-                    : ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: notificationPrefs.length,
-                        itemBuilder: (context, index) {
-                          final pref = notificationPrefs[index];
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade300),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: SwitchListTile(
-                              title: Text(
-                                pref["society"],
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w500),
-                              ),
-                              subtitle: Text(
-                                pref["notify"]
-                                    ? "Notifications on"
-                                    : "Notifications off",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: pref["notify"]
-                                      ? Colors.purple
-                                      : Colors.grey,
-                                ),
-                              ),
-                              value: pref["notify"] ?? true,
-                              activeColor: Colors.purple,
-                              onChanged: (val) {
-                                toggleNotification(
-                                  pref["society_id"],
-                                  pref["notify"] ?? true,
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      ),
+            SwitchListTile(
+              title: const Text(
+                "Enable Notifications",
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
+              subtitle: Text(
+                notificationsEnabled
+                    ? "Notifications on"
+                    : "Notifications off",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: notificationsEnabled ? Colors.purple : Colors.grey,
+                ),
+              ),
+              value: notificationsEnabled,
+              activeColor: Colors.purple,
+              onChanged: (val) {
+                setState(() {
+                  notificationsEnabled = val;
+                });
+              },
+            ),
 
             const SizedBox(height: 32),
 
