@@ -40,30 +40,26 @@ class SocietyListSearchView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        query = request.query_params.get("q", "").strip()  # optional search query
+        query = request.query_params.get("q", "").strip()
 
-        # Base queryset: active societies
         societies = Society.objects.filter(is_active=True)
 
-        # If query exists, filter by name (case-insensitive)
         if query:
             societies = societies.filter(name__icontains=query)
 
-        # Annotate with member count
         societies = societies.annotate(
-            member_count=Count(
+            active_member_count=Count(
                 'membership',
                 filter=Q(membership__left_at__isnull=True)
             )
-        ).order_by('name')  # alphabetically
+        ).order_by('name')
 
-        # Prepare response
         data = [{
             "id": s.id,
             "name": s.name,
             "category": s.category,
             "description": s.description,
-            "member_count": s.member_count,
+            "member_count": s.active_member_count,  # ✅ fixed
         } for s in societies]
 
         return Response(data)
@@ -231,31 +227,4 @@ class MyCreatedEventsView(APIView):
         return Response(serializer.data)
     
     
-class SocietySearchView(APIView):
-    permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        query = request.query_params.get("q", "").strip()
-
-        if not query:
-            return Response([])  # empty search returns empty list
-
-        societies = Society.objects.filter(
-            is_active=True,
-            name__icontains=query
-        ).annotate(
-            member_count=Count(
-                'membership',
-                filter=Q(membership__left_at__isnull=True)
-            )
-        ).order_by('name')
-
-        data = [{
-            "id": s.id,
-            "name": s.name,
-            "category": s.category,
-            "description": s.description,
-            "member_count": s.member_count,
-        } for s in societies]
-
-        return Response(data)
