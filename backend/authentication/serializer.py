@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SocietySerializer(serializers.ModelSerializer):
-    member_count = serializers.SerializerMethodField()
+    member_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Society
