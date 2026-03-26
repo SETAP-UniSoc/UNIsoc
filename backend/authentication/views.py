@@ -89,22 +89,22 @@ class ListEventsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from django.utils.timezone import now
 
-            if request.user.role == "admin":
-            # Admin sees their own society events
-                society = Society.objects.get(admin=request.user)
-                events = Event.objects.filter(
-                    society=society,
-                    start_time__gte=now()   
-                    ).order_by('start_time')
-            else:
-            # Users see events of societies they belong to
-                events = Event.objects.filter(
-                    society__membership__user=request.user
-                ).distinct()
+        if request.user.role == "admin":
+            society = Society.objects.get(admin=request.user)
+            events = Event.objects.filter(
+                society=society,
+                start_time__gte=now()
+            )
+        else:
+            events = Event.objects.filter(
+                society__membership__user=request.user,
+                start_time__gte=now()
+            ).distinct()
 
-            serializer = EventSerializer(events, many=True)
-            return Response(serializer.data)
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
     
 class SocietyEventView(APIView):
     permission_classes = [IsAuthenticated]
