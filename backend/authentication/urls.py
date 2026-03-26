@@ -40,7 +40,7 @@ urlpatterns = [
     path('events/my/', MyEventsView.as_view()),
     path('events/<int:id>/', EventDetailView.as_view()),
     path('events/<int:id>/update/', UpdateEventView.as_view()),
-    path('events/all/', AllEventsView.as_view(), name='all-events'),
+    path('events/', AllEventsView.as_view(), name='all-events'),
     path('events/my/', MyCreatedEventsView.as_view(), name='my-events'),
 
     # Analytics
