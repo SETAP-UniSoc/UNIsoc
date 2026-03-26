@@ -31,11 +31,11 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     
     print("📅 Loading events for society ID: ${widget.societyId}");
     print("🔑 Token: ${ApiService.authToken}");
-    print("🌐 URL: ${ApiService.baseUrl}/societies/${widget.societyId}/events/");
+    print("🌐 URL: ${ApiService.baseUrl}/societies/${widget.societyId}/api/events/");
     
     try {
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
+        Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/api/events/"),
         headers: ApiService.headers,
       );
 
