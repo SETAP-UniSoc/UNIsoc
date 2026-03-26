@@ -18,10 +18,13 @@ class SocietySerializer(serializers.ModelSerializer):
         return obj.member_count
 
 class EventSerializer(serializers.ModelSerializer):
+    attendee_count = serializers.SerializerMethodField()
     class Meta:
         model = Event
         fields = "__all__"
 
-        
+    def get_attendee_count(self, obj):
+        return obj.rsvps.count()
+
 
         
