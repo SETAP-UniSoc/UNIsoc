@@ -51,7 +51,7 @@ class AddEventView(generics.CreateAPIView):
 
 class DeleteEventView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
-    queryset = Event.objects.all()
+    serializer_class = EventSerializer
     lookup_field = 'id'
 
     def get_queryset(self):
