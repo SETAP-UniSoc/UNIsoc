@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .serializer import EventSerializer
 from .import serializer
+from django.utils.timezone import now
 
 
 
@@ -68,17 +69,106 @@ class ListEventsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from django.utils.timezone import now
 
-            if request.user.role == "admin":
-            # Admin sees their own society events
-                society = Society.objects.get(admin=request.user)
-                events = Event.objects.filter(society=society)
+        if request.user.role == "admin":
+            society = Society.objects.get(admin=request.user)
+            events = Event.objects.filter(
+                society=society,
+                start_time__gte=now()
+            )
+        else:
+            events = Event.objects.filter(
+                society__membership__user=request.user,
+                start_time__gte=now()
+            ).distinct()
 
-            else:
-            # Users see events of societies they belong to
-                events = Event.objects.filter(
-                    society__membership__user=request.user
-                ).distinct()
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+    
+class SocietyEventView(APIView):
+    permission_classes = [IsAuthenticated]
 
-            serializer = EventSerializer(events, many=True)
-            return Response(serializer.data)
+    def get(self, request, society_id):
+
+        try:
+            society = Society.objects.get(id=society_id)
+        except Society.DoesNotExist:
+            return Response({"error": "Society not found"}, status=404)
+
+        events = Event.objects.filter(society=society)
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request, society_id):
+        if request.user.role != "admin":
+            return Response({"error": "Admins only"}, status=403)
+
+        try:
+            society = Society.objects.get(id=society_id, admin=request.user)
+        except Society.DoesNotExist:
+            return Response({"error": "Society not found or not admin"}, status=404)
+
+        data = request.data.copy()
+        data["society"] = society.id
+        data["created_by"] = request.user.id
+
+        serializer = EventSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+
+        return Response(serializer.errors, status=400)
+
+class EventDetailView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    lookup_field = 'id'
+
+class UpdateEventView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        return Event.objects.filter(created_by=self.request.user)
+    
+class MyEventsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role == "admin":
+            society = Society.objects.get(admin=request.user)
+            events = Event.objects.filter(society=society)
+        else:
+            events = Event.objects.filter(
+                society__membership__user=request.user
+            ).distinct()
+
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+
+class AllEventsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        events = Event.objects.filter(
+            start_time__gte=now()   # ✅ ONLY FUTURE EVENTS
+        ).order_by('start_time')[:5]  # ✅ SOONEST FIRST
+
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+    
+class MyCreatedEventsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        events = Event.objects.filter(created_by=request.user).order_by('-created_at')
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+    
+    
+    

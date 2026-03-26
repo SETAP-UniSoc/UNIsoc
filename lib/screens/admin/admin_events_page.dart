@@ -460,7 +460,7 @@ void onDateTapped(DateTime date) {
         "location": location,
         "start_time": startTime,
         "end_time": endTime,
-        "capacity_limit" : capacity ??0,
+        "capacity_limit": capacity ?? 0,
     
       }),
     );

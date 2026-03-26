@@ -22,7 +22,20 @@ urlpatterns = [
     path('event/<int:event_id>/delete/', DeleteEventView.as_view(), name='delete-event'),
     path('events/', CreateEventView.as_view(), name='event-list'),
     path('events/create/', CreateEventView.as_view(), name='create-event'),
-]
+    path('events/my/', MyEventsView.as_view()),
+    path('events/<int:id>/', EventDetailView.as_view()),
+    path('events/<int:id>/update/', UpdateEventView.as_view()),
+    path('events/', AllEventsView.as_view(), name='all-events'),
+    path('events/my/', MyCreatedEventsView.as_view(), name='my-events'),
+
+    # Analytics
+    path("analytics/", AnalyticsView.as_view(), name="analytics"),
+    # Users 
+    path('users/', UserListView.as_view(), name='user-list-create'),
+    # search and filter societies
+    path('societies/search/', SocietyListView.as_view(), name='society-search'),
+    ]
+
 
 
 
