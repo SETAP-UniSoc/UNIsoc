@@ -16,7 +16,7 @@ class SocietySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_member_count(self, obj):
-        return obj.member_count
+        return obj.members.count()
 
 class EventSerializer(serializers.ModelSerializer):
     attendee_count = serializers.SerializerMethodField()
