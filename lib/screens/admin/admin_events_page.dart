@@ -19,14 +19,15 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   List eventData = [];
   bool isLoading = true;
 
+  DateTime normalize(DateTime d) => DateTime(d.year, d.month, d.day);
+
   @override
   void initState() {
     super.initState();
     loadEvents();
   }
 
-  DateTime normalize(DateTime d) => DateTime(d.year, d.month, d.day);
-
+  // ✅ LOAD EVENTS + GROUP BY DATE
   Future<void> loadEvents() async {
     setState(() => isLoading = true);
 
@@ -38,18 +39,40 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body) as List;
 
+      // 🔥 GROUP EVENTS BY DATE
+      Map<String, List> grouped = {};
+
+      for (var e in data) {
+        final parsed = DateTime.parse(e["start_time"]).toLocal();
+        final key = "${parsed.year}-${parsed.month}-${parsed.day}";
+
+        if (!grouped.containsKey(key)) {
+          grouped[key] = [];
+        }
+        grouped[key]!.add(e);
+      }
+
+      // 🔥 CREATE CALENDAR EVENTS (ONE PER DAY)
+      List<Event> calEvents = grouped.entries.map((entry) {
+        final parts = entry.key.split("-");
+        final date = DateTime(
+          int.parse(parts[0]),
+          int.parse(parts[1]),
+          int.parse(parts[2]),
+        );
+
+        return Event(
+          eventName: "${entry.value.length} events", // shows count
+          dates: [date],
+          color: entry.value.length > 1
+              ? Colors.red
+              : const Color(0xFF8B5CF6),
+        );
+      }).toList();
+
       setState(() {
         eventData = data;
-
-        calendarEvents = data.map((e) {
-          final parsed = DateTime.parse(e["start_time"]).toLocal();
-          return Event(
-            eventName: e["title"],
-            dates: [normalize(parsed)], // 🔥 key fix
-            color: const Color(0xFF8B5CF6),
-          );
-        }).toList();
-
+        calendarEvents = calEvents;
         isLoading = false;
       });
     } else {
@@ -57,6 +80,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     }
   }
 
+  // ✅ TAP DATE
   void onDateTapped(DateTime date) {
     final selected = normalize(date);
 
@@ -72,6 +96,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     }
   }
 
+  // ✅ SHOW EVENTS LIST
   void _showEvents(List events) {
     showDialog(
       context: context,
@@ -88,7 +113,12 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
 
               return ListTile(
                 title: Text(e["title"]),
-                subtitle: Text("${time.hour}:${time.minute} • ${e["location"] ?? ""}"),
+                subtitle: Text(
+                    "${time.hour}:${time.minute} • ${e["location"] ?? ""}"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showEditDialog(e); // 🔥 EDIT
+                },
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () async {
@@ -102,19 +132,26 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Close"),
-          ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close")),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showCreateDialog(
+                  DateTime.parse(events[0]["start_time"]).toLocal());
+            },
+            child: const Text("Add Another"),
+          )
         ],
       ),
     );
   }
 
+  // ✅ CREATE EVENT
   void _showCreateDialog(DateTime date) {
     final title = TextEditingController();
     final desc = TextEditingController();
     final loc = TextEditingController();
-    final cap = TextEditingController();
 
     TimeOfDay start = const TimeOfDay(hour: 9, minute: 0);
     TimeOfDay end = const TimeOfDay(hour: 10, minute: 0);
@@ -124,38 +161,30 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
       builder: (_) => StatefulBuilder(
         builder: (_, setStateDialog) => AlertDialog(
           title: const Text("Create Event"),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextField(controller: title, decoration: const InputDecoration(labelText: "Title")),
-                TextField(controller: desc, decoration: const InputDecoration(labelText: "Description")),
-                TextField(controller: loc, decoration: const InputDecoration(labelText: "Location")),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: title, decoration: const InputDecoration(labelText: "Title")),
+              TextField(controller: desc, decoration: const InputDecoration(labelText: "Description")),
+              TextField(controller: loc, decoration: const InputDecoration(labelText: "Location")),
 
-                ListTile(
-                  title: const Text("Start Time"),
-                  subtitle: Text(start.format(context)),
-                  onTap: () async {
-                    final picked = await showTimePicker(context: context, initialTime: start);
-                    if (picked != null) setStateDialog(() => start = picked);
-                  },
-                ),
-
-                ListTile(
-                  title: const Text("End Time"),
-                  subtitle: Text(end.format(context)),
-                  onTap: () async {
-                    final picked = await showTimePicker(context: context, initialTime: end);
-                    if (picked != null) setStateDialog(() => end = picked);
-                  },
-                ),
-
-                TextField(
-                  controller: cap,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: "Capacity"),
-                ),
-              ],
-            ),
+              ListTile(
+                title: const Text("Start Time"),
+                subtitle: Text(start.format(context)),
+                onTap: () async {
+                  final picked = await showTimePicker(context: context, initialTime: start);
+                  if (picked != null) setStateDialog(() => start = picked);
+                },
+              ),
+              ListTile(
+                title: const Text("End Time"),
+                subtitle: Text(end.format(context)),
+                onTap: () async {
+                  final picked = await showTimePicker(context: context, initialTime: end);
+                  if (picked != null) setStateDialog(() => end = picked);
+                },
+              ),
+            ],
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
@@ -170,7 +199,6 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
                   location: loc.text,
                   startTime: startDT.toIso8601String(),
                   endTime: endDT.toIso8601String(),
-                  capacity: cap.text.isEmpty ? null : int.tryParse(cap.text),
                 );
 
                 Navigator.pop(context);
@@ -183,13 +211,50 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     );
   }
 
+  // ✅ EDIT EVENT
+  void _showEditDialog(Map event) {
+    final title = TextEditingController(text: event["title"]);
+    final desc = TextEditingController(text: event["description"]);
+    final loc = TextEditingController(text: event["location"]);
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Edit Event"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: title),
+            TextField(controller: desc),
+            TextField(controller: loc),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () async {
+              await _updateEvent(event["id"], {
+                "title": title.text,
+                "description": desc.text,
+                "location": loc.text,
+                "start_time": event["start_time"],
+                "end_time": event["end_time"],
+              });
+              Navigator.pop(context);
+            },
+            child: const Text("Save"),
+          )
+        ],
+      ),
+    );
+  }
+
   Future<void> _createEvent({
     required String title,
     required String description,
     required String location,
     required String startTime,
     required String endTime,
-    int? capacity,
   }) async {
     final res = await http.post(
       Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
@@ -200,11 +265,20 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         "location": location,
         "start_time": startTime,
         "end_time": endTime,
-        if (capacity != null) "capacity_limit": capacity,
       }),
     );
 
     if (res.statusCode == 201) loadEvents();
+  }
+
+  Future<void> _updateEvent(int id, Map data) async {
+    final res = await http.put(
+      Uri.parse("${ApiService.baseUrl}/events/$id/update/"),
+      headers: ApiService.headers,
+      body: jsonEncode(data),
+    );
+
+    if (res.statusCode == 200) loadEvents();
   }
 
   Future<void> _deleteEvent(int id) async {
