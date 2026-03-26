@@ -91,36 +91,41 @@ class _AdminHomepageState extends State<AdminHomepage> {
     } catch (e) {
       print("Error loading societies: $e");
     }
-  }
+}
 
-  Future<void> loadEvents() async {
-    if (ApiService.societyId == null) {
-      print("⚠️ Society ID is null - skipping events load");
-      return;
-    }
-    
-    try {
-      final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/societies/${ApiService.societyId}/events/"),
-        headers: ApiService.headers,
-      );
-      print("EVENTS RESPONSE: ${response.statusCode}");
-      
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as List;
-        final now = DateTime.now();
-        setState(() {
-          events = data
-              .where((e) => DateTime.parse(e["start_time"]).isAfter(now))
-              .toList();
-        });
-        print("Loaded ${events.length} upcoming events");
-      }
-    } catch (e) {
-      print("Error loading events: $e");
-      setState(() => events = []);
-    }
-  }
+Future<void> loadEvents() async {
+try {
+final response = await http.get(
+Uri.parse("${ApiService.baseUrl}/events/"), // 👈 GET ALL EVENTS
+headers: ApiService.headers,
+);
+
+print("EVENTS RESPONSE: ${response.statusCode}");
+
+if (response.statusCode == 200) {
+final data = jsonDecode(response.body) as List;
+final now = DateTime.now();
+
+final upcoming = data
+.where((e) => DateTime.parse(e["start_time"]).isAfter(now))
+.toList();
+
+// ✅ SORT newest first
+upcoming.sort((a, b) =>
+DateTime.parse(b["start_time"])
+.compareTo(DateTime.parse(a["start_time"])));
+
+setState(() {
+events = upcoming.take(5).toList(); // 👈 ONLY 5 EVENTS
+});
+
+print("Loaded ${events.length} latest events");
+}
+} catch (e) {
+print("Error loading events: $e");
+setState(() => events = []);
+}
+}
 
   void applyFilters() {
     List result = [...societies];
