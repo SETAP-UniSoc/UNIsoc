@@ -11,6 +11,7 @@ from rest_framework.exceptions import PermissionDenied
 from .serializer import EventSerializer
 from .import serializer
 from django.utils.timezone import now
+from django.db.models import Count, Q
 
 
 
@@ -198,4 +199,31 @@ class MyCreatedEventsView(APIView):
         return Response(serializer.data)
     
     
-    
+class SocietySearchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        query = request.query_params.get("q", "").strip()
+
+        if not query:
+            return Response([])  # empty search returns empty list
+
+        societies = Society.objects.filter(
+            is_active=True,
+            name__icontains=query
+        ).annotate(
+            member_count=Count(
+                'membership',
+                filter=Q(membership__left_at__isnull=True)
+            )
+        ).order_by('name')
+
+        data = [{
+            "id": s.id,
+            "name": s.name,
+            "category": s.category,
+            "description": s.description,
+            "member_count": s.member_count,
+        } for s in societies]
+
+        return Response(data)
