@@ -1,3 +1,4 @@
+from flask import request
 from rest_framework import generics
 from .models import User, Event, Society
 from .serializer import UserSerializer
@@ -6,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 from .serializer import EventSerializer
 from .import serializer
 
@@ -33,10 +35,28 @@ class SocietyListView(generics.ListAPIView):
     serializer_class = SocietySerializer
 
 class AddEventView(generics.CreateAPIView):
-    serializer_class = SocietySerializer
+    serializer_class = EventSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        if self.request.user.role != "admin":
+            raise PermissionDenied("Admins only")
+
+        society = Society.objects.get(admin=self.request.user)
+
+        serializer.save(
+            created_by=self.request.user,
+            society=society
+        )
 
 class DeleteEventView(generics.DestroyAPIView):
-    serializer_class = SocietySerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Event.objects.all()
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        return Event.objects.filter(created_by=self.request.user)
+        
 
 class CreateEventView(APIView):
     permission_classes = [IsAuthenticated]
@@ -82,3 +102,70 @@ class ListEventsView(APIView):
 
             serializer = EventSerializer(events, many=True)
             return Response(serializer.data)
+    
+class SocietyEventView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, society_id):
+
+        try:
+            society = Society.objects.get(id=society_id)
+        except Society.DoesNotExist:
+            return Response({"error": "Society not found"}, status=404)
+
+        events = Event.objects.filter(society=society)
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request, society_id):
+        if request.user.role != "admin":
+            return Response({"error": "Admins only"}, status=403)
+
+        try:
+            society = Society.objects.get(id=society_id, admin=request.user)
+        except Society.DoesNotExist:
+            return Response({"error": "Society not found or not admin"}, status=404)
+
+        data = request.data.copy()
+        data["society"] = society.id
+        data["created_by"] = request.user.id
+
+        serializer = EventSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+
+        return Response(serializer.errors, status=400)
+
+class EventDetailView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    lookup_field = 'id'
+
+class UpdateEventView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        return Event.objects.filter(created_by=self.request.user)
+    
+class MyEventsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role == "admin":
+            society = Society.objects.get(admin=request.user)
+            events = Event.objects.filter(society=society)
+        else:
+            events = Event.objects.filter(
+                society__membership__user=request.user
+            ).distinct()
+
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+    
+    
