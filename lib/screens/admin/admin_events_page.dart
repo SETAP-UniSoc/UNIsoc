@@ -114,7 +114,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
               return ListTile(
                 title: Text(e["title"]),
                 subtitle: Text(
-                    "${time.hour}:${time.minute} • ${e["location"] ?? ""}"),
+                    "${time.hour}:${time.minute} • ${e["location"] ?? ""} • ${e["capacity"] != null ? "Cap: ${e["capacity"]}" : "No Cap"}"),
                 onTap: () {
                   Navigator.pop(context);
                   _showEditDialog(e); // 🔥 EDIT
@@ -152,6 +152,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     final title = TextEditingController();
     final desc = TextEditingController();
     final loc = TextEditingController();
+    final cap = TextEditingController();  
 
     TimeOfDay start = const TimeOfDay(hour: 9, minute: 0);
     TimeOfDay end = const TimeOfDay(hour: 10, minute: 0);
@@ -167,6 +168,11 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
               TextField(controller: title, decoration: const InputDecoration(labelText: "Title")),
               TextField(controller: desc, decoration: const InputDecoration(labelText: "Description")),
               TextField(controller: loc, decoration: const InputDecoration(labelText: "Location")),
+
+              TextField( controller: cap,
+                decoration: const InputDecoration(labelText: "Capacity (optional)"),
+                keyboardType: TextInputType.number,
+              ),
 
               ListTile(
                 title: const Text("Start Time"),
@@ -199,6 +205,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
                   location: loc.text,
                   startTime: startDT.toIso8601String(),
                   endTime: endDT.toIso8601String(),
+                  capacity: cap.text.isEmpty ? null : int.tryParse(cap.text),
                 );
 
                 Navigator.pop(context);
@@ -216,7 +223,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     final title = TextEditingController(text: event["title"]);
     final desc = TextEditingController(text: event["description"]);
     final loc = TextEditingController(text: event["location"]);
-
+    final cap = TextEditingController(text: event["capacity"].toString());
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -255,6 +262,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     required String location,
     required String startTime,
     required String endTime,
+    int? capacity,
   }) async {
     final res = await http.post(
       Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
@@ -265,6 +273,8 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         "location": location,
         "start_time": startTime,
         "end_time": endTime,
+        "capacity_limit": capacity ?? 0,
+    
       }),
     );
 
