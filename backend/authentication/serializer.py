@@ -1,11 +1,11 @@
 
 from rest_framework import serializers
-from .models import Society
+from .models import Society, User
 from .models import Event 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Society
+        model = User
         fields = '__all__'
 
 class SocietySerializer(serializers.ModelSerializer):

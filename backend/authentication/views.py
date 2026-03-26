@@ -1,3 +1,4 @@
+from flask import request
 from rest_framework import generics
 from .models import User, Event, Society
 from .serializer import UserSerializer
@@ -36,7 +37,23 @@ class AddEventView(generics.CreateAPIView):
     serializer_class = SocietySerializer
 
 class DeleteEventView(generics.DestroyAPIView):
-    serializer_class = SocietySerializer
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, event_id):
+        try:
+            event = Event.objects.get(id=event_id, created_by=request.user)
+        except Event.DoesNotExist:
+            return Response({"error": "Event not found or not creator"}, status=404)
+
+        event.delete()
+        return Response(status=204)
+    
+        if request.user.role != "admin" or event_society.admin != request.user: 
+            return Response({"error": "Admins only"}, status=403)
+        
+        event.delete()
+        return Response(status=204)
+        
 
 class CreateEventView(APIView):
     permission_classes = [IsAuthenticated]
@@ -82,3 +99,39 @@ class ListEventsView(APIView):
 
             serializer = EventSerializer(events, many=True)
             return Response(serializer.data)
+    
+class SocietyEventView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, society_id):
+
+        try:
+            society = Society.objects.get(id=society_id)
+        except Society.DoesNotExist:
+            return Response({"error": "Society not found"}, status=404)
+
+        events = Event.objects.filter(society=society)
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request, society_id):
+        if request.user.role != "admin":
+            return Response({"error": "Admins only"}, status=403)
+
+        try:
+            society = Society.objects.get(id=society_id, admin=request.user)
+        except Society.DoesNotExist:
+            return Response({"error": "Society not found or not admin"}, status=404)
+
+        data = request.data.copy()
+        data["society"] = society.id
+        data["created_by"] = request.user.id
+
+        serializer = EventSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+
+        return Response(serializer.errors, status=400)
+    
