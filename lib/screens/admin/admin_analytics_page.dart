@@ -1,9 +1,3 @@
-
-
-
-
-
-
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -26,6 +20,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   List<String> labels = [];
   List<double> values = [];
   List<double> eventValues = [];
+  List<String> eventNames = [];
   int liveCount = 0;
   bool isLoading = false;
   Timer? liveTimer;
@@ -72,6 +67,10 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
               .map((e) => (e as num).toDouble())
               .toList();
           liveCount = data["live_count"] ?? 0;
+
+           eventValues = List<dynamic>.from(data["event_attendance"] ?? [])
+            .map((e) => (e as num).toDouble())
+            .toList();
 
            if (values.isNotEmpty) {
     values[values.length - 1] = liveCount.toDouble();

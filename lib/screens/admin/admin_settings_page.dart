@@ -28,7 +28,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      loadNotifications();
+     // loadNotifications();
     });
   }
 
