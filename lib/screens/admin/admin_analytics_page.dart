@@ -147,14 +147,25 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
             const SizedBox(height: 30),
 
             // current member count
-            if (values.isNotEmpty)
-              Text(
-                values.last.toStringAsFixed(0),
-                style: const TextStyle(
-                    fontSize: 32, fontWeight: FontWeight.bold),
-              ),
+            // if (values.isNotEmpty)
+            //   Text(
+            //     values.last.toStringAsFixed(0),
+            //     style: const TextStyle(
+            //         fontSize: 32, fontWeight: FontWeight.bold),
+            //   ),
 
-            const SizedBox(height: 20),
+            // const SizedBox(height: 20),
+
+            // current member count
+Text(
+  values.isNotEmpty
+      ? values.last.toStringAsFixed(0)
+      : liveCount.toString(),
+  style: const TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.bold,
+  ),
+),
 
             // membership trend graph
             SizedBox(
