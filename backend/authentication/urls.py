@@ -5,24 +5,32 @@ from .AnalyticsView import AnalyticsView
 from .JoinSoc import JoinSocietyView
 from .LeaveSoc import LeaveSocietyView
 from .SocietyDetailView import SocietyDetailView
-from .views import UserListView, SocietyListView
-from .views import AddEventView, DeleteEventView
-from .views import CreateEventView
+from .views import UserListView, SocietyListView, AddEventView, DeleteEventView, CreateEventView
+from .serializer import EventSerializer
+
 
 urlpatterns = [
+    # Authentication
     path("login/", LoginView.as_view(), name="login"),
     path("user/register/", RegisterView.as_view(), name="register"),
+    # Society management
     path("society/<int:society_id>/join/", JoinSocietyView.as_view(), name="join-society"),
     path("society/<int:society_id>/leave/", LeaveSocietyView.as_view(), name="leave-society"),
-    path('my-analytics/', AnalyticsView.as_view(), name="society-analytics"),
     path('societies/<int:society_id>/', SocietyDetailView.as_view(), name='society-detail'),
     path('users/', UserListView.as_view(), name='user-list-create'),
     path('societies/', SocietyListView.as_view(), name='society-list-create'),
     path('societies/<int:society_id>/events/', AddEventView.as_view(), name='society-events'),
+    # Admin event management
     path('event/<int:event_id>/delete/', DeleteEventView.as_view(), name='delete-event'),
     path('events/', CreateEventView.as_view(), name='event-list'),
     path('events/create/', CreateEventView.as_view(), name='create-event'),
-]
+    # Analytics
+    path("analytics/", AnalyticsView.as_view(), name="analytics"),
+    # Users 
+    path('users/', UserListView.as_view(), name='user-list-create'),
+    # search and filter societies
+    path('societies/search/', SocietyListView.as_view(), name='society-search'),
+    ]
 
 
 
