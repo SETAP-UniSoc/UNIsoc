@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path #include
 from .RegisterView import RegisterView
 from .LoginView import LoginView
 from .AnalyticsView import AnalyticsView
@@ -24,7 +24,7 @@ from .views import (
 
 
 urlpatterns = [
-    path("api/", include("authentication.urls")),
+    # path("api/", include("authentication.urls")),
     # Authentication
     path("login/", LoginView.as_view(), name="login"),
     path("user/register/", RegisterView.as_view(), name="register"),
