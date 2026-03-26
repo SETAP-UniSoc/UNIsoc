@@ -37,10 +37,10 @@ urlpatterns = [
     path('events/<int:id>/delete/', DeleteEventView.as_view(), name='delete-event'),
     path('events/', CreateEventView.as_view(), name='event-list'),
     path('events/create/', CreateEventView.as_view(), name='create-event'),
-    path('events/my/', MyEventsView.as_view()),
-    path('events/<int:id>/', EventDetailView.as_view()),
-    path('events/<int:id>/update/', UpdateEventView.as_view()),
-    path('events/', AllEventsView.as_view(), name='all-events'),
+    path('events/my/', MyEventsView.as_view(), name='my-events'),
+    path('events/<int:id>/', EventDetailView.as_view(), name='event-detail'),
+    path('events/<int:id>/update/', UpdateEventView.as_view(), name='update-event'),
+    path('events/all/', AllEventsView.as_view(), name='all-events'),
     path('events/my/', MyCreatedEventsView.as_view(), name='my-events'),
 
     # Analytics

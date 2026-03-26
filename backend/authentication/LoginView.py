@@ -15,13 +15,9 @@ class LoginView(APIView):
         password = request.data.get("password")
 
         if not password:
-            return Response(
-                {"error": "Password required"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "Password required"}, status=400)
 
         try:
-            # 🔍 FIND USER
             if email:
                 user = User.objects.get(email__iexact=email)
             elif up_number:
@@ -30,19 +26,15 @@ class LoginView(APIView):
                     up_number = f"up{up_number}"
                 user = User.objects.get(up_number__iexact=up_number)
             else:
-                return Response(
-                    {"error": "Email or UP number required"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                return Response({"error": "Email or UP number required"}, status=400)
 
-            # 🔐 CHECK PASSWORD
             if user.check_password(password):
                 token, _ = Token.objects.get_or_create(user=user)
 
+                # ✅ GET SOCIETY FOR ADMIN
                 society_id = None
                 society_name = None
 
-                # ✅ CRITICAL FIX: LINK ADMIN TO SOCIETY
                 if user.role == "admin":
                     try:
                         society = Society.objects.get(admin=user)
@@ -56,14 +48,11 @@ class LoginView(APIView):
                     "role": user.role,
                     "email": user.email,
                     "up_number": user.up_number,
-                    "society_id": society_id,      # ✅ REQUIRED
-                    "society_name": society_name   # ✅ REQUIRED
+                    "society_id": society_id,      # ✅ ADD THIS
+                    "society_name": society_name   # ✅ ADD THIS
                 })
 
         except User.DoesNotExist:
             pass
 
-        return Response(
-            {"error": "Invalid credentials"},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+        return Response({"error": "Invalid credentials"}, status=401)
