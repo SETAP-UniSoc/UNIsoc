@@ -30,6 +30,7 @@ urlpatterns = [
     # Society management
     path("society/<int:society_id>/join/", JoinSocietyView.as_view(), name="join-society"),
     path("society/<int:society_id>/leave/", LeaveSocietyView.as_view(), name="leave-society"),
+    path('societies/', SocietyListSearchView.as_view(), name='society-list-create'),
     path('societies/<int:society_id>/', SocietyDetailView.as_view(), name='society-detail'),
     path('users/', UserListView.as_view(), name='user-list-create'),
     #path('societies/', SocietyListSearchView.as_view(), name='society-list-create'),
