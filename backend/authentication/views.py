@@ -51,21 +51,11 @@ class AddEventView(generics.CreateAPIView):
 
 class DeleteEventView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
+    queryset = Event.objects.all()
+    lookup_field = 'id'
 
-    def delete(self, request, event_id):
-        try:
-            event = Event.objects.get(id=event_id, created_by=request.user)
-        except Event.DoesNotExist:
-            return Response({"error": "Event not found or not creator"}, status=404)
-
-        event.delete()
-        return Response(status=204)
-    
-        if request.user.role != "admin" or event_society.admin != request.user: 
-            return Response({"error": "Admins only"}, status=403)
-        
-        event.delete()
-        return Response(status=204)
+    def get_queryset(self):
+        return Event.objects.filter(created_by=self.request.user)
         
 
 class CreateEventView(APIView):
