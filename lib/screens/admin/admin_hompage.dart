@@ -7,7 +7,7 @@ import 'package:unisoc/services/api_services.dart';
 import 'package:unisoc/screens/society_profile_page.dart';
 import 'admin_bottom_nav.dart';
 import 'admin_dropdown_menu.dart';
-//admin hompage with a carousel of top societies, a section to browse societies by category and a section for upcoming events. Also includes a search bar that searches both events and societies and shows results in a dropdown as the user types. Admin can also filter and sort societies in the browse section. This is the default page when admin logs in
+
 class AdminHomepage extends StatefulWidget {
   const AdminHomepage({super.key});
 
@@ -31,32 +31,32 @@ class _AdminHomepageState extends State<AdminHomepage> {
   Timer? debounce;
   bool isSearching = false;
 
-  @override
-  void dispose() {
-  debounce?.cancel();
-  super.dispose();
-}
-
   final List<String> categories = [
-    "All", "Academic", "Cultural", "Sports", "Religious", "Extra-curricular" ]; // list of catergies
+    "All", "Academic", "Cultural", "Sports", "Religious", "Extra-curricular"
+  ];
 
   final Map<String, Color> categoryColours = {
-    "Academic": const Color(0xFF5C6BC0), //indgo
-
-    "Cultural ": const Color(0xFF26A69A), //teal
-    "Sports": const Color(0xFF7E57C2), //medium purple
-    "Religious": const Color(0xFF8D6E63), //warm brown
-    "Extra-curricular": const Color(0xFF42A5F5), //light blue
-    "All": const Color(0xFF7B1FA2), //deep purple    
-    };
+    "Academic": const Color(0xFF5C6BC0),
+    "Cultural": const Color(0xFF26A69A),
+    "Sports": const Color(0xFF7E57C2),
+    "Religious": const Color(0xFF8D6E63),
+    "Extra-curricular": const Color(0xFF42A5F5),
+    "All": const Color(0xFF7B1FA2),
+  };
 
   final List<Color> carouselColours = [
-    const Color(0xFF7B1FA2), //deep purple
-    const Color(0xFF6A1B9A), //darker purple
-    const Color(0xFF9C27B0), // purple
-    const Color(0xFF8E24AA), // medium purple
-    const Color(0xFF6D1F7B), // darkest purple
+    const Color(0xFF7B1FA2),
+    const Color(0xFF6A1B9A),
+    const Color(0xFF9C27B0),
+    const Color(0xFF8E24AA),
+    const Color(0xFF6D1F7B),
   ];
+
+  @override
+  void dispose() {
+    debounce?.cancel();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -78,8 +78,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
         Uri.parse("${ApiService.baseUrl}/societies/"),
         headers: ApiService.headers,
       );
-      print("SOC RESPONESE: ${response.statusCode}");
-      print("SOC BODY: ${response.body}");
+      print("SOC RESPONSE: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as List;
@@ -87,28 +86,39 @@ class _AdminHomepageState extends State<AdminHomepage> {
           societies = data;
           filteredSocieties = data;
         });
+        print("Loaded ${societies.length} societies");
       }
     } catch (e) {
       print("Error loading societies: $e");
-    }print("SOC DATA: $societies");
+    }
   }
 
   Future<void> loadEvents() async {
+    if (ApiService.societyId == null) {
+      print("⚠️ Society ID is null - skipping events load");
+      return;
+    }
+    
     try {
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/society/${ApiService.societyId}/api/events/"),
+        Uri.parse("${ApiService.baseUrl}/societies/${ApiService.societyId}/events/"),
         headers: ApiService.headers,
       );
+      print("EVENTS RESPONSE: ${response.statusCode}");
+      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as List;
-        setState(() => events = data);
+        final now = DateTime.now();
+        setState(() {
+          events = data
+              .where((e) => DateTime.parse(e["start_time"]).isAfter(now))
+              .toList();
+        });
+        print("Loaded ${events.length} upcoming events");
       }
     } catch (e) {
       print("Error loading events: $e");
       setState(() => events = []);
-    } print("societies legnth: ${societies.length}");
-    if (ApiService.societyId != null) {
-      print("socID  is null- skipping evenst load");
     }
   }
 
@@ -143,7 +153,27 @@ class _AdminHomepageState extends State<AdminHomepage> {
       showingCategories = true;
     });
   }
-// rest of the code is in the build method and widget builders
+
+  // Helper method to navigate to society page with correct isAdmin flag
+  void navigateToSociety(int societyId, String societyName) {
+    // Check if this is the admin's own society
+    final bool isOwnSociety = societyId == ApiService.societyId;
+    
+    print("🔍 Navigating to society: $societyName (ID: $societyId)");
+    print("👤 Admin's own society ID: ${ApiService.societyId}");
+    print("🏷️ Setting isAdmin: $isOwnSociety");
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SocietyProfilePage(
+          societyId: societyId,
+          isAdmin: isOwnSociety,  // Only true if it's their own society
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -158,8 +188,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
                 children: [
                   _buildSearchBar(),
                   _buildSearchDropdown(),
-                  ],
-                  ),
+                ],
+              ),
               const SizedBox(height: 20),
               _buildTopSocietiesCarousel(),
               const SizedBox(height: 30),
@@ -214,122 +244,111 @@ class _AdminHomepageState extends State<AdminHomepage> {
       ),
     );
   }
-//searchbar code important for both admin and user homepages
+
   Widget _buildSearchBar() {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    child: TextField(
-      onChanged: (query) {
-        // 🔥 debounce (prevents spam requests)
-        if (debounce?.isActive ?? false) debounce!.cancel();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: TextField(
+        onChanged: (query) {
+          if (debounce?.isActive ?? false) debounce!.cancel();
 
-        debounce = Timer(const Duration(milliseconds: 300), () async {
-          if (query.isEmpty) {
-            setState(() {
-              searchResults = [];
-            });
-            return;
-          }
-
-          setState(() => isSearching = true);
-
-          try {
-            final response = await http.get(
-              Uri.parse("${ApiService.baseUrl}/search?q=$query"),
-              headers: ApiService.headers,
-            );
-
-            if (response.statusCode == 200) {
+          debounce = Timer(const Duration(milliseconds: 300), () async {
+            if (query.isEmpty) {
               setState(() {
-                searchResults = json.decode(response.body);
-                isSearching = false;
+                searchResults = [];
               });
+              return;
             }
-          } catch (e) {
-            print("Search error: $e");
-            setState(() => isSearching = false);
-          }
-        });
-      },
-      decoration: InputDecoration(
-        hintText: "Search events or societies",
-        prefixIcon: const Icon(Icons.search, color: Color(0xFF9C27B0)),
 
-        // 🔥 loading indicator
-        suffixIcon: isSearching
-            ? const Padding(
-                padding: EdgeInsets.all(12),
-                child: SizedBox(
-                  height: 16,
-                  width: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              )
-            : null,
+            setState(() => isSearching = true);
 
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: const BorderSide(color: Color(0xFF9C27B0)),
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
+            try {
+              final response = await http.get(
+                Uri.parse("${ApiService.baseUrl}/search?q=$query"),
+                headers: ApiService.headers,
+              );
+
+              if (response.statusCode == 200) {
+                setState(() {
+                  searchResults = json.decode(response.body);
+                  isSearching = false;
+                });
+              }
+            } catch (e) {
+              print("Search error: $e");
+              setState(() => isSearching = false);
+            }
+          });
+        },
+        decoration: InputDecoration(
+          hintText: "Search events or societies",
+          prefixIcon: const Icon(Icons.search, color: Color(0xFF9C27B0)),
+          suffixIcon: isSearching
+              ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : null,
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(24),
+            borderSide: const BorderSide(color: Color(0xFF9C27B0)),
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildSearchDropdown() {
-  if (searchResults.isEmpty) return const SizedBox();
+    if (searchResults.isEmpty) return const SizedBox();
 
-  return Container(
-    margin: const EdgeInsets.symmetric(horizontal: 16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black12,
-          blurRadius: 6,
-        ),
-      ],
-    ),
-    child: ListView.builder(
-      shrinkWrap: true,
-      itemCount: searchResults.length,
-      itemBuilder: (context, index) {
-        final item = searchResults[index];
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+          ),
+        ],
+      ),
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: searchResults.length,
+        itemBuilder: (context, index) {
+          final item = searchResults[index];
 
-        return ListTile(
-          leading: const Icon(Icons.search),
-          title: Text(item["name"] ?? item["title"] ?? ""),
-          subtitle: Text(item["type"] ?? ""),
-
-          onTap: () {
-            if (item["type"] == "society") {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => SocietyProfilePage(
-                    societyId: item["id"],
-                    isAdmin: false,
-                  ),
-                ),
-              );
-            }
-
-            setState(() {
-              searchResults = [];
-            });
-          },
-        );
-      },
-    ),
-  );
-}
-
-
-
+          return ListTile(
+            leading: item["type"] == "society" 
+                ? const Icon(Icons.business, color: Color(0xFF9C27B0))
+                : const Icon(Icons.event, color: Color(0xFF3B82F6)),
+            title: Text(item["name"] ?? item["title"] ?? ""),
+            subtitle: Text(item["type"] == "society" 
+                ? "Society • ${item["category"] ?? ''}" 
+                : "Event • ${item["society_name"] ?? ''}"),
+            onTap: () {
+              if (item["type"] == "society") {
+                navigateToSociety(item["id"], item["name"]);
+              } else if (item["type"] == "event") {
+                navigateToSociety(item["society_id"], item["society_name"]);
+              }
+              setState(() {
+                searchResults = [];
+              });
+            },
+          );
+        },
+      ),
+    );
+  }
 
   Widget _buildTopSocietiesCarousel() {
     final topSocieties = [...societies]
@@ -348,7 +367,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 50),
         if (isLoading)
           const CircularProgressIndicator()
         else if (top5.isEmpty)
@@ -373,15 +392,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
                   return GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => SocietyProfilePage(
-                            societyId: society["id"],
-                            isAdmin: false,
-                          ),
-                        ),
-                      );
+                      navigateToSociety(society["id"], society["name"]);
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -417,14 +428,14 @@ class _AdminHomepageState extends State<AdminHomepage> {
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              "${society["member_count"]} members",
-                              style: const TextStyle(
-                                color: Colors.white60,
-                                fontSize: 13,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
+                            // Text(
+                            //   "${society["member_count"]} members",
+                            //   style: const TextStyle(
+                            //     color: Colors.white60,
+                            //     fontSize: 13,
+                            //   ),
+                            //   textAlign: TextAlign.center,
+                            // ),
                           ],
                         ),
                       ),
@@ -451,12 +462,6 @@ class _AdminHomepageState extends State<AdminHomepage> {
       ],
     );
   }
-
-
-
-
-
-
 
   Widget _buildBrowseSocietiesSection() {
     return Padding(
@@ -522,22 +527,17 @@ class _AdminHomepageState extends State<AdminHomepage> {
               ),
             ],
           ),
-
           const SizedBox(height: 12),
-
           if (!showingCategories)
             TextButton.icon(
               onPressed: resetToCategories,
-              icon: const Icon(Icons.arrow_back,
-                  color: Color(0xFF9C27B0)),
+              icon: const Icon(Icons.arrow_back, color: Color(0xFF9C27B0)),
               label: const Text(
                 "Back to Categories",
                 style: TextStyle(color: Color(0xFF9C27B0)),
               ),
             ),
-
           const SizedBox(height: 8),
-
           if (showingCategories)
             GridView.count(
               crossAxisCount: 2,
@@ -549,8 +549,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
               children: categories
                   .where((c) => c != "All")
                   .map((category) {
-                final colour =
-                    categoryColours[category] ?? Colors.purple;
+                final colour = categoryColours[category] ?? Colors.purple;
                 final count = societies
                     .where((s) => s["category"] == category)
                     .length;
@@ -575,8 +574,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           category,
@@ -603,9 +601,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: filteredSocieties.isEmpty
-                  ? 1
-                  : filteredSocieties.length,
+              itemCount: filteredSocieties.isEmpty ? 1 : filteredSocieties.length,
               itemBuilder: (context, index) {
                 if (filteredSocieties.isEmpty) {
                   return const Center(
@@ -617,8 +613,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
                 }
 
                 final soc = filteredSocieties[index];
-                final colour =
-                    categoryColours[soc["category"]] ?? Colors.purple;
+                final colour = categoryColours[soc["category"]] ?? Colors.purple;
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 10),
@@ -639,25 +634,15 @@ class _AdminHomepageState extends State<AdminHomepage> {
                     ),
                     title: Text(
                       soc["name"],
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w600),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(soc["category"] ?? ""),
                     trailing: Text(
                       "${soc["member_count"]} members",
-                      style: const TextStyle(
-                          fontSize: 12, color: Colors.grey),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => SocietyProfilePage(
-                            societyId: soc["id"],
-                            isAdmin: false,
-                          ),
-                        ),
-                      );
+                      navigateToSociety(soc["id"], soc["name"]);
                     },
                   ),
                 );
@@ -694,20 +679,11 @@ class _AdminHomepageState extends State<AdminHomepage> {
                 itemCount: events.length,
                 itemBuilder: (context, index) {
                   final event = events[index];
-                  final startTime =
-                      DateTime.parse(event["start_time"]).toLocal();
+                  final startTime = DateTime.parse(event["start_time"]).toLocal();
 
                   return GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => SocietyProfilePage(
-                            societyId: event["society_id"],
-                            isAdmin: false,
-                          ),
-                        ),
-                      );
+                      navigateToSociety(event["society_id"], event["society_name"]);
                     },
                     child: Container(
                       width: 200,
@@ -715,10 +691,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF6A1B9A),
-                            Color(0xFF4A148C)
-                          ],
+                          colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -726,8 +699,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             event["title"],
@@ -740,8 +712,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 "${startTime.day}/${startTime.month}/${startTime.year}",
