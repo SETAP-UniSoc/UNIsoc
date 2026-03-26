@@ -13,7 +13,7 @@ from .views import (
     DeleteEventView,
     MyCreatedEventsView,
     SocietyEventView, 
-    SocietySearchView, 
+    SocietyListSearchView, 
     UserListView,
     SocietyListSearchView,
     EventDetailView,
@@ -32,7 +32,7 @@ urlpatterns = [
     path("society/<int:society_id>/leave/", LeaveSocietyView.as_view(), name="leave-society"),
     path('societies/<int:society_id>/', SocietyDetailView.as_view(), name='society-detail'),
     path('users/', UserListView.as_view(), name='user-list-create'),
-    path('societies/', SocietyListSearchView.as_view(), name='society-list-create'),
+    #path('societies/', SocietyListSearchView.as_view(), name='society-list-create'),
     path('societies/<int:society_id>/events/', SocietyEventView.as_view(), name='society-events'),
     # Admin event management
     path('events/<int:id>/delete/', DeleteEventView.as_view(), name='delete-event'),
@@ -49,7 +49,7 @@ urlpatterns = [
     # Users 
     path('users/', UserListView.as_view(), name='user-list-create'),
     # search and filter societies
-    path("search/", SocietySearchView.as_view(), name="society-search"),
+    path("search/", SocietyListSearchView.as_view(), name="society-search"),
     ]
 
 
