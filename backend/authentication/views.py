@@ -93,8 +93,10 @@ class ListEventsView(APIView):
             if request.user.role == "admin":
             # Admin sees their own society events
                 society = Society.objects.get(admin=request.user)
-                events = Event.objects.filter(society=society)
-
+                events = Event.objects.filter(
+                    society=society,
+                    start_time__gte=now()   
+                    ).order_by('start_time')
             else:
             # Users see events of societies they belong to
                 events = Event.objects.filter(
