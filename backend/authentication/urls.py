@@ -13,7 +13,8 @@ from .views import (
     DeleteEventView,
     MyCreatedEventsView,
     SocietyEventView, 
-    SocietyListView, 
+    SocietyListView,
+    SocietySearchView, 
     UserListView,
     SocietyListView, 
     EventDetailView,
@@ -48,7 +49,7 @@ urlpatterns = [
     # Users 
     path('users/', UserListView.as_view(), name='user-list-create'),
     # search and filter societies
-    path('societies/search/', SocietyListView.as_view(), name='society-search'),
+    path("search/", SocietySearchView.as_view(), name="society-search"),
     ]
 
 
