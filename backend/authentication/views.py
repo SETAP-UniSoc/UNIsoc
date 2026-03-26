@@ -10,6 +10,7 @@ from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from .serializer import EventSerializer
 from .import serializer
+from django.utils.timezone import now
 
 
 
@@ -88,20 +89,22 @@ class ListEventsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from django.utils.timezone import now
 
-            if request.user.role == "admin":
-            # Admin sees their own society events
-                society = Society.objects.get(admin=request.user)
-                events = Event.objects.filter(society=society)
+        if request.user.role == "admin":
+            society = Society.objects.get(admin=request.user)
+            events = Event.objects.filter(
+                society=society,
+                start_time__gte=now()
+            )
+        else:
+            events = Event.objects.filter(
+                society__membership__user=request.user,
+                start_time__gte=now()
+            ).distinct()
 
-            else:
-            # Users see events of societies they belong to
-                events = Event.objects.filter(
-                    society__membership__user=request.user
-                ).distinct()
-
-            serializer = EventSerializer(events, many=True)
-            return Response(serializer.data)
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
     
 class SocietyEventView(APIView):
     permission_classes = [IsAuthenticated]
@@ -172,7 +175,10 @@ class AllEventsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        events = Event.objects.all().order_by('-created_at')[:5]
+        events = Event.objects.filter(
+            start_time__gte=now()   # ✅ ONLY FUTURE EVENTS
+        ).order_by('start_time')[:5]  # ✅ SOONEST FIRST
+
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data)
     
