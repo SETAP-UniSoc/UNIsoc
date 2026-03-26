@@ -3,7 +3,7 @@ import 'package:flutter_calenders/flutter_calenders.dart';
 import 'package:unisoc/services/api_services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:unisoc/screens/admin/admin_bottom_nav.dart';
+//import 'package:unisoc/screens/admin/admin_bottom_nav.dart';
 
 class AdminEventsPage extends StatefulWidget {
   final int societyId;
@@ -51,18 +51,20 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
           eventData = data;
 
           calendarEvents = data.map((e) {
-            final parsed = DateTime.parse(e["start_time"]).toLocal();
+  final parsed = DateTime.parse(e["start_time"]).toLocal();
 
-            final normalized = normalizeDate(parsed);
+  final normalized = DateTime(
+    parsed.year,
+    parsed.month,
+    parsed.day,
+  );
 
-            print("EVENT → ${e["title"]} DATE → $normalized");
-
-            return Event(
-              eventName: e["title"],
-              dates: [normalized], // 🔥 CRITICAL FIX
-              color: const Color(0xFF8B5CF6),
-            );
-          }).toList();
+  return Event(
+    eventName: e["title"],
+    dates: [normalized],
+    color: const Color(0xFF8B5CF6),
+  );
+}).toList();
 
           isLoading = false;
         });
@@ -191,7 +193,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
 
   Future<void> _deleteEvent(int id) async {
     final response = await http.delete(
-      Uri.parse("${ApiService.baseUrl}/event/$id/delete/"),
+      Uri.parse("${ApiService.baseUrl}/events/$id/delete/"),
       headers: ApiService.headers,
     );
 
@@ -213,7 +215,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
               primaryColor: const Color(0xFF8B5CF6),
               onDateTap: onDateTapped,
             ),
-      bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
+     // bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
     );
   }
 }
