@@ -122,7 +122,8 @@ class Membership(models.Model):
     )
     society = models.ForeignKey(
         Society,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name="membership"
     )
 
     joined_at = models.DateTimeField(auto_now_add=True)
