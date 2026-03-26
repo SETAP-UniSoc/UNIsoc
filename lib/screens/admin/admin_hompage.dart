@@ -257,7 +257,7 @@ print("Error loading events: $e");
 
             try {
               final response = await http.get(
-                Uri.parse("${ApiService.baseUrl}/search?q=$query"),
+                Uri.parse("${ApiService.baseUrl}/societies?q=$query"),
                 headers: ApiService.headers,
               );
 
