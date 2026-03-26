@@ -203,7 +203,7 @@ print("Error loading events: $e");
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFCE93D8), Color(0xFF9C27B0)],
+          colors: [Color.fromARGB(255, 175, 147, 216), Color.fromARGB(255, 94, 39, 176)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
