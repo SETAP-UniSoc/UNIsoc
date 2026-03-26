@@ -41,7 +41,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
 
       print("📊 Events response status: ${response.statusCode}");
       
-      if (response.statusCode == 200) {
+      if (response.statusCode == 204) {
         final data = jsonDecode(response.body) as List;
         final now = DateTime.now();
         
@@ -144,6 +144,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
                     },
                   ),
                   onTap: () => _showSingleEventDetails(event),
+                  
                 ),
               );
             },
@@ -211,9 +212,200 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
             },
             child: const Text("Delete Event", style: TextStyle(color: Colors.white)),
           ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showEditEventDialog(event);
+            },
+            child: const Text("Edit Event"),
+          ),
         ],
       ),
     );
+  }
+
+  // Edit event dialog
+  void _showEditEventDialog(Map event) {
+    final titleController = TextEditingController(text: event["title"]);
+    final descController = TextEditingController(text: event["description"] ?? "");
+    final locationController = TextEditingController(text: event["location"] ?? "");
+    final capacityController = TextEditingController(text: event["capacity_limit"]?.toString() ?? "");
+    final startDateTime = DateTime.parse(event["start_time"]).toLocal();
+    final endDateTime = DateTime.parse(event["end_time"]).toLocal();
+    TimeOfDay startTime = TimeOfDay(hour: startDateTime.hour, minute: startDateTime.minute);
+    TimeOfDay endTime = TimeOfDay(hour: endDateTime.hour, minute: endDateTime.minute);
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text("Edit Event"),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                    labelText: "Title *",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: descController,
+                  decoration: const InputDecoration(
+                    labelText: "Description",
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: locationController,
+                  decoration: const InputDecoration(
+                    labelText: "Location",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text("Start Time"),
+                        subtitle: Text(startTime.format(context)),
+                        trailing: const Icon(Icons.access_time),
+                        onTap: () async {
+                          final picked = await showTimePicker(
+                            context: context,
+                            initialTime: startTime,
+                          );
+                          if (picked != null) setDialogState(() => startTime = picked);
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text("End Time"),
+                        subtitle: Text(endTime.format(context)),
+                        trailing: const Icon(Icons.access_time),
+                        onTap: () async {
+                          final picked = await showTimePicker(
+                            context: context,
+                            initialTime: endTime,
+                          );
+                          if (picked != null) setDialogState(() => endTime = picked);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: capacityController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: "Capacity (optional)",
+                    hintText: "Leave blank for unlimited",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (titleController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Please enter a title")),
+                  );
+                  return;
+                }
+
+                final start = DateTime(
+                  startDateTime.year, startDateTime.month, startDateTime.day,
+                  startTime.hour, startTime.minute,
+                );
+                final end = DateTime(
+                  endDateTime.year, endDateTime.month, endDateTime.day,
+                  endTime.hour, endTime.minute,
+                );
+
+                await _updateEvent(
+                  eventId: event["id"],
+                  title: titleController.text,
+                  description: descController.text,
+                  location: locationController.text,
+                  startTime: start.toIso8601String(),
+                  endTime: end.toIso8601String(),
+                  capacity: capacityController.text.isEmpty
+                      ? null
+                      : int.tryParse(capacityController.text),
+                );
+
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF8B5CF6),
+              ),
+              child: const Text("Update Event"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // PUT update event to backend
+  Future<void> _updateEvent({
+    required int eventId,
+    required String title,
+    required String description,
+    required String location,
+    required String startTime,
+    required String endTime,
+    int? capacity,
+  }) async {
+    try {
+      final response = await http.put(
+        Uri.parse("${ApiService.baseUrl}/event/$eventId/"),
+        headers: ApiService.headers,
+        body: jsonEncode({
+          "title": title,
+          "description": description,
+          "location": location,
+          "start_time": startTime,
+          "end_time": endTime,
+          if (capacity != null) "capacity_limit": capacity,
+        }),
+      );
+
+      print("✏️ Update event response: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Event updated successfully! ✅")),
+        );
+        loadEvents();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to update event: ${response.statusCode}")),
+        );
+      }
+    } catch (e) {
+      print("❌ Error updating event: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error updating event")),
+      );
+    }
   }
 
   // Create event dialog

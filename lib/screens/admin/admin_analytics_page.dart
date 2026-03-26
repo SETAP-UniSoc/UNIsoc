@@ -1,9 +1,3 @@
-
-
-
-
-
-
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -26,6 +20,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   List<String> labels = [];
   List<double> values = [];
   List<double> eventValues = [];
+  List<String> eventNames = [];
   int liveCount = 0;
   bool isLoading = false;
   Timer? liveTimer;
