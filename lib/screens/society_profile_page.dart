@@ -32,6 +32,8 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   @override
   void initState() {
     super.initState();
+     print("🔍 SocietyProfilePage INIT - isAdmin: ${widget.isAdmin}, societyId: ${widget.societyId}");
+     print("🔍 ApiService.societyId: ${ApiService.societyId}");
     loadData();
     if (!widget.isAdmin) startPolling();
   }
