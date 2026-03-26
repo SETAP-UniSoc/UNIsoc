@@ -5,8 +5,18 @@ from .AnalyticsView import AnalyticsView
 from .JoinSoc import JoinSocietyView
 from .LeaveSoc import LeaveSocietyView
 from .SocietyDetailView import SocietyDetailView
-from .views import UserListView, SocietyListView, AddEventView, DeleteEventView, CreateEventView
 from .serializer import EventSerializer
+from .views import (
+    AddEventView, 
+    CreateEventView, 
+    DeleteEventView, 
+    SocietyListView, 
+    UserListView,
+    SocietyListView, 
+    EventDetailView,
+    UpdateEventView,
+    MyEventsView)
+
 
 
 urlpatterns = [
@@ -24,6 +34,10 @@ urlpatterns = [
     path('event/<int:event_id>/delete/', DeleteEventView.as_view(), name='delete-event'),
     path('events/', CreateEventView.as_view(), name='event-list'),
     path('events/create/', CreateEventView.as_view(), name='create-event'),
+    path('events/my/', MyEventsView.as_view()),
+    path('events/<int:id>/', EventDetailView.as_view()),
+    path('events/<int:id>/update/', UpdateEventView.as_view()),
+
     # Analytics
     path("analytics/", AnalyticsView.as_view(), name="analytics"),
     # Users 

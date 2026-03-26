@@ -152,3 +152,20 @@ class UpdateEventView(generics.UpdateAPIView):
 
     def get_queryset(self):
         return Event.objects.filter(created_by=self.request.user)
+    
+class MyEventsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role == "admin":
+            society = Society.objects.get(admin=request.user)
+            events = Event.objects.filter(society=society)
+        else:
+            events = Event.objects.filter(
+                society__membership__user=request.user
+            ).distinct()
+
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+    
+    
