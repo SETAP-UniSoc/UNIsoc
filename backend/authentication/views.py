@@ -137,4 +137,18 @@ class SocietyEventView(APIView):
             return Response(serializer.data, status=201)
 
         return Response(serializer.errors, status=400)
-    
+
+class EventDetailView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    lookup_field = 'id'
+
+class UpdateEventView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        return Event.objects.filter(created_by=self.request.user)
