@@ -19,102 +19,111 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   List eventData = [];
   bool isLoading = true;
 
+  DateTime normalize(DateTime d) => DateTime(d.year, d.month, d.day);
+
   @override
   void initState() {
     super.initState();
     loadEvents();
   }
 
-  // 🔥 NORMALIZE DATE (FIXES YOUR ISSUE)
-  DateTime normalizeDate(DateTime date) {
-    return DateTime(date.year, date.month, date.day);
-  }
-
+  // ✅ LOAD EVENTS + GROUP BY DATE
   Future<void> loadEvents() async {
     setState(() => isLoading = true);
 
-    try {
-      final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
-        headers: ApiService.headers,
-      );
+    final res = await http.get(
+      Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
+      headers: ApiService.headers,
+    );
 
-      print("STATUS: ${response.statusCode}");
-      print("BODY: ${response.body}");
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body) as List;
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as List;
+      // 🔥 GROUP EVENTS BY DATE
+      Map<String, List> grouped = {};
 
-        print("RAW EVENTS: $data");
+      for (var e in data) {
+        final parsed = DateTime.parse(e["start_time"]).toLocal();
+        final key = "${parsed.year}-${parsed.month}-${parsed.day}";
 
-        setState(() {
-          eventData = data;
-
-          calendarEvents = data.map((e) {
-            final parsed = DateTime.parse(e["start_time"]).toLocal();
-
-            final normalized = normalizeDate(parsed);
-
-            print("EVENT → ${e["title"]} DATE → $normalized");
-
-            return Event(
-              eventName: e["title"],
-              dates: [normalized], // 🔥 CRITICAL FIX
-              color: const Color(0xFF8B5CF6),
-            );
-          }).toList();
-
-          isLoading = false;
-        });
-      } else {
-        setState(() => isLoading = false);
+        if (!grouped.containsKey(key)) {
+          grouped[key] = [];
+        }
+        grouped[key]!.add(e);
       }
-    } catch (e) {
-      print("ERROR: $e");
+
+      // 🔥 CREATE CALENDAR EVENTS (ONE PER DAY)
+      List<Event> calEvents = grouped.entries.map((entry) {
+        final parts = entry.key.split("-");
+        final date = DateTime(
+          int.parse(parts[0]),
+          int.parse(parts[1]),
+          int.parse(parts[2]),
+        );
+
+        return Event(
+          eventName: "${entry.value.length} events", // shows count
+          dates: [date],
+          color: entry.value.length > 1
+              ? Colors.red
+              : const Color(0xFF8B5CF6),
+        );
+      }).toList();
+
+      setState(() {
+        eventData = data;
+        calendarEvents = calEvents;
+        isLoading = false;
+      });
+    } else {
       setState(() => isLoading = false);
     }
   }
 
+  // ✅ TAP DATE
   void onDateTapped(DateTime date) {
-    final selectedDate = normalizeDate(date);
+    final selected = normalize(date);
 
     final eventsOnDate = eventData.where((e) {
       final parsed = DateTime.parse(e["start_time"]).toLocal();
-      final normalized = normalizeDate(parsed);
-      return normalized == selectedDate;
+      return normalize(parsed) == selected;
     }).toList();
 
-    print("Tapped: $selectedDate → Found: ${eventsOnDate.length}");
-
     if (eventsOnDate.isNotEmpty) {
-      _showMultipleEventsDialog(eventsOnDate);
+      _showEvents(eventsOnDate);
     } else {
-      _showCreateEventDialog(date);
+      _showCreateDialog(date);
     }
   }
 
-  void _showMultipleEventsDialog(List eventsOnDate) {
+  // ✅ SHOW EVENTS LIST
+  void _showEvents(List events) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Events"),
+        title: Text("Events (${events.length})"),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
             shrinkWrap: true,
-            itemCount: eventsOnDate.length,
-            itemBuilder: (context, index) {
-              final event = eventsOnDate[index];
+            itemCount: events.length,
+            itemBuilder: (_, i) {
+              final e = events[i];
+              final time = DateTime.parse(e["start_time"]).toLocal();
 
               return ListTile(
-                title: Text(event["title"]),
-                subtitle: Text(event["location"] ?? ""),
+                title: Text(e["title"]),
+                subtitle: Text(
+                    "${time.hour}:${time.minute} • ${e["location"] ?? ""}"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showEditDialog(e); // 🔥 EDIT
+                },
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () async {
                     Navigator.pop(context);
-                    await _deleteEvent(event["id"]);
-                    loadEvents();
+                    await _deleteEvent(e["id"]);
                   },
                 ),
               );
@@ -123,44 +132,118 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Close"),
-          ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close")),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showCreateDialog(
+                  DateTime.parse(events[0]["start_time"]).toLocal());
+            },
+            child: const Text("Add Another"),
+          )
         ],
       ),
     );
   }
 
-  void _showCreateEventDialog(DateTime selectedDate) {
-    final titleController = TextEditingController();
+  // ✅ CREATE EVENT
+  void _showCreateDialog(DateTime date) {
+    final title = TextEditingController();
+    final desc = TextEditingController();
+    final loc = TextEditingController();
+
+    TimeOfDay start = const TimeOfDay(hour: 9, minute: 0);
+    TimeOfDay end = const TimeOfDay(hour: 10, minute: 0);
+
+    showDialog(
+      context: context,
+      builder: (_) => StatefulBuilder(
+        builder: (_, setStateDialog) => AlertDialog(
+          title: const Text("Create Event"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: title, decoration: const InputDecoration(labelText: "Title")),
+              TextField(controller: desc, decoration: const InputDecoration(labelText: "Description")),
+              TextField(controller: loc, decoration: const InputDecoration(labelText: "Location")),
+
+              ListTile(
+                title: const Text("Start Time"),
+                subtitle: Text(start.format(context)),
+                onTap: () async {
+                  final picked = await showTimePicker(context: context, initialTime: start);
+                  if (picked != null) setStateDialog(() => start = picked);
+                },
+              ),
+              ListTile(
+                title: const Text("End Time"),
+                subtitle: Text(end.format(context)),
+                onTap: () async {
+                  final picked = await showTimePicker(context: context, initialTime: end);
+                  if (picked != null) setStateDialog(() => end = picked);
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+            ElevatedButton(
+              onPressed: () async {
+                final startDT = DateTime(date.year, date.month, date.day, start.hour, start.minute);
+                final endDT = DateTime(date.year, date.month, date.day, end.hour, end.minute);
+
+                await _createEvent(
+                  title: title.text,
+                  description: desc.text,
+                  location: loc.text,
+                  startTime: startDT.toIso8601String(),
+                  endTime: endDT.toIso8601String(),
+                );
+
+                Navigator.pop(context);
+              },
+              child: const Text("Create"),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ✅ EDIT EVENT
+  void _showEditDialog(Map event) {
+    final title = TextEditingController(text: event["title"]);
+    final desc = TextEditingController(text: event["description"]);
+    final loc = TextEditingController(text: event["location"]);
 
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Create Event"),
-        content: TextField(
-          controller: titleController,
-          decoration: const InputDecoration(labelText: "Title"),
+        title: const Text("Edit Event"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: title),
+            TextField(controller: desc),
+            TextField(controller: loc),
+          ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
           ElevatedButton(
             onPressed: () async {
-              final start = normalizeDate(selectedDate);
-
-              await _createEvent(
-                title: titleController.text,
-                startTime: start.toIso8601String(),
-                endTime: start.add(const Duration(hours: 1)).toIso8601String(),
-              );
-
+              await _updateEvent(event["id"], {
+                "title": title.text,
+                "description": desc.text,
+                "location": loc.text,
+                "start_time": event["start_time"],
+                "end_time": event["end_time"],
+              });
               Navigator.pop(context);
             },
-            child: const Text("Create"),
-          ),
+            child: const Text("Save"),
+          )
         ],
       ),
     );
@@ -168,44 +251,49 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
 
   Future<void> _createEvent({
     required String title,
+    required String description,
+    required String location,
     required String startTime,
     required String endTime,
   }) async {
-    final response = await http.post(
+    final res = await http.post(
       Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
       headers: ApiService.headers,
       body: jsonEncode({
         "title": title,
+        "description": description,
+        "location": location,
         "start_time": startTime,
         "end_time": endTime,
       }),
     );
 
-    print("CREATE STATUS: ${response.statusCode}");
-    print("CREATE BODY: ${response.body}");
+    if (res.statusCode == 201) loadEvents();
+  }
 
-    if (response.statusCode == 201) {
-      loadEvents();
-    }
+  Future<void> _updateEvent(int id, Map data) async {
+    final res = await http.put(
+      Uri.parse("${ApiService.baseUrl}/events/$id/update/"),
+      headers: ApiService.headers,
+      body: jsonEncode(data),
+    );
+
+    if (res.statusCode == 200) loadEvents();
   }
 
   Future<void> _deleteEvent(int id) async {
-    final response = await http.delete(
-      Uri.parse("${ApiService.baseUrl}/event/$id/delete/"),
+    final res = await http.delete(
+      Uri.parse("${ApiService.baseUrl}/events/$id/delete/"),
       headers: ApiService.headers,
     );
 
-    print("DELETE STATUS: ${response.statusCode}");
-
-    if (response.statusCode == 204) {
-      loadEvents();
-    }
+    if (res.statusCode == 204) loadEvents();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Calendar")),
+      appBar: AppBar(title: const Text("Events Calendar")),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : EventBasedCalender(
