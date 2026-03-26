@@ -32,7 +32,7 @@ urlpatterns = [
     path('societies/', SocietyListView.as_view(), name='society-list-create'),
     path('societies/<int:society_id>/events/', SocietyEventView.as_view(), name='society-events'),
     # Admin event management
-    path('event/<int:event_id>/delete/', DeleteEventView.as_view(), name='delete-event'),
+    path('event/<int:id>/delete/', DeleteEventView.as_view(), name='delete-event'),
     path('events/', CreateEventView.as_view(), name='event-list'),
     path('events/create/', CreateEventView.as_view(), name='create-event'),
     path('events/my/', MyEventsView.as_view()),
