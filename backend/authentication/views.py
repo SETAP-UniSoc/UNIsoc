@@ -175,13 +175,19 @@ class AllEventsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        events = Event.objects.all().order_by('-created_at')[:5]
-        # events = Event.objects.filter(
-        #     start_time__gte=now()   # ✅ ONLY FUTURE EVENTS
-        # ).order_by('start_time')[:5]  # ✅ SOONEST FIRST
+        events = Event.objects.all().order_by('-id')[:5]  # ✅ FIXED
 
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data)
+
+    # def get(self, request):
+    #     events = Event.objects.all().order_by('-created_at')[:5]
+    #     # events = Event.objects.filter(
+    #     #     start_time__gte=now()   # ✅ ONLY FUTURE EVENTS
+    #     # ).order_by('start_time')[:5]  # ✅ SOONEST FIRST
+
+    #     serializer = EventSerializer(events, many=True)
+    #     return Response(serializer.data)
     
 class MyCreatedEventsView(APIView):
     permission_classes = [IsAuthenticated]
