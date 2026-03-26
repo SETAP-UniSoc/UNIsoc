@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 from .serializer import EventSerializer
 from .import serializer
 
@@ -34,7 +35,19 @@ class SocietyListView(generics.ListAPIView):
     serializer_class = SocietySerializer
 
 class AddEventView(generics.CreateAPIView):
-    serializer_class = SocietySerializer
+    serializer_class = EventSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        if self.request.user.role != "admin":
+            raise PermissionDenied("Admins only")
+
+        society = Society.objects.get(admin=self.request.user)
+
+        serializer.save(
+            created_by=self.request.user,
+            society=society
+        )
 
 class DeleteEventView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
