@@ -273,7 +273,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         "location": location,
         "start_time": startTime,
         "end_time": endTime,
-        "capacity_limit" : capacity ??0,
+        "capacity_limit": capacity ?? 0,
     
       }),
     );
