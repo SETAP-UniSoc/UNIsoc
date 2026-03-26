@@ -16,8 +16,7 @@ class AdminEventsPage extends StatefulWidget {
 
 class _AdminEventsPageState extends State<AdminEventsPage> {
   List<Event> calendarEvents = [];
-  List eventData = [];
-  bool isLoading = true;
+  List eventData = []; // raw data from backend
 
   @override
   void initState() {
@@ -25,154 +24,142 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     loadEvents();
   }
 
-  // Fetch events from backend and convert to calendar Event objects
+  // fetch events from backend and convert to calendar Event objects
   Future<void> loadEvents() async {
-    setState(() => isLoading = true);
-    
-    print("📅 Loading events for society ID: ${widget.societyId}");
-    print("🔑 Token: ${ApiService.authToken}");
-    print("🌐 URL: ${ApiService.baseUrl}/societies/${widget.societyId}/events/");
-    
-    try {
-      final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
-        headers: ApiService.headers,
-      );
-
-      print("📊 Events response status: ${response.statusCode}");
-      
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as List;
-        final now = DateTime.now();
-        
-        // Only show upcoming events (future dates)
-        final upcomingEvents = data.where((e) =>
-          DateTime.parse(e["start_time"]).isAfter(now)
-        ).toList();
-
-        print("✅ Loaded ${upcomingEvents.length} upcoming events");
-
-        setState(() {
-          eventData = upcomingEvents;
-          calendarEvents = upcomingEvents.map((e) => Event(
-            eventName: e["title"],
-            dates: [DateTime.parse(e["start_time"]).toLocal()],
-            color: const Color(0xFF8B5CF6), // Purple to match theme
-          )).toList();
-          isLoading = false;
-        });
-      } else {
-        print("❌ Failed to load events: ${response.statusCode}");
-        setState(() => isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to load events: ${response.statusCode}")),
-        );
-      }
-    } catch (e) {
-      print("❌ LOAD EVENTS ERROR: $e");
-      setState(() => isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error loading events")),
-      );
-    }
-  }
-
-  // Show popup when admin taps a date - shows ALL events on that date
-  void onDateTapped(DateTime date) {
-    final selectedDate = DateTime(date.year, date.month, date.day);
-    
-    // Find ALL events on this date
-    final eventsOnDate = eventData.where((e) {
-      final eventDate = DateTime.parse(e["start_time"]).toLocal();
-      final normalizedEventDate = DateTime(eventDate.year, eventDate.month, eventDate.day);
-      return normalizedEventDate == selectedDate;
-    }).toList();
-
-    print("📅 Date tapped: $selectedDate, found ${eventsOnDate.length} events");
-
-    if (eventsOnDate.isNotEmpty) {
-      // Show ALL events on this date
-      _showMultipleEventsDialog(eventsOnDate);
-    } else {
-      // Create new event
-      _showCreateEventDialog(date);
-    }
-  }
-
-  // Show dialog with ALL events on a date
-  void _showMultipleEventsDialog(List eventsOnDate) {
-    final formattedDate = "${eventsOnDate[0]["start_time"].toString().substring(0, 10)}";
-    
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text("Events on $formattedDate"),
-        content: Container(
-          width: double.maxFinite,
-          constraints: const BoxConstraints(maxHeight: 400),
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: eventsOnDate.length,
-            itemBuilder: (context, index) {
-              final event = eventsOnDate[index];
-              final startTime = DateTime.parse(event["start_time"]).toLocal();
-              
-              return Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: const Icon(Icons.event, color: Color(0xFF8B5CF6)),
-                  title: Text(
-                    event["title"],
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("⏰ ${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}"),
-                      if (event["location"] != null && event["location"].toString().isNotEmpty)
-                        Text("📍 ${event["location"]}"),
-                      if (event["description"] != null && event["description"].toString().isNotEmpty)
-                        Text(event["description"], maxLines: 1, overflow: TextOverflow.ellipsis),
-                    ],
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () async {
-                      Navigator.pop(context);
-                      await _deleteEvent(event["id"]);
-                      loadEvents();
-                    },
-                  ),
-                  onTap: () => _showSingleEventDetails(event),
-                ),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Close"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showCreateEventDialog(DateTime.parse(eventsOnDate[0]["start_time"]));
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF8B5CF6),
-            ),
-            child: const Text("Add Another Event"),
-          ),
-        ],
-      ),
+  print("SOCIETY ID: ${widget.societyId}");  // ← move to here
+  print("TOKEN: ${ApiService.authToken}");    // ← move to here
+  print("URL: ${ApiService.baseUrl}/society/${widget.societyId}/api/events/");
+  try {
+    final response = await http.get(
+      Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/api/events/"),
+      headers: ApiService.headers,
     );
-  }
 
-  // Show single event details (when tapping from the list)
-  void _showSingleEventDetails(Map event) {
-    final startTime = DateTime.parse(event["start_time"]).toLocal();
-    
+    print("Load events status: ${response.statusCode}");
+    print("Load events body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as List;
+
+      final now = DateTime.now();
+
+      final filtered = data.where((e) =>
+        DateTime.parse(e["start_time"]).isAfter(now)
+      ).toList();
+
+//       setState(() {
+//   eventData = data;
+//   calendarEvents = data.map((e) => Event(
+//     eventName: e["title"],
+//     dates: [DateTime.parse(e["start_time"]).toLocal()],
+//     color: Colors.blue,
+//   )).toList();
+// });
+
+      setState(() {
+        eventData = filtered;
+        calendarEvents = filtered.map((e) => Event(
+          eventName: e["title"],
+          dates: [DateTime.parse(e["start_time"])],
+          color: Colors.blue,
+        )).toList();
+      });
+    }
+  } catch (e) {
+    print("LOAD EVENTS ERROR: $e");
+  }
+}
+
+
+
+
+
+
+
+
+
+// Future<void> loadEvents() async {
+//     try {
+//       final response = await http.get(
+//         Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/api/events/"),
+//         headers: ApiService.headers,
+//       );
+
+//       if (response.statusCode == 200) {
+//         final List data = jsonDecode(response.body);
+//         final now = DateTime.now().toUtc();
+
+//         final filtered = data.where((e) =>
+//           DateTime.parse(e["start_time"]).toUtc().isAfter(now)
+//         ).map((e) => Map<String, dynamic>.from(e)).toList();
+
+//         setState(() {
+//           eventData = filtered;
+//           calendarEvents = filtered.map((e) {
+//             // convert start time to local for display
+//             final start = DateTime.parse(e["start_time"]).toLocal();
+//             final end = DateTime.parse(e["end_time"]).toLocal();
+//             return Event(
+//               eventName: e["title"],
+//               dates: [start],
+//               color: Colors.blue,
+//               // optionally store end time if package supports multi-hour
+//             );
+//           }).toList();
+//         });
+//       } else {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(content: Text("Failed to load events: ${response.statusCode}")),
+//         );
+//       }
+//     } catch (e) {
+//       print("LOAD EVENTS ERROR: $e");
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text("Error loading events")),
+//       );
+//     }
+//   }
+
+
+  // show popup when admin taps a date
+  // void onDateTapped(DateTime date) {
+  //   // check if there's already an event on this date
+  //   final existing = eventData.where((e) =>
+  //     DateTime.parse(e["start_time"]).toLocal().day == date.day &&
+  //     DateTime.parse(e["start_time"]).toLocal().month == date.month &&
+  //     DateTime.parse(e["start_time"]).toLocal().year == date.year
+  //   ).toList();
+
+  //   if (existing.isNotEmpty) {
+  //     // show existing event with remove button
+  //     _showEventDetails(existing.first);
+  //   } else {
+  //     // show create event form
+  //     _showCreateEventDialog(date);
+  //   }
+  // }
+
+  // show popup when admin taps a date
+void onDateTapped(DateTime date) {
+  final selectedDate = DateTime(date.year, date.month, date.day);
+
+  final existing = eventData.where((e) {
+    final eventDate = DateTime.parse(e["start_time"]).toLocal();
+    final normalizedEventDate =
+        DateTime(eventDate.year, eventDate.month, eventDate.day);
+
+    return normalizedEventDate == selectedDate;
+  }).toList();
+
+  if (existing.isNotEmpty) {
+    _showEventDetails(existing.first);
+  } else {
+    _showCreateEventDialog(date);
+  }
+}
+
+  // popup to view and remove an existing event
+  void _showEventDetails(Map event) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -181,20 +168,13 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (event["description"] != null && event["description"].toString().isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text(event["description"]),
-              ),
-            Text("📍 ${event["location"] ?? 'No location'}"),
-            const SizedBox(height: 4),
-            Text("⏰ ${startTime.day}/${startTime.month}/${startTime.year} at ${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}"),
-            if (event["capacity_limit"] != null) ...[
-              const SizedBox(height: 4),
-              Text("👥 Capacity: ${event["capacity_limit"]}"),
-            ],
+            Text(event["description"] ?? ""),
             const SizedBox(height: 8),
-            Text("✅ ${event["attendee_count"] ?? 0} people attending"),
+            Text("📍 ${event["location"] ?? 'No location'}"),
+            const SizedBox(height: 8),
+            Text("👥 ${event["attendee_count"]} attending"),
+            if (event["capacity_limit"] != null)
+              Text("🔒 Capacity: ${event["capacity_limit"]}"),
           ],
         ),
         actions: [
@@ -205,18 +185,17 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
-              Navigator.pop(context);
               await _deleteEvent(event["id"]);
-              loadEvents();
+              Navigator.pop(context);
             },
-            child: const Text("Delete Event", style: TextStyle(color: Colors.white)),
+            child: const Text("Remove", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
   }
 
-  // Create event dialog
+  // popup form to create a new event
   void _showCreateEventDialog(DateTime selectedDate) {
     final titleController = TextEditingController();
     final descController = TextEditingController();
@@ -236,71 +215,55 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
               children: [
                 TextField(
                   controller: titleController,
-                  decoration: const InputDecoration(
-                    labelText: "Title *",
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: const InputDecoration(labelText: "Title *"),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 TextField(
                   controller: descController,
-                  decoration: const InputDecoration(
-                    labelText: "Description",
-                    border: OutlineInputBorder(),
-                  ),
-                  maxLines: 3,
+                  decoration: const InputDecoration(labelText: "Description"),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 TextField(
                   controller: locationController,
-                  decoration: const InputDecoration(
-                    labelText: "Location",
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: const InputDecoration(labelText: "Location"),
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text("Start Time"),
-                        subtitle: Text(startTime.format(context)),
-                        trailing: const Icon(Icons.access_time),
-                        onTap: () async {
-                          final picked = await showTimePicker(
-                            context: context,
-                            initialTime: startTime,
-                          );
-                          if (picked != null) setDialogState(() => startTime = picked);
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text("End Time"),
-                        subtitle: Text(endTime.format(context)),
-                        trailing: const Icon(Icons.access_time),
-                        onTap: () async {
-                          final picked = await showTimePicker(
-                            context: context,
-                            initialTime: endTime,
-                          );
-                          if (picked != null) setDialogState(() => endTime = picked);
-                        },
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 10),
+
+                // start time picker
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text("Start: ${startTime.format(context)}"),
+                  trailing: const Icon(Icons.access_time),
+                  onTap: () async {
+                    final picked = await showTimePicker(
+                      context: context,
+                      initialTime: startTime,
+                    );
+                    if (picked != null) setDialogState(() => startTime = picked);
+                  },
                 ),
-                const SizedBox(height: 12),
+
+                // end time picker
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text("End: ${endTime.format(context)}"),
+                  trailing: const Icon(Icons.access_time),
+                  onTap: () async {
+                    final picked = await showTimePicker(
+                      context: context,
+                      initialTime: endTime,
+                    );
+                    if (picked != null) setDialogState(() => endTime = picked);
+                  },
+                ),
+
+                // optional capacity
                 TextField(
                   controller: capacityController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText: "Capacity (optional)",
+                    labelText: "Set Capacity (optional)",
                     hintText: "Leave blank for unlimited",
-                    border: OutlineInputBorder(),
                   ),
                 ),
               ],
@@ -313,13 +276,9 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
             ),
             ElevatedButton(
               onPressed: () async {
-                if (titleController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Please enter a title")),
-                  );
-                  return;
-                }
+                if (titleController.text.isEmpty) return;
 
+                // build datetime strings for backend
                 final start = DateTime(
                   selectedDate.year, selectedDate.month, selectedDate.day,
                   startTime.hour, startTime.minute,
@@ -342,10 +301,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
 
                 Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8B5CF6),
-              ),
-              child: const Text("Create Event"),
+              child: const Text("Post"),
             ),
           ],
         ),
@@ -364,7 +320,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
+        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
         headers: ApiService.headers,
         body: jsonEncode({
           "title": title,
@@ -376,24 +332,14 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         }),
       );
 
-      print("📝 Create event response: ${response.statusCode}");
-      print("📝 Response body: ${response.body}");
-
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Event created successfully! 🎉")),
+          const SnackBar(content: Text("Event created ✅")),
         );
-        loadEvents(); // Auto-refresh calendar
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to create event: ${response.statusCode}")),
-        );
+        loadEvents(); // refresh calendar
       }
     } catch (e) {
-      print("❌ Error creating event: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error creating event")),
-      );
+      print("Error creating event: $e");
     }
   }
 
@@ -409,12 +355,10 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Event removed")),
         );
-        loadEvents(); // Auto-refresh after delete
-      } else {
-        print("❌ Failed to delete event: ${response.statusCode}");
+        loadEvents(); // refresh calendar
       }
     } catch (e) {
-      print("❌ Error deleting event: $e");
+      print("Error deleting event: $e");
     }
   }
 
@@ -422,41 +366,40 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: true,
-        title: const Text("Events Calendar"),
+        automaticallyImplyLeading: false,
+        title: const Text("Calendar"),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      child: EventBasedCalender(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        padding: const EdgeInsets.all(8),
-                        events: calendarEvents,
-                        primaryColor: const Color(0xFF8B5CF6),
-                        backgroundColor: const Color(0xFF8B5CF6).withValues(alpha: 0.05),
-                        chooserColor: Colors.black,
-                        endYear: 2028,
-                        startYear: 2024,
-                        currentMonthDateColor: Colors.black,
-                        pastFutureMonthDateColor: Colors.grey,
-                        isSelectedColor: const Color(0xFF8B5CF6),
-                        isSelectedShow: true,
-                        showEvent: true,
-                        onDateTap: (date) => onDateTapped(date),
-                      ),
-                    ),
-                  ),
-                );
-              },
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+              ),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: EventBasedCalender(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.all(8),
+                  events: calendarEvents,
+                  primaryColor: Colors.blue,
+                  backgroundColor: Colors.blue.withValues(alpha: .05),
+                  chooserColor: Colors.black,
+                  endYear: 2028,
+                  startYear: 2024,
+                  currentMonthDateColor: Colors.black,
+                  pastFutureMonthDateColor: Colors.grey,
+                  isSelectedColor: Colors.amber,
+                  isSelectedShow: true,
+                  showEvent: true,
+                  onDateTap: (date) => onDateTapped(date),
+                ),
+              ),
             ),
+          );
+        },
+      ),
       bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
     );
   }
