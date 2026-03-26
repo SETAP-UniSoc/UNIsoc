@@ -54,30 +54,9 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
   @override
   void dispose() {
-  debounce?.cancel();
-  super.dispose();
-}
-
-  final List<String> categories = [
-    "All", "Academic", "Cultural", "Sports", "Religious", "Extra-curricular" ]; // list of catergies 
-
-  final Map<String, Color> categoryColours = {
-    "Academic": const Color(0xFF5C6BC0), //indgo
-
-    "Cultural ": const Color(0xFF26A69A), //teal
-    "Sports": const Color(0xFF7E57C2), //medium purple
-    "Religious": const Color(0xFF8D6E63), //warm brown
-    "Extra-curricular": const Color(0xFF42A5F5), //light blue
-    "All": const Color(0xFF7B1FA2), //deep purple     
-    };
-
-  final List<Color> carouselColours = [
-    const Color(0xFF7B1FA2), //deep purple
-    const Color(0xFF6A1B9A), //darker purple
-    const Color(0xFF9C27B0), // purple
-    const Color(0xFF8E24AA), // medium purple
-    const Color(0xFF6D1F7B), // darkest purple
-  ];
+    debounce?.cancel();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -372,7 +351,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 50),
         if (isLoading)
           const CircularProgressIndicator()
         else if (top5.isEmpty)
