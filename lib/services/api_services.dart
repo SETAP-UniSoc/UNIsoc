@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -16,6 +15,8 @@ class ApiService {
 
   // Save login data after admin login
   static void saveAdminLogin(String token, int id, String name) {
+    authToken = token;
+    societyId = id;
     societyName = name;
   }
 
@@ -29,6 +30,7 @@ class ApiService {
   // -------- PUBLIC ENDPOINTS --------
 
   static Future<List> getSocieties() async {
+    final response = await http.get(
       Uri.parse("$baseUrl/societies/"),
       headers: headers,
     );
