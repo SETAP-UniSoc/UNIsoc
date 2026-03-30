@@ -30,9 +30,7 @@ INSTALLED_APPS = [
     'authentication.apps.AuthenticationConfig',
 ]
 
-CRONJOBS = [
-    ('*/10 * * * *', 'authentication.views.send_event_reminders'),
-]
+CELERY_BROKER_URL = 'redis://127.0.0.1:6380/0'
 
 # =========================================================
 # MIDDLEWARE (FIXED ORDER)
