@@ -204,7 +204,7 @@ class AllEventsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        events = Event.objects.all().order_by('-id')[:5]  # ✅ FIXED
+        events = Event.objects.all().order_by('-id')[:5]  
 
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data)

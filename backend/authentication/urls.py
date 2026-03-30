@@ -23,7 +23,6 @@ from .views import (
     MyEventsView)
 
 
-
 urlpatterns = [
     # path("api/", include("authentication.urls")),
     # Authentication
