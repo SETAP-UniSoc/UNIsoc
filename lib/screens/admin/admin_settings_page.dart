@@ -1,6 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:unisoc/services/api_services.dart';
 
 class AdminSettingsPage extends StatefulWidget {
@@ -11,280 +11,631 @@ class AdminSettingsPage extends StatefulWidget {
 }
 
 class _AdminSettingsPageState extends State<AdminSettingsPage> {
-  final TextEditingController oldPasswordController = TextEditingController();
-  final TextEditingController newPasswordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
-
-  bool isLoading = false;
-  bool obscureOld = true;
-  bool obscureNew = true;
-  bool obscureConfirm = true;
-
-  // ✅ simple toggle (no backend)
-  bool notificationsEnabled = true;
-
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _currentEmailController = TextEditingController();
+  final TextEditingController _newEmailController = TextEditingController();
+  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  
+  bool _isEditingName = false;
+  bool _isLoading = false;
+  bool _notificationsEnabled = true;
+  
+  // Password visibility toggles
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+  
+  String _userName = "";
+  String _userEmail = "";
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+  
   @override
   void dispose() {
-    oldPasswordController.dispose();
-    newPasswordController.dispose();
-    confirmPasswordController.dispose();
+    _nameController.dispose();
+    _currentEmailController.dispose();
+    _newEmailController.dispose();
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
-
-  Future<void> changePassword() async {
-    final oldPassword = oldPasswordController.text;
-    final newPassword = newPasswordController.text;
-    final confirmPassword = confirmPasswordController.text;
-
-    if (oldPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
-      _showSnackBar("All fields are required");
+  
+  Future<void> _loadUserData() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      print("🔍 Loading user profile from: ${ApiService.baseUrl}/user/profile/");
+      print("🔍 Token: ${ApiService.authToken}");
+      
+      final response = await http.get(
+        Uri.parse("${ApiService.baseUrl}/user/profile/"),
+        headers: ApiService.headers,
+      );
+      
+      print("📊 Profile response status: ${response.statusCode}");
+      print("📊 Profile response body: ${response.body}");
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print("✅ Profile data: $data");
+        
+        setState(() {
+          // Get first name from the name field or first_name
+          _userName = data["name"] ?? data["first_name"] ?? "Admin";
+          _userEmail = data["email"] ?? "";
+          _nameController.text = _userName;
+        });
+      } else {
+        print("❌ Failed to load profile: ${response.statusCode}");
+        setState(() {
+          _userName = "Admin";
+          _userEmail = "";
+        });
+      }
+    } catch (e) {
+      print("❌ Error loading user data: $e");
+      setState(() {
+        _userName = "Admin";
+        _userEmail = "";
+      });
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+  
+  Future<void> _updateName() async {
+    if (_nameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Name cannot be empty")),
+      );
       return;
     }
-
-    if (newPassword != confirmPassword) {
-      _showSnackBar("New passwords do not match");
+    
+    setState(() => _isLoading = true);
+    
+    try {
+      final response = await http.patch(
+        Uri.parse("${ApiService.baseUrl}/user/profile/"),
+        headers: ApiService.headers,
+        body: jsonEncode({"name": _nameController.text.trim()}),
+      );
+      
+      print("📊 Update name response: ${response.statusCode}");
+      print("📊 Response body: ${response.body}");
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _userName = data["name"] ?? _nameController.text.trim();
+          _isEditingName = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Name updated successfully ✅")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to update name: ${response.statusCode}")),
+        );
+      }
+    } catch (e) {
+      print("Error updating name: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error updating name")),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+  
+  Future<void> _updateEmail() async {
+    if (_currentEmailController.text.trim().isEmpty || 
+        _newEmailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill in both email fields")),
+      );
       return;
     }
-
-    if (newPassword.length < 8) {
-      _showSnackBar("New password must be at least 8 characters");
+    
+    setState(() => _isLoading = true);
+    
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiService.baseUrl}/change-email/"),
+        headers: ApiService.headers,
+        body: jsonEncode({
+          "current_email": _currentEmailController.text.trim(),
+          "new_email": _newEmailController.text.trim(),
+        }),
+      );
+      
+      print("📊 Change email response: ${response.statusCode}");
+      print("📊 Response body: ${response.body}");
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _userEmail = data["email"];
+          _currentEmailController.clear();
+          _newEmailController.clear();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Email updated successfully ✅")),
+        );
+      } else {
+        final error = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error["error"] ?? "Failed to update email")),
+        );
+      }
+    } catch (e) {
+      print("Error updating email: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error updating email")),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+  
+  Future<void> _changePassword() async {
+    if (_currentPasswordController.text.isEmpty || 
+        _newPasswordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill in both password fields")),
+      );
       return;
     }
-
-    setState(() => isLoading = true);
-
+    
+    if (_newPasswordController.text.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Password must be at least 8 characters")),
+      );
+      return;
+    }
+    
+    if (_newPasswordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("New passwords don't match")),
+      );
+      return;
+    }
+    
+    setState(() => _isLoading = true);
+    
     try {
       final response = await http.post(
         Uri.parse("${ApiService.baseUrl}/change-password/"),
         headers: ApiService.headers,
         body: jsonEncode({
-          "old_password": oldPassword,
-          "new_password": newPassword,
+          "old_password": _currentPasswordController.text,
+          "new_password": _newPasswordController.text,
         }),
       );
-
-      final data = jsonDecode(response.body);
-
+      
+      print("📊 Change password response: ${response.statusCode}");
+      print("📊 Response body: ${response.body}");
+      
       if (response.statusCode == 200) {
-        _showSnackBar("Password changed successfully ✅");
-        oldPasswordController.clear();
-        newPasswordController.clear();
-        confirmPasswordController.clear();
+        setState(() {
+          _currentPasswordController.clear();
+          _newPasswordController.clear();
+          _confirmPasswordController.clear();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Password changed successfully ✅")),
+        );
       } else {
-        _showSnackBar(data["error"] ?? "Something went wrong");
+        final error = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error["error"] ?? "Failed to change password")),
+        );
       }
     } catch (e) {
-      _showSnackBar("Unable to connect to server");
+      print("Error changing password: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error changing password")),
+      );
     } finally {
-      setState(() => isLoading = false);
+      setState(() => _isLoading = false);
     }
   }
-
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        elevation: 0,
+        automaticallyImplyLeading: true,
+        title: const Text(
+          "My Account",
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
-        title: const Text(
-          "Settings",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-
-            // header card
-            Container(
-              width: double.infinity,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Colors.purple, Colors.deepPurple],
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Account Settings",
+                  // My Details Section
+                  const Text(
+                    "My Details",
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1F2937),
                     ),
                   ),
-                  SizedBox(height: 6),
-                  Text(
-                    "Manage your account security",
+                  const SizedBox(height: 12),
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  
+                  // Name Field
+                  const Text(
+                    "Name",
                     style: TextStyle(
-                      color: Colors.white70,
                       fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B7280),
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _isEditingName
+                            ? TextField(
+                                controller: _nameController,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 14,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey.shade300),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  _userName.isNotEmpty ? _userName : "No name set",
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: Icon(
+                          _isEditingName ? Icons.save : Icons.edit,
+                          color: const Color(0xFF8B5CF6),
+                        ),
+                        onPressed: () {
+                          if (_isEditingName) {
+                            _updateName();
+                          } else {
+                            setState(() => _isEditingName = true);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Email Field (Read-only)
+                  const Text(
+                    "Email",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.grey.shade50,
+                    ),
+                    child: Text(
+                      _userEmail.isNotEmpty ? _userEmail : "No email set",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Change Email Section
+                  const Text(
+                    "Change Email",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  
+                  // Current Email
+                  const Text(
+                    "Current Email",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _currentEmailController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      hintText: "Enter current email",
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // New Email
+                  const Text(
+                    "New Email",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _newEmailController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      hintText: "Enter new email",
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _updateEmail,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF8B5CF6),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        "Update Email",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 32),
+                  
+                  // Change Password Section
+                  const Text(
+                    "Change Password",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  
+                  // Current Password with Eye Icon
+                  const Text(
+                    "Current Password",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _currentPasswordController,
+                    obscureText: _obscureCurrentPassword,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      hintText: "Enter current password",
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureCurrentPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureCurrentPassword = !_obscureCurrentPassword;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // New Password with Eye Icon
+                  const Text(
+                    "New Password",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _newPasswordController,
+                    obscureText: _obscureNewPassword,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      hintText: "Enter new password (min. 8 characters)",
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureNewPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureNewPassword = !_obscureNewPassword;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Confirm Password with Eye Icon
+                  const Text(
+                    "Confirm New Password",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _confirmPasswordController,
+                    obscureText: _obscureConfirmPassword,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      hintText: "Confirm new password",
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _changePassword,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF8B5CF6),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        "Change Password",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 32),
+                  
+                  // Notifications Section
+                  const Text(
+                    "Notifications",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text(
+                        "Enable Notifications",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      subtitle: const Text(
+                        "Receive updates about your society and events",
+                        style: TextStyle(fontSize: 13),
+                      ),
+                      value: _notificationsEnabled,
+                      activeColor: const Color(0xFF8B5CF6),
+                      onChanged: (value) {
+                        setState(() => _notificationsEnabled = value);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Coming soon!")),
+                        );
+                      },
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
-
-            const SizedBox(height: 32),
-
-            // notification toggle with zero functionality 
-            const Text(
-              "Notifications",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              "Toggle notifications on or off",
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            const SizedBox(height: 12),
-
-            SwitchListTile(
-              title: const Text(
-                "Enable Notifications",
-                style: TextStyle(fontWeight: FontWeight.w500),
-              ),
-              subtitle: Text(
-                notificationsEnabled
-                    ? "Notifications on"
-                    : "Notifications off",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: notificationsEnabled ? Colors.purple : Colors.grey,
-                ),
-              ),
-              value: notificationsEnabled,
-              activeColor: Colors.purple,
-              onChanged: (val) {
-                setState(() {
-                  notificationsEnabled = val;
-                });
-              },
-            ),
-
-            const SizedBox(height: 32),
-
-            // change password section
-            const Text(
-              "Change Password",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-
-            const SizedBox(height: 16),
-
-            TextField(
-              controller: oldPasswordController,
-              obscureText: obscureOld,
-              decoration: InputDecoration(
-                labelText: "Current Password",
-                labelStyle: const TextStyle(color: Colors.purple),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.purple),
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    obscureOld ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.purple,
-                  ),
-                  onPressed: () => setState(() => obscureOld = !obscureOld),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            TextField(
-              controller: newPasswordController,
-              obscureText: obscureNew,
-              decoration: InputDecoration(
-                labelText: "New Password",
-                labelStyle: const TextStyle(color: Colors.purple),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.purple),
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    obscureNew ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.purple,
-                  ),
-                  onPressed: () => setState(() => obscureNew = !obscureNew),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            TextField(
-              controller: confirmPasswordController,
-              obscureText: obscureConfirm,
-              decoration: InputDecoration(
-                labelText: "Confirm New Password",
-                labelStyle: const TextStyle(color: Colors.purple),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.purple),
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    obscureConfirm ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.purple,
-                  ),
-                  onPressed: () =>
-                      setState(() => obscureConfirm = !obscureConfirm),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: isLoading ? null : changePassword,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        "Save Changes",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-              ),
-            ),
-
-            const SizedBox(height: 30),
-          ],
-        ),
-      ),
     );
   }
 }
