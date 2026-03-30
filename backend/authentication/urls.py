@@ -18,6 +18,7 @@ from .views import (
     SocietyListSearchView,
     EventDetailView,
     UpdateEventView,
+    ChangePasswordView,
     MyEventsView)
 
 
@@ -51,6 +52,8 @@ urlpatterns = [
     path('users/', UserListView.as_view(), name='user-list-create'),
     # search and filter societies
     path("search/", SocietyListSearchView.as_view(), name="society-search"),
+    # chnage password 
+    path('change-password/', ChangePasswordView.as_view(), name='change-password'),
     ]
 
 
