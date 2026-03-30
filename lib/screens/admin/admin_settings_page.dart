@@ -166,7 +166,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
     setState(() => _isLoading = true);
     
     try {
-      final response = await http.patch(
+      final response = await http.post(
         Uri.parse("${ApiService.baseUrl}/user/profile/"),
         headers: ApiService.headers,
         body: jsonEncode({"name": newName}),
