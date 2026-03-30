@@ -105,7 +105,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
-          _notificationsEnabled = data["enabled"] ?? true;
+          _notificationsEnabled = data[0] ["event_notifications"] ?? true;
         });
       }
     } catch (e) {
@@ -120,7 +120,10 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
       final response = await http.post(
         Uri.parse("${ApiService.baseUrl}/notification-settings/"),
         headers: ApiService.headers,
-        body: jsonEncode({"enabled": enabled}),
+        body: jsonEncode({"enabled": enabled,
+        "society_id": 1,
+        "event_notifications": enabled}),
+        
       );
       
       if (response.statusCode == 200) {
