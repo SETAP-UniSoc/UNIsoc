@@ -98,7 +98,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   Future<void> _loadNotificationSettings() async {
     try {
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/notification-settings/"),
+        Uri.parse("${ApiService.baseUrl}/notifications/"),
         headers: ApiService.headers,
       );
       
@@ -118,7 +118,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
     
     try {
       final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}/notification-settings/"),
+        Uri.parse("${ApiService.baseUrl}/notifications/"),
         headers: ApiService.headers,
         body: jsonEncode({"enabled": enabled,
         "society_id": 1,
