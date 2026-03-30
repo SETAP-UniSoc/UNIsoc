@@ -97,20 +97,24 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   
   Future<void> _loadNotificationSettings() async {
     try {
-      final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/notifications/"),
-        headers: ApiService.headers,
-      );
-      
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          _notificationsEnabled = data[0] ["event_notifications"] ?? true;
-        });
-      }
-    } catch (e) {
-      print("Error loading notification settings: $e");
+  final response = await http.get(
+    Uri.parse("${ApiService.baseUrl}/notifications/"),
+    headers: ApiService.headers,
+  );
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+
+    if (data.isNotEmpty) {
+      setState(() {
+        _notificationsEnabled =
+            data[0]["event_notifications"] ?? true;
+      });
     }
+  }
+} catch (e) {
+  print("Error loading notification settings: ${e.toString()}");
+}
   }
   
   Future<void> _updateNotificationSettings(bool enabled) async {
@@ -120,7 +124,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
       final response = await http.post(
         Uri.parse("${ApiService.baseUrl}/notifications/"),
         headers: ApiService.headers,
-        body: jsonEncode({"enabled": enabled,
+        body: jsonEncode({
         "society_id": 1,
         "event_notifications": enabled}),
         
