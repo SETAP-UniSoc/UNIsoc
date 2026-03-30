@@ -20,6 +20,7 @@ from .views import (
     EventDetailView,
     UpdateEventView,
     ChangePasswordView,
+    NotificationView,
     MyEventsView)
 
 
@@ -57,6 +58,7 @@ urlpatterns = [
     # change email
     path('change-email/', ChangeEmailView.as_view(), name='change-email'),
     
+    path('notifications/', NotificationView.as_view(), name='notifications'),
     ]
 
 
