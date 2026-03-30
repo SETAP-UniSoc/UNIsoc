@@ -34,6 +34,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   void initState() {
     super.initState();
     _loadUserData();
+    _loadNotificationSettings();
   }
   
   @override
@@ -89,6 +90,61 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
       setState(() {
         _errorMessage = "Connection error: Unable to load profile";
       });
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+  
+  Future<void> _loadNotificationSettings() async {
+    try {
+      final response = await http.get(
+        Uri.parse("${ApiService.baseUrl}/notification-settings/"),
+        headers: ApiService.headers,
+      );
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _notificationsEnabled = data["enabled"] ?? true;
+        });
+      }
+    } catch (e) {
+      print("Error loading notification settings: $e");
+    }
+  }
+  
+  Future<void> _updateNotificationSettings(bool enabled) async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiService.baseUrl}/notification-settings/"),
+        headers: ApiService.headers,
+        body: jsonEncode({"enabled": enabled}),
+      );
+      
+      if (response.statusCode == 200) {
+        setState(() {
+          _notificationsEnabled = enabled;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              enabled ? "Notifications enabled" : "Notifications disabled"
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to update notification settings")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error updating notification settings")),
+      );
     } finally {
       setState(() => _isLoading = false);
     }
@@ -664,27 +720,38 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                       color: const Color(0xFFF3F4F6),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        "Enable Notifications",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Enable Notifications",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                "Receive updates about your society and events",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      subtitle: const Text(
-                        "Receive updates about your society and events",
-                        style: TextStyle(fontSize: 13),
-                      ),
-                      value: _notificationsEnabled,
-                      activeColor: const Color(0xFF8B5CF6),
-                      onChanged: (value) {
-                        setState(() => _notificationsEnabled = value);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Coming soon")),
-                        );
-                      },
+                        Switch(
+                          value: _notificationsEnabled,
+                          activeColor: const Color(0xFF8B5CF6),
+                          onChanged: (value) {
+                            _updateNotificationSettings(value);
+                          },
+                        ),
+                      ],
                     ),
                   ),
                   
