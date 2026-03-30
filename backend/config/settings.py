@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_crontab',
 
     'rest_framework',
     'rest_framework.authtoken',
@@ -29,6 +30,7 @@ INSTALLED_APPS = [
     'authentication.apps.AuthenticationConfig',
 ]
 
+CELERY_BROKER_URL = 'redis://127.0.0.1:6380/0'
 
 # =========================================================
 # MIDDLEWARE (FIXED ORDER)

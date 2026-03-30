@@ -342,11 +342,6 @@ class NotificationView(APIView):
 
 
 def send_event_confirmation(user, event):
-    """
-    Send email when admin creates an event
-    """
-
-    # check preference
     if not NotificationPreference.objects.filter(
         user=user,
         society=event.society,
@@ -359,23 +354,16 @@ def send_event_confirmation(user, event):
         message=f"""
 Your event "{event.title}" has been created successfully.
 
-Details:
 Date: {event.start_time}
 Location: {event.location}
-
-You will receive a reminder 24 hours before the event.
 """,
-        from_email="noreply@yourapp.com",
+        from_email=None,
         recipient_list=[user.email],
         fail_silently=False,
     )
 
 
 def send_event_reminders():
-    """
-    Run this every 10–60 minutes using cron or Celery
-    """
-
     now = timezone.now()
     upcoming = now + timedelta(hours=24)
 
@@ -400,15 +388,12 @@ def send_event_reminders():
             send_mail(
                 subject="Reminder: Event in 24 Hours",
                 message=f"""
-Reminder: Your event "{event.title}" is happening in 24 hours.
+Reminder: "{event.title}" is in 24 hours.
 
 Date: {event.start_time}
 Location: {event.location}
-
-If you need to cancel or make changes, please do so now.
 """,
-                from_email="noreply@yourapp.com",
+                from_email=None,
                 recipient_list=[user.email],
                 fail_silently=False,
             )
-
