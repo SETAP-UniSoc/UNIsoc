@@ -45,8 +45,8 @@ class AdminDropdownMenu extends StatelessWidget {
         }
       },
       itemBuilder: (context) => const [
-        PopupMenuItem(value: "account", child: Text("My Account")),
-        PopupMenuItem(value: "settings", child: Text("Settings")),
+        PopupMenuItem(value: "account", child: Text("My Society")),
+        PopupMenuItem(value: "settings", child: Text("My Account")),
         PopupMenuItem(value: "logout", child: Text("Logout")),
       ],
     );
