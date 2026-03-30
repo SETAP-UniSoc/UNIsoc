@@ -44,7 +44,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
 
   void startLiveUpdates() {
     // live member count refreshes every 5 seconds
-    liveTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+    liveTimer = Timer.periodic(const Duration(seconds: 50), (_) {
       fetchAnalytics(selectedPeriod);
     });
   }
