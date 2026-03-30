@@ -8,7 +8,8 @@ from .SocietyDetailView import SocietyDetailView
 from .serializer import EventSerializer
 from .views import (
     AddEventView,
-    AllEventsView, 
+    AllEventsView,
+    ChangeEmailView, 
     CreateEventView, 
     DeleteEventView,
     MyCreatedEventsView,
@@ -54,6 +55,9 @@ urlpatterns = [
     path("search/", SocietyListSearchView.as_view(), name="society-search"),
     # chnage password 
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
+    # change email
+    path('change-email/', ChangeEmailView.as_view(), name='change-email'),
+    
     ]
 
 
