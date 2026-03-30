@@ -152,9 +152,9 @@ print("Error loading events: $e");
     // Check if this is the admin's own society
     final bool isOwnSociety = societyId == ApiService.societyId;
     
-    print("🔍 Navigating to society: $societyName (ID: $societyId)");
-    print("👤 Admin's own society ID: ${ApiService.societyId}");
-    print("🏷️ Setting isAdmin: $isOwnSociety");
+    print(" Navigating to society: $societyName (ID: $societyId)");
+    print(" Admin's own society ID: ${ApiService.societyId}");
+    print(" Setting isAdmin: $isOwnSociety");
     
     Navigator.push(
       context,
