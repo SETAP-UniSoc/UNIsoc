@@ -16,7 +16,7 @@ class AdminAnalyticsPage extends StatefulWidget {
 }
 
 class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
-  String selectedPeriod = "year";
+  String selectedPeriod = "week";
   List<String> labels = [];
   List<double> values = [];
   List<double> eventValues = [];
