@@ -72,9 +72,9 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
            final eventsStats = data["events_stats"] ?? [];
 eventValues = eventsStats.map((e) => (e["attendee_count"] as num).toDouble()).toList();
 eventNames = eventsStats.map((e) => e["title"].toString()).toList();
-           if (values.isNotEmpty) {
-    values[values.length - 1] = liveCount.toDouble();
-  }
+  //          if (values.isNotEmpty) {
+  //   values[values.length - 1] = liveCount.toDouble();
+  // }
 
         });
       }
@@ -222,57 +222,90 @@ SizedBox(
   }
 
   Widget _buildChart(List<double> data) {
-    if (data.isEmpty) {
-      return const Center(child: Text("No data yet"));
-    }
+  if (data.isEmpty) {
+    return const Center(child: Text("No data yet"));
+  }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: LineChart(
-        LineChartData(
-          minX: 0,
-          maxX: (data.length - 1).toDouble(),
-          minY: 0,
-          maxY: data.reduce((a, b) => a > b ? a : b) * 1.2,
-          gridData: const FlGridData(show: false),
-          borderData: FlBorderData(show: false),
-          titlesData: const FlTitlesData(
-            leftTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: false)),
-            rightTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: false)),
-            topTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: false)),
-            bottomTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: false)),
+  // Calculate max Y value
+  double maxY = data.reduce((a, b) => a > b ? a : b);
+  if (maxY == 0) maxY = 1; // Prevent division by zero
+
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: LineChart(
+      LineChartData(
+        minX: 0,
+        maxX: (data.length - 1).toDouble(),
+        minY: 0,
+        maxY: maxY * 1.2,
+        gridData: const FlGridData(show: false),
+        borderData: FlBorderData(show: false),
+        titlesData: FlTitlesData(
+          show: true,
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 40,
+              getTitlesWidget: (value, meta) {
+                if (value.toInt() < labels.length) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      labels[value.toInt()],
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                  );
+                }
+                return const Text('');
+              },
+            ),
           ),
-          lineBarsData: [
-            LineChartBarData(
-              isCurved: true,
-              barWidth: 3,
-              dotData: const FlDotData(show: false),
-              gradient: const LinearGradient(
-                colors: [Colors.purple, Colors.deepPurple],
-              ),
-              belowBarData: BarAreaData(
-                show: true,
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.purple.withOpacity(0.4),
-                    Colors.purple.withOpacity(0.05),
-                  ],
-                ),
-              ),
-              spots: List.generate(
-                data.length,
-                (i) => FlSpot(i.toDouble(), data[i]),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 40,
+              getTitlesWidget: (value, meta) {
+                return Text(
+                  value.toInt().toString(),
+                  style: const TextStyle(fontSize: 10),
+                );
+              },
+            ),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+        ),
+        lineBarsData: [
+          LineChartBarData(
+            isCurved: true,
+            barWidth: 3,
+            dotData: const FlDotData(show: false),
+            gradient: const LinearGradient(
+              colors: [Colors.purple, Colors.deepPurple],
+            ),
+            belowBarData: BarAreaData(
+              show: true,
+              gradient: LinearGradient(
+                colors: [
+                  Colors.purple.withOpacity(0.4),
+                  Colors.purple.withOpacity(0.05),
+                ],
               ),
             ),
-          ],
-        ),
+            spots: List.generate(
+              data.length,
+              (i) => FlSpot(i.toDouble(), data[i]),
+            ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
 
   Widget _buildEventBarChart(List<double> data, List<String> names) {
