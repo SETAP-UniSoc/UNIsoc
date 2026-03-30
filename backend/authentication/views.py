@@ -271,6 +271,16 @@ class ChangeEmailView(APIView):
         user.save()
         return Response({"message": "Email changed successfully"})
     
+class User_ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        serializer = UserSerializer(user)
+    
+        return Response(serializer.data)    
+
+    
 class NotificationView(APIView):
     permission_classes = [IsAuthenticated]
 
