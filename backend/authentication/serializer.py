@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import Society, User
-from .models import Event 
+from .models import NotificationPreference, Society, User
+from .models import Event, NotificationPreference
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,6 +25,12 @@ class EventSerializer(serializers.ModelSerializer):
 
     def get_attendee_count(self, obj):
         return obj.rsvps.count()
+
+class NotificationPreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationPreference
+        fields = "__all__"
+    read_only_fields = ['user', 'id']
 
 
         
