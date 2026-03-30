@@ -27,7 +27,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     loadEvents();
   }
 
-  // ✅ LOAD EVENTS + GROUP BY DATE
+  //  LOAD EVENTS + GROUP BY DATE
   Future<void> loadEvents() async {
     setState(() => isLoading = true);
 
@@ -39,7 +39,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body) as List;
 
-      // 🔥 GROUP EVENTS BY DATE
+      //  GROUP EVENTS BY DATE
       Map<String, List> grouped = {};
 
       for (var e in data) {
@@ -52,7 +52,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         grouped[key]!.add(e);
       }
 
-      // 🔥 CREATE CALENDAR EVENTS (ONE PER DAY)
+      //  CREATE CALENDAR EVENTS (ONE PER DAY)
       List<Event> calEvents = grouped.entries.map((entry) {
         final parts = entry.key.split("-");
         final date = DateTime(
@@ -80,7 +80,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     }
   }
 
-  // ✅ TAP DATE
+  //  TAP DATE
   void onDateTapped(DateTime date) {
     final selected = normalize(date);
 
@@ -96,7 +96,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     }
   }
 
-  // ✅ SHOW EVENTS LIST
+  //  SHOW EVENTS LIST
   void _showEvents(List events) {
     showDialog(
       context: context,
@@ -147,7 +147,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     );
   }
 
-  // ✅ CREATE EVENT
+  //  CREATE EVENT
   void _showCreateDialog(DateTime date) {
     final title = TextEditingController();
     final desc = TextEditingController();
@@ -303,14 +303,25 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Events Calendar")),
+      appBar: AppBar(title: const Text("Events Calendar"),automaticallyImplyLeading: false,),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : EventBasedCalender(
-              events: calendarEvents,
-              primaryColor: const Color(0xFF8B5CF6),
-              onDateTap: onDateTapped,
+    ? const Center(child: CircularProgressIndicator())
+    : LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+              ),
+              child: EventBasedCalender(
+                events: calendarEvents,
+                primaryColor: const Color(0xFF8B5CF6),
+                onDateTap: onDateTapped,
+              ),
             ),
+          );
+        },
+      ),
       bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
     );
   }

@@ -7,6 +7,7 @@ class ApiService {
   static String? authToken;
   static int? societyId; // Admin's society ID
   static String? societyName; // Admin's society name
+  static String? adminName; // Admin's personal name
 
   static Map<String, String> get headers => {
     "Content-Type": "application/json",

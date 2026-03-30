@@ -72,12 +72,12 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
           societyData = data;
           descController.text = data["description"] ?? "";
         });
-        print("✅ Loaded society: ${data["name"]} (ID: ${widget.societyId})");
+        print(" Loaded society: ${data["name"]} (ID: ${widget.societyId})");
       } else {
-        print("❌ Failed to load society: ${response.statusCode}");
+        print(" Failed to load society: ${response.statusCode}");
       }
     } catch (e) {
-      print("❌ Error loading society: $e");
+      print(" Error loading society: $e");
     }
   }
 
