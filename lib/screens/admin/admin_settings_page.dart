@@ -22,6 +22,11 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   bool _isLoading = false;
   bool _notificationsEnabled = true;
   
+  // Password visibility toggles
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+  
   String _userName = "";
   String _userEmail = "";
   
@@ -46,30 +51,39 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
     setState(() => _isLoading = true);
     
     try {
+      print("🔍 Loading user profile from: ${ApiService.baseUrl}/user/profile/");
+      print("🔍 Token: ${ApiService.authToken}");
+      
       final response = await http.get(
         Uri.parse("${ApiService.baseUrl}/user/profile/"),
         headers: ApiService.headers,
       );
       
+      print("📊 Profile response status: ${response.statusCode}");
+      print("📊 Profile response body: ${response.body}");
+      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        print("✅ Profile data: $data");
+        
         setState(() {
-          _userName = data["name"] ?? "Admin";
+          // Get first name from the name field or first_name
+          _userName = data["name"] ?? data["first_name"] ?? "Admin";
           _userEmail = data["email"] ?? "";
           _nameController.text = _userName;
         });
       } else {
-        // Fallback to stored data
+        print("❌ Failed to load profile: ${response.statusCode}");
         setState(() {
-          _userName = ApiService.societyName ?? "Admin";
-          _nameController.text = _userName;
+          _userName = "Admin";
+          _userEmail = "";
         });
       }
     } catch (e) {
-      print("Error loading user data: $e");
+      print("❌ Error loading user data: $e");
       setState(() {
-        _userName = ApiService.societyName ?? "Admin";
-        _nameController.text = _userName;
+        _userName = "Admin";
+        _userEmail = "";
       });
     } finally {
       setState(() => _isLoading = false);
@@ -93,15 +107,17 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
         body: jsonEncode({"name": _nameController.text.trim()}),
       );
       
+      print("📊 Update name response: ${response.statusCode}");
+      print("📊 Response body: ${response.body}");
+      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
-          _userName = data["name"];
+          _userName = data["name"] ?? _nameController.text.trim();
           _isEditingName = false;
-          ApiService.societyName = _userName;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Name updated successfully")),
+          const SnackBar(content: Text("Name updated successfully ✅")),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -139,6 +155,9 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
         }),
       );
       
+      print("📊 Change email response: ${response.statusCode}");
+      print("📊 Response body: ${response.body}");
+      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
@@ -147,7 +166,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
           _newEmailController.clear();
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Email updated successfully")),
+          const SnackBar(content: Text("Email updated successfully ✅")),
         );
       } else {
         final error = jsonDecode(response.body);
@@ -199,6 +218,9 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
           "new_password": _newPasswordController.text,
         }),
       );
+      
+      print("📊 Change password response: ${response.statusCode}");
+      print("📊 Response body: ${response.body}");
       
       if (response.statusCode == 200) {
         setState(() {
@@ -295,7 +317,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  _userName,
+                                  _userName.isNotEmpty ? _userName : "No name set",
                                   style: const TextStyle(fontSize: 16),
                                 ),
                               ),
@@ -439,7 +461,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                   const Divider(),
                   const SizedBox(height: 16),
                   
-                  // Current Password
+                  // Current Password with Eye Icon
                   const Text(
                     "Current Password",
                     style: TextStyle(
@@ -451,18 +473,31 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                   const SizedBox(height: 8),
                   TextField(
                     controller: _currentPasswordController,
-                    obscureText: true,
+                    obscureText: _obscureCurrentPassword,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                       hintText: "Enter current password",
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureCurrentPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureCurrentPassword = !_obscureCurrentPassword;
+                          });
+                        },
+                      ),
                     ),
                   ),
                   
                   const SizedBox(height: 16),
                   
-                  // New Password
+                  // New Password with Eye Icon
                   const Text(
                     "New Password",
                     style: TextStyle(
@@ -474,18 +509,31 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                   const SizedBox(height: 8),
                   TextField(
                     controller: _newPasswordController,
-                    obscureText: true,
+                    obscureText: _obscureNewPassword,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                       hintText: "Enter new password (min. 8 characters)",
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureNewPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureNewPassword = !_obscureNewPassword;
+                          });
+                        },
+                      ),
                     ),
                   ),
                   
                   const SizedBox(height: 16),
                   
-                  // Confirm New Password
+                  // Confirm Password with Eye Icon
                   const Text(
                     "Confirm New Password",
                     style: TextStyle(
@@ -497,12 +545,25 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                   const SizedBox(height: 8),
                   TextField(
                     controller: _confirmPasswordController,
-                    obscureText: true,
+                    obscureText: _obscureConfirmPassword,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                       hintText: "Confirm new password",
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
+                          });
+                        },
+                      ),
                     ),
                   ),
                   
