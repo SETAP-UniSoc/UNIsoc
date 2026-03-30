@@ -360,7 +360,7 @@ def send_event_confirmation(user, event):
 Your event "{event.title}" has been created successfully.
 
 Details:
-Date: {event.date}
+Date: {event.start_time}
 Location: {event.location}
 
 You will receive a reminder 24 hours before the event.
@@ -379,7 +379,7 @@ def send_event_reminders():
     now = timezone.now()
     upcoming = now + timedelta(hours=24)
 
-    events = Event.objects.filter(date__range=(now, upcoming))
+    events = Event.objects.filter(start_time__range=(now, upcoming))
 
     for event in events:
         admins = Membership.objects.filter(
@@ -402,7 +402,7 @@ def send_event_reminders():
                 message=f"""
 Reminder: Your event "{event.title}" is happening in 24 hours.
 
-Date: {event.date}
+Date: {event.start_time}
 Location: {event.location}
 
 If you need to cancel or make changes, please do so now.
