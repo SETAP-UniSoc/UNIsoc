@@ -13,7 +13,7 @@ class AdminDropdownMenu extends StatelessWidget {
       icon: const Icon(Icons.more_vert),
       onSelected: (value) {
         switch (value) {
-          case "account":
+          case "society":
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -24,7 +24,7 @@ class AdminDropdownMenu extends StatelessWidget {
               ),
             );
             break;
-          case "settings":
+          case "myaccount":
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const AdminSettingsPage()),
@@ -45,8 +45,8 @@ class AdminDropdownMenu extends StatelessWidget {
         }
       },
       itemBuilder: (context) => const [
-        PopupMenuItem(value: "account", child: Text("My Society")),
-        PopupMenuItem(value: "settings", child: Text("My Account")),
+        PopupMenuItem(value: "society", child: Text("My Society")),
+        PopupMenuItem(value: "myaccount", child: Text("My Account")),
         PopupMenuItem(value: "logout", child: Text("Logout")),
       ],
     );
