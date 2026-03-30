@@ -280,6 +280,17 @@ class User_ProfileView(APIView):
     
         return Response(serializer.data)    
 
+    def post(self, request):
+        user = request.user
+        new_name = request.data.get("name")
+
+        if not new_name:
+            return Response({"error": "New name is required"}, status=400)
+
+        user.name = new_name
+        user.save()
+        return Response({"message": "Name changed successfully"})
+
     
 class NotificationView(APIView):
     permission_classes = [IsAuthenticated]
