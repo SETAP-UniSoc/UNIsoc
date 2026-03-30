@@ -22,13 +22,13 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   bool _isLoading = false;
   bool _notificationsEnabled = true;
   
-  // Password visibility toggles
   bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
   
   String _userName = "";
   String _userEmail = "";
+  String _errorMessage = "";
   
   @override
   void initState() {
@@ -48,42 +48,46 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   }
   
   Future<void> _loadUserData() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = "";
+    });
     
     try {
-      print("🔍 Loading user profile from: ${ApiService.baseUrl}/user/profile/");
-      print("🔍 Token: ${ApiService.authToken}");
-      
       final response = await http.get(
         Uri.parse("${ApiService.baseUrl}/user/profile/"),
         headers: ApiService.headers,
       );
       
-      print("📊 Profile response status: ${response.statusCode}");
-      print("📊 Profile response body: ${response.body}");
-      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print("✅ Profile data: $data");
+        
+        String nameValue = "Admin";
+        String emailValue = "";
+        
+        if (data["name"] != null && data["name"].toString().isNotEmpty) {
+          nameValue = data["name"].toString();
+        } else if (data["first_name"] != null && data["first_name"].toString().isNotEmpty) {
+          nameValue = data["first_name"].toString();
+        }
+        
+        if (data["email"] != null && data["email"].toString().isNotEmpty) {
+          emailValue = data["email"].toString();
+        }
         
         setState(() {
-          // Get first name from the name field or first_name
-          _userName = data["name"] ?? data["first_name"] ?? "Admin";
-          _userEmail = data["email"] ?? "";
+          _userName = nameValue;
+          _userEmail = emailValue;
           _nameController.text = _userName;
         });
       } else {
-        print("❌ Failed to load profile: ${response.statusCode}");
         setState(() {
-          _userName = "Admin";
-          _userEmail = "";
+          _errorMessage = "Failed to load profile: ${response.statusCode}";
         });
       }
     } catch (e) {
-      print("❌ Error loading user data: $e");
       setState(() {
-        _userName = "Admin";
-        _userEmail = "";
+        _errorMessage = "Connection error: Unable to load profile";
       });
     } finally {
       setState(() => _isLoading = false);
@@ -91,7 +95,9 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   }
   
   Future<void> _updateName() async {
-    if (_nameController.text.trim().isEmpty) {
+    final newName = _nameController.text.trim();
+    
+    if (newName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Name cannot be empty")),
       );
@@ -104,20 +110,26 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
       final response = await http.patch(
         Uri.parse("${ApiService.baseUrl}/user/profile/"),
         headers: ApiService.headers,
-        body: jsonEncode({"name": _nameController.text.trim()}),
+        body: jsonEncode({"name": newName}),
       );
-      
-      print("📊 Update name response: ${response.statusCode}");
-      print("📊 Response body: ${response.body}");
       
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        
+        String updatedName = newName;
+        if (data["name"] != null && data["name"].toString().isNotEmpty) {
+          updatedName = data["name"].toString();
+        } else if (data["first_name"] != null && data["first_name"].toString().isNotEmpty) {
+          updatedName = data["first_name"].toString();
+        }
+        
         setState(() {
-          _userName = data["name"] ?? _nameController.text.trim();
+          _userName = updatedName;
           _isEditingName = false;
         });
+        
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Name updated successfully ✅")),
+          const SnackBar(content: Text("Name updated successfully")),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -125,7 +137,6 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
         );
       }
     } catch (e) {
-      print("Error updating name: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error updating name")),
       );
@@ -135,8 +146,10 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   }
   
   Future<void> _updateEmail() async {
-    if (_currentEmailController.text.trim().isEmpty || 
-        _newEmailController.text.trim().isEmpty) {
+    final currentEmail = _currentEmailController.text.trim();
+    final newEmail = _newEmailController.text.trim();
+    
+    if (currentEmail.isEmpty || newEmail.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill in both email fields")),
       );
@@ -150,32 +163,43 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
         Uri.parse("${ApiService.baseUrl}/change-email/"),
         headers: ApiService.headers,
         body: jsonEncode({
-          "current_email": _currentEmailController.text.trim(),
-          "new_email": _newEmailController.text.trim(),
+          "current_email": currentEmail,
+          "new_email": newEmail,
         }),
       );
       
-      print("📊 Change email response: ${response.statusCode}");
-      print("📊 Response body: ${response.body}");
-      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        
+        String updatedEmail = newEmail;
+        if (data["email"] != null && data["email"].toString().isNotEmpty) {
+          updatedEmail = data["email"].toString();
+        }
+        
         setState(() {
-          _userEmail = data["email"];
+          _userEmail = updatedEmail;
           _currentEmailController.clear();
           _newEmailController.clear();
         });
+        
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Email updated successfully ✅")),
+          const SnackBar(content: Text("Email updated successfully")),
         );
       } else {
-        final error = jsonDecode(response.body);
+        String errorMessage = "Failed to update email";
+        try {
+          final error = jsonDecode(response.body);
+          if (error["error"] != null) {
+            errorMessage = error["error"].toString();
+          }
+        } catch (e) {
+          // Ignore parsing error
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error["error"] ?? "Failed to update email")),
+          SnackBar(content: Text(errorMessage)),
         );
       }
     } catch (e) {
-      print("Error updating email: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error updating email")),
       );
@@ -185,22 +209,25 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   }
   
   Future<void> _changePassword() async {
-    if (_currentPasswordController.text.isEmpty || 
-        _newPasswordController.text.isEmpty) {
+    final currentPassword = _currentPasswordController.text;
+    final newPassword = _newPasswordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+    
+    if (currentPassword.isEmpty || newPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill in both password fields")),
       );
       return;
     }
     
-    if (_newPasswordController.text.length < 8) {
+    if (newPassword.length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Password must be at least 8 characters")),
       );
       return;
     }
     
-    if (_newPasswordController.text != _confirmPasswordController.text) {
+    if (newPassword != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("New passwords don't match")),
       );
@@ -214,13 +241,10 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
         Uri.parse("${ApiService.baseUrl}/change-password/"),
         headers: ApiService.headers,
         body: jsonEncode({
-          "old_password": _currentPasswordController.text,
-          "new_password": _newPasswordController.text,
+          "old_password": currentPassword,
+          "new_password": newPassword,
         }),
       );
-      
-      print("📊 Change password response: ${response.statusCode}");
-      print("📊 Response body: ${response.body}");
       
       if (response.statusCode == 200) {
         setState(() {
@@ -228,17 +252,25 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
           _newPasswordController.clear();
           _confirmPasswordController.clear();
         });
+        
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Password changed successfully ✅")),
+          const SnackBar(content: Text("Password changed successfully")),
         );
       } else {
-        final error = jsonDecode(response.body);
+        String errorMessage = "Failed to change password";
+        try {
+          final error = jsonDecode(response.body);
+          if (error["error"] != null) {
+            errorMessage = error["error"].toString();
+          }
+        } catch (e) {
+          // Ignore parsing error
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error["error"] ?? "Failed to change password")),
+          SnackBar(content: Text(errorMessage)),
         );
       }
     } catch (e) {
-      print("Error changing password: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error changing password")),
       );
@@ -268,6 +300,30 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Error message display
+                  if (_errorMessage.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.error_outline, color: Colors.red.shade400, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage,
+                              style: TextStyle(color: Colors.red.shade700, fontSize: 13),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  
                   // My Details Section
                   const Text(
                     "My Details",
@@ -461,7 +517,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                   const Divider(),
                   const SizedBox(height: 16),
                   
-                  // Current Password with Eye Icon
+                  // Current Password
                   const Text(
                     "Current Password",
                     style: TextStyle(
@@ -497,7 +553,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                   
                   const SizedBox(height: 16),
                   
-                  // New Password with Eye Icon
+                  // New Password
                   const Text(
                     "New Password",
                     style: TextStyle(
@@ -533,7 +589,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                   
                   const SizedBox(height: 16),
                   
-                  // Confirm Password with Eye Icon
+                  // Confirm Password
                   const Text(
                     "Confirm New Password",
                     style: TextStyle(
@@ -626,7 +682,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                       onChanged: (value) {
                         setState(() => _notificationsEnabled = value);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Coming soon!")),
+                          const SnackBar(content: Text("Coming soon")),
                         );
                       },
                     ),
