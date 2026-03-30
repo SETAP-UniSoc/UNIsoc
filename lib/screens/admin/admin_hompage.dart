@@ -227,7 +227,7 @@ print("Error loading events: $e");
           ),
           const SizedBox(height: 8),
           Text(
-            "Welcome — ${ApiService.societyName ?? 'Admin'}",
+            "Welcome — ${ApiService.adminName ?? 'Admin'}",
             style: const TextStyle(
               fontSize: 18,
               color: Colors.white70,

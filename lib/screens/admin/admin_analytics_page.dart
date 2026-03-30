@@ -68,11 +68,10 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
               .toList();
           liveCount = data["live_count"] ?? 0;
 
-           eventValues = List<dynamic>.from(data["event_attendance_values"] ?? [])
-            .map((e) => (e as num).toDouble())
-            .toList();
-          
-          eventNames = List<String>.from(data["event_names_names"] ?? []);
+           // Get events_stats from backend and extract values and names
+           final eventsStats = data["events_stats"] ?? [];
+eventValues = eventsStats.map((e) => (e["attendee_count"] as num).toDouble()).toList();
+eventNames = eventsStats.map((e) => e["title"].toString()).toList();
            if (values.isNotEmpty) {
     values[values.length - 1] = liveCount.toDouble();
   }
