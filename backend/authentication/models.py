@@ -31,10 +31,6 @@ class CustomUserManager(BaseUserManager):
 class User(AbstractUser):
     username = None  
 
-    ROLE_CHOICES = [
-        ('user', 'User'),
-        ('admin', 'Admin'),
-    ]
 
     email = models.EmailField(unique=True)
 
@@ -47,7 +43,6 @@ class User(AbstractUser):
 
     role = models.CharField(
         max_length=20,
-        choices=ROLE_CHOICES,
         default='user'
     )
 
@@ -116,6 +111,11 @@ class Society(models.Model):
 
 
 class Membership(models.Model):
+    ROLE_CHOICES = [
+        ('member', 'Member'),
+        ('admin', 'Admin'),
+    ]
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
@@ -128,6 +128,8 @@ class Membership(models.Model):
 
     joined_at = models.DateTimeField(auto_now_add=True)
     left_at = models.DateTimeField(null=True, blank=True)
+
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='member')
 
     class Meta:
         unique_together = ('user', 'society')
@@ -219,21 +221,26 @@ class EventRSVP(models.Model):
 
 class NotificationPreference(models.Model):
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='notification_preferences'
     )
 
-    society = models.ForeignKey(
-        Society,
-        on_delete=models.CASCADE
-    )
+    society = models.ForeignKey(Society, on_delete=models.CASCADE)
 
-    notify = models.BooleanField(default=True)
-    event_notifications = models.BooleanField(default=True)
+    # 👤 USER EMAIL SETTINGS
+    notify_new_events = models.BooleanField(default=True)
+    notify_cancellations = models.BooleanField(default=True)
+
+    # 👑 ADMIN EMAIL SETTINGS
+    notify_event_created = models.BooleanField(default=True)
+    notify_24hr_reminder = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ('user', 'society')
+
+    def __str__(self):
+        return f"{self.user} prefs for {self.society}"
 
 class Message(models.Model):
     society = models.ForeignKey(
