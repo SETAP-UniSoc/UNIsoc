@@ -10,4 +10,4 @@ app = Celery('config')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # auto-discover tasks.py in apps
-app.autodiscover_tasks()
+app.autodiscover_tasks() 
