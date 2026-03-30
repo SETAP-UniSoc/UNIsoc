@@ -241,3 +241,20 @@ class ChangePasswordView(APIView):
         user.save()
         return Response({"message": "Password changed successfully"})
     
+class ChangeEmailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        new_email = request.data.get("new_email")
+
+        if not new_email:
+            return Response({"error": "New email is required"}, status=400)
+
+        if User.objects.filter(email=new_email).exists():
+            return Response({"error": "Email already in use"}, status=400)
+
+        user.email = new_email
+        user.save()
+        return Response({"message": "Email changed successfully"})
+    
