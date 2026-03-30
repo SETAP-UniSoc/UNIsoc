@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_crontab',
 
     'rest_framework',
     'rest_framework.authtoken',
@@ -29,6 +30,9 @@ INSTALLED_APPS = [
     'authentication.apps.AuthenticationConfig',
 ]
 
+CRONJOBS = [
+    ('*/10 * * * *', 'authentication.views.send_event_reminders'),
+]
 
 # =========================================================
 # MIDDLEWARE (FIXED ORDER)
