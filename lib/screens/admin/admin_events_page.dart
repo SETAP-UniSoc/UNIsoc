@@ -272,16 +272,18 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     required String endTime,
     int? capacity,
   }) async {
-    final res = await http.post(
-      Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
-      headers: ApiService.headers,
-      body: jsonEncode({
-        "title": title,
-        "description": description,
-        "location": location,
-        "start_time": startTime,
-        "end_time": endTime,
-        "capacity_limit" : capacity ??0,
+    Map<String, dynamic> body = {
+      "title": title,
+      "description": description,
+      "location": location,
+      "start_time": startTime,
+      "end_time": endTime,
+    };
+    
+    // Only add capacity if it's not null AND greater than 0
+    if (capacity != null && capacity > 0) {
+      body["capacity_limit"] = capacity;
+    }
     
     print("📝 Creating event with body: $body");
     
