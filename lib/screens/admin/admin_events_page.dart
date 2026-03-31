@@ -27,19 +27,26 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     loadEvents();
   }
 
-  //  LOAD EVENTS + GROUP BY DATE
+  // LOAD EVENTS + GROUP BY DATE
   Future<void> loadEvents() async {
     setState(() => isLoading = true);
+    
+    final url = "${ApiService.baseUrl}/societies/${widget.societyId}/events/";
+    print("🔍 Loading events from: $url");
 
     final res = await http.get(
-      Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
+      Uri.parse(url),
       headers: ApiService.headers,
     );
 
+    print("📊 Events response status: ${res.statusCode}");
+    print("📊 Events response body: ${res.body}");
+
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body) as List;
+      print("✅ Found ${data.length} events");
 
-      //  GROUP EVENTS BY DATE
+      // GROUP EVENTS BY DATE
       Map<String, List> grouped = {};
 
       for (var e in data) {
@@ -52,7 +59,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         grouped[key]!.add(e);
       }
 
-      //  CREATE CALENDAR EVENTS (ONE PER DAY)
+      // CREATE CALENDAR EVENTS (ONE PER DAY)
       List<Event> calEvents = grouped.entries.map((entry) {
         final parts = entry.key.split("-");
         final date = DateTime(
@@ -62,7 +69,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         );
 
         return Event(
-          eventName: "${entry.value.length} events", // shows count
+          eventName: "${entry.value.length} events",
           dates: [date],
           color: entry.value.length > 1
               ? Colors.red
@@ -76,11 +83,12 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         isLoading = false;
       });
     } else {
+      print("❌ Failed to load events");
       setState(() => isLoading = false);
     }
   }
 
-  //  TAP DATE
+  // TAP DATE
   void onDateTapped(DateTime date) {
     final selected = normalize(date);
 
@@ -96,7 +104,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     }
   }
 
-  //  SHOW EVENTS LIST
+  // SHOW EVENTS LIST
   void _showEvents(List events) {
     showDialog(
       context: context,
@@ -114,10 +122,10 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
               return ListTile(
                 title: Text(e["title"]),
                 subtitle: Text(
-                    "${time.hour}:${time.minute} • ${e["location"] ?? ""} • ${e["capacity"] != null ? "Cap: ${e["capacity"]}" : "No Cap"}"),
+                    "${time.hour}:${time.minute} • ${e["location"] ?? ""} • ${e["capacity_limit"] != null ? "Cap: ${e["capacity_limit"]}" : "No Cap"}"),
                 onTap: () {
                   Navigator.pop(context);
-                  _showEditDialog(e); // 🔥 EDIT
+                  _showEditDialog(e);
                 },
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
@@ -147,7 +155,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     );
   }
 
-  //  CREATE EVENT
+  // CREATE EVENT
   void _showCreateDialog(DateTime date) {
     final title = TextEditingController();
     final desc = TextEditingController();
@@ -218,12 +226,12 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     );
   }
 
-  // ✅ EDIT EVENT
+  // EDIT EVENT
   void _showEditDialog(Map event) {
     final title = TextEditingController(text: event["title"]);
     final desc = TextEditingController(text: event["description"]);
     final loc = TextEditingController(text: event["location"]);
-    final cap = TextEditingController(text: event["capacity"].toString());
+    final cap = TextEditingController(text: event["capacity_limit"]?.toString() ?? "");
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -273,12 +281,31 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         "location": location,
         "start_time": startTime,
         "end_time": endTime,
-        "capacity_limit": capacity ?? 0,
+        "capacity_limit" : capacity ??0,
     
-      }),
+    print("📝 Creating event with body: $body");
+    
+    final res = await http.post(
+      Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
+      headers: ApiService.headers,
+      body: jsonEncode(body),
     );
+    
+    print("📊 Create event response: ${res.statusCode}");
+    print("📊 Response body: ${res.body}");
 
-    if (res.statusCode == 201) loadEvents();
+    if (res.statusCode == 201) {
+      print("✅ Event created successfully");
+      loadEvents();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Event created successfully!")),
+      );
+    } else {
+      print("❌ Failed to create event");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to create event: ${res.statusCode}")),
+      );
+    }
   }
 
   Future<void> _updateEvent(int id, Map data) async {
@@ -288,7 +315,12 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
       body: jsonEncode(data),
     );
 
-    if (res.statusCode == 200) loadEvents();
+    if (res.statusCode == 200) {
+      print("✅ Event updated successfully");
+      loadEvents();
+    } else {
+      print("❌ Failed to update event: ${res.statusCode}");
+    }
   }
 
   Future<void> _deleteEvent(int id) async {
@@ -297,31 +329,39 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
       headers: ApiService.headers,
     );
 
-    if (res.statusCode == 204) loadEvents();
+    if (res.statusCode == 204) {
+      print("✅ Event deleted successfully");
+      loadEvents();
+    } else {
+      print("❌ Failed to delete event: ${res.statusCode}");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Events Calendar"),automaticallyImplyLeading: false,),
-      body: isLoading
-    ? const Center(child: CircularProgressIndicator())
-    : LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: constraints.maxHeight,
-              ),
-              child: EventBasedCalender(
-                events: calendarEvents,
-                primaryColor: const Color(0xFF8B5CF6),
-                onDateTap: onDateTapped,
-              ),
-            ),
-          );
-        },
+      appBar: AppBar(
+        title: const Text("Events Calendar"),
+        automaticallyImplyLeading: false,
       ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: EventBasedCalender(
+                      events: calendarEvents,
+                      primaryColor: const Color(0xFF8B5CF6),
+                      onDateTap: onDateTapped,
+                    ),
+                  ),
+                );
+              },
+            ),
       bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
     );
   }

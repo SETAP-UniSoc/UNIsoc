@@ -96,66 +96,71 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   }
   
   Future<void> _loadNotificationSettings() async {
-    try {
-  final response = await http.get(
-    Uri.parse("${ApiService.baseUrl}/notifications/"),
-    headers: ApiService.headers,
-  );
+  try {
+    final response = await http.get(
+      Uri.parse("${ApiService.baseUrl}/notifications/"),
+      headers: ApiService.headers,
+    );
 
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-
-    if (data.isNotEmpty) {
-      setState(() {
-        _notificationsEnabled =
-            data[0]["event_notifications"] ?? true;
-      });
-    }
-  }
-} catch (e) {
-  print("Error loading notification settings: ${e.toString()}");
-}
-  }
-  
-  Future<void> _updateNotificationSettings(bool enabled) async {
-    setState(() => _isLoading = true);
-    
-    try {
-      final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}/notifications/"),
-        headers: ApiService.headers,
-        body: jsonEncode({
-        "society_id": 1,
-        "event_notifications": enabled}),
-        
-      );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      print("📊 Notification data: $data");
       
-      if (response.statusCode == 200) {
+      if (data.isNotEmpty) {
         setState(() {
-          _notificationsEnabled = enabled;
+          // Use the correct field name from backend
+          _notificationsEnabled = data[0]["notify_new_events"] ?? true;
         });
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              enabled ? "Notifications enabled" : "Notifications disabled"
-            ),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to update notification settings")),
-        );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error updating notification settings")),
-      );
-    } finally {
-      setState(() => _isLoading = false);
     }
+  } catch (e) {
+    print("Error loading notification settings: ${e.toString()}");
   }
+}
+
+Future<void> _updateNotificationSettings(bool enabled) async {
+  setState(() => _isLoading = true);
+  
+  try {
+    final response = await http.post(
+      Uri.parse("${ApiService.baseUrl}/notifications/"),
+      headers: ApiService.headers,
+      body: jsonEncode({
+        "society_id": ApiService.societyId,  // Use dynamic society ID, not hardcoded 1
+        "event_notifications": enabled,      // Your backend expects this field name
+      }),
+    );
+    
+    print("📊 Update notification response: ${response.statusCode}");
+    print("📊 Response body: ${response.body}");
+    
+    if (response.statusCode == 200) {
+      setState(() {
+        _notificationsEnabled = enabled;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            enabled ? "Notifications enabled" : "Notifications disabled"
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to update notification settings")),
+      );
+    }
+  } catch (e) {
+    print("❌ Error updating notification: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Error updating notification settings")),
+    );
+  } finally {
+    setState(() => _isLoading = false);
+  }
+}
   
   Future<void> _updateName() async {
     final newName = _nameController.text.trim();
