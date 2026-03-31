@@ -23,7 +23,7 @@ def authenticate_user(identifier, password):
 def send_event_notifications(event):
     prefs = NotificationPreference.objects.filter(
         society=event.society,
-        event_notifications=True
+        notify_new_events=True
     )
 
     for pref in prefs:
