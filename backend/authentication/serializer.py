@@ -20,8 +20,26 @@ class SocietySerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     attendee_count = serializers.SerializerMethodField()
     class Meta:
+        from rest_framework import serializers
+from .models import Event
+
+class EventSerializer(serializers.ModelSerializer):
+    attendee_count = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
         model = Event
-        fields = "__all__"
+        # Only include fields that can be set via POST
+        fields = [
+            'id',
+            'title',
+            'description',
+            'start_time',
+            'end_time',
+            'location',  # if you have this
+            'society',
+            'attendee_count',
+        ]
+        read_only_fields = ['id', 'attendee_count', 'society']  # society can be set from URL in the view
 
     def get_attendee_count(self, obj):
         return obj.rsvps.count()

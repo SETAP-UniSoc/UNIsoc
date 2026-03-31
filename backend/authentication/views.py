@@ -99,11 +99,39 @@ class DeleteEventView(generics.DestroyAPIView):
         return Event.objects.filter(created_by=self.request.user)
         
 
+# class CreateEventView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+
+#         if request.user.role != "admin":
+#             return Response({"error": "Admins only"}, status=403)
+
+#         try:
+#             society = Society.objects.get(admin=request.user)
+#         except Society.DoesNotExist:
+#             return Response({"error": "No society found"}, status=404)
+
+#         data = request.data.copy()
+#         data["society"] = society.id
+#         data["created_by"] = request.user.id
+
+#         serializer = EventSerializer(data=data)
+
+#         if serializer.is_valid():
+#             event = serializer.save()   # capture the event
+
+#             send_event_confirmation(request.user, event)
+
+#             return Response(serializer.data, status=201)
+
+#         return Response(serializer.errors, status=400)
+
+
 class CreateEventView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-
         if request.user.role != "admin":
             return Response({"error": "Admins only"}, status=403)
 
@@ -113,18 +141,18 @@ class CreateEventView(APIView):
             return Response({"error": "No society found"}, status=404)
 
         data = request.data.copy()
+        # Set society automatically; don't pass created_by unless model has it
         data["society"] = society.id
-        data["created_by"] = request.user.id
 
         serializer = EventSerializer(data=data)
 
         if serializer.is_valid():
-            event = serializer.save()   # capture the event
-
+            event = serializer.save()  # society is already set
+            # Send confirmation emails if needed
             send_event_confirmation(request.user, event)
-
             return Response(serializer.data, status=201)
 
+        # Return serializer errors for debugging
         return Response(serializer.errors, status=400)
 
 class ListEventsView(APIView):
@@ -341,24 +369,62 @@ class NotificationView(APIView):
 
 
 
-def send_event_confirmation(user, event):
-    if not NotificationPreference.objects.filter(
-        user=user,
+# def send_event_confirmation(user, event):
+#     if not NotificationPreference.objects.filter(
+#         user=user,
+#         society=event.society,
+#         event_notifications=True
+#     ).exists():
+#         return
+
+#     send_mail(
+#         subject="Event Created Successfully",
+#         message=f"""
+# Your event "{event.title}" has been created successfully.
+
+# Date: {event.start_time}
+# Location: {event.location}
+# """,
+#         from_email=None,
+#         recipient_list=[user.email],
+#         fail_silently=False,
+#     )
+
+def send_event_confirmation(admin_user, event):
+    """
+    Send emails to all users in the society who have opted in for new event notifications.
+    """
+    # Get all NotificationPreferences for the society where users want new event emails
+    prefs = NotificationPreference.objects.filter(
         society=event.society,
-        event_notifications=True
-    ).exists():
-        return
+        notify_new_events=True
+    )
+
+    # Collect user emails
+    recipient_emails = [pref.user.email for pref in prefs if pref.user.email]
+
+    if not recipient_emails:
+        return  # No one to notify
+
+    subject = f"New Event: {event.title}"
+    message = f"""
+    Hello,
+
+    A new event has been created in your society: {event.society.name}
+
+    Title: {event.title}
+    Description: {event.description}
+    Start: {event.start_time}
+    End: {event.end_time}
+
+    Please check the portal for more details.
+    """
 
     send_mail(
-        subject="Event Created Successfully",
-        message=f"""
-Your event "{event.title}" has been created successfully.
-
-Date: {event.start_time}
-Location: {event.location}
-""",
-        from_email=None,
-        recipient_list=[user.email],
+        subject=subject,
+        message=message,
+        from_email="no-reply@yoursite.com",  # replace with your from email
+        recipient_list=recipient_emails,
         fail_silently=False,
     )
 
