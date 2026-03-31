@@ -40,7 +40,7 @@ urlpatterns = [
     # Admin event management
     path('events/<int:id>/delete/', DeleteEventView.as_view(), name='delete-event'),
     path('events/', SocietyEventView.as_view(), name='event-list'),
-    path('events/create/', SocietyEventView.as_view(), name='create-event'),
+    # path('events/create/', SocietyEventView.as_view(), name='create-event'),
     path('events/my/', MyEventsView.as_view(), name='my-events'),
     path('events/<int:id>/', EventDetailView.as_view(), name='event-detail'),
     path('events/<int:id>/update/', UpdateEventView.as_view(), name='update-event'),
