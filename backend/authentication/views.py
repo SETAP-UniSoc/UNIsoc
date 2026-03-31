@@ -313,6 +313,27 @@ class User_ProfileView(APIView):
         user.name = new_name
         user.save()
         return Response({"message": "Name changed successfully"})
+    
+# def send_event_confirmation(user, event):
+#     if not NotificationPreference.objects.filter(
+#         user=user,
+#         society=event.society,
+#         notify_new_events=True
+#     ).exists():
+#         return
+
+#     send_mail(
+#         subject="Event Created Successfully",
+#         message=f"""
+# Your event "{event.title}" has been created successfully.
+
+# Date: {event.start_time}
+# Location: {event.location}
+# """,
+#         from_email=None,
+#         recipient_list=[user.email],
+#         fail_silently=False,
+#     )
 
     
 class NotificationView(APIView):
@@ -362,27 +383,6 @@ class NotificationView(APIView):
             "notify_new_events": pref.notify_new_events
         })
 
-
-# def send_event_confirmation(user, event):
-#     if not NotificationPreference.objects.filter(
-#         user=user,
-#         society=event.society,
-#         notify_new_events=True
-#     ).exists():
-#         return
-
-#     send_mail(
-#         subject="Event Created Successfully",
-#         message=f"""
-# Your event "{event.title}" has been created successfully.
-
-# Date: {event.start_time}
-# Location: {event.location}
-# """,
-#         from_email=None,
-#         recipient_list=[user.email],
-#         fail_silently=False,
-#     )
 
 def send_event_confirmation(admin_user, event):
     """
