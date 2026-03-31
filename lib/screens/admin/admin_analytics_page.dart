@@ -72,9 +72,9 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
            final eventsStats = data["events_stats"] ?? [];
 eventValues = eventsStats.map((e) => (e["attendee_count"] as num).toDouble()).toList();
 eventNames = eventsStats.map((e) => e["title"].toString()).toList();
-  //          if (values.isNotEmpty) {
-  //   values[values.length - 1] = liveCount.toDouble();
-  // }
+           if (values.isNotEmpty) {
+    values[values.length - 1] = liveCount.toDouble();
+  }
 
         });
       }
