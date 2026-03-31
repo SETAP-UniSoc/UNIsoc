@@ -99,11 +99,39 @@ class DeleteEventView(generics.DestroyAPIView):
         return Event.objects.filter(created_by=self.request.user)
         
 
+# class CreateEventView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+
+#         if request.user.role != "admin":
+#             return Response({"error": "Admins only"}, status=403)
+
+#         try:
+#             society = Society.objects.get(admin=request.user)
+#         except Society.DoesNotExist:
+#             return Response({"error": "No society found"}, status=404)
+
+#         data = request.data.copy()
+#         data["society"] = society.id
+#         data["created_by"] = request.user.id
+
+#         serializer = EventSerializer(data=data)
+
+#         if serializer.is_valid():
+#             event = serializer.save()   # capture the event
+
+#             send_event_confirmation(request.user, event)
+
+#             return Response(serializer.data, status=201)
+
+#         return Response(serializer.errors, status=400)
+
+
 class CreateEventView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-
         if request.user.role != "admin":
             return Response({"error": "Admins only"}, status=403)
 
@@ -113,18 +141,18 @@ class CreateEventView(APIView):
             return Response({"error": "No society found"}, status=404)
 
         data = request.data.copy()
+        # Set society automatically; don't pass created_by unless model has it
         data["society"] = society.id
-        data["created_by"] = request.user.id
 
         serializer = EventSerializer(data=data)
 
         if serializer.is_valid():
-            event = serializer.save()   # capture the event
-
+            event = serializer.save()  # society is already set
+            # Send confirmation emails if needed
             send_event_confirmation(request.user, event)
-
             return Response(serializer.data, status=201)
 
+        # Return serializer errors for debugging
         return Response(serializer.errors, status=400)
 
 class ListEventsView(APIView):
