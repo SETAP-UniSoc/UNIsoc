@@ -369,24 +369,62 @@ class NotificationView(APIView):
 
 
 
-def send_event_confirmation(user, event):
-    if not NotificationPreference.objects.filter(
-        user=user,
+# def send_event_confirmation(user, event):
+#     if not NotificationPreference.objects.filter(
+#         user=user,
+#         society=event.society,
+#         event_notifications=True
+#     ).exists():
+#         return
+
+#     send_mail(
+#         subject="Event Created Successfully",
+#         message=f"""
+# Your event "{event.title}" has been created successfully.
+
+# Date: {event.start_time}
+# Location: {event.location}
+# """,
+#         from_email=None,
+#         recipient_list=[user.email],
+#         fail_silently=False,
+#     )
+
+def send_event_confirmation(admin_user, event):
+    """
+    Send emails to all users in the society who have opted in for new event notifications.
+    """
+    # Get all NotificationPreferences for the society where users want new event emails
+    prefs = NotificationPreference.objects.filter(
         society=event.society,
-        event_notifications=True
-    ).exists():
-        return
+        notify_new_events=True
+    )
+
+    # Collect user emails
+    recipient_emails = [pref.user.email for pref in prefs if pref.user.email]
+
+    if not recipient_emails:
+        return  # No one to notify
+
+    subject = f"New Event: {event.title}"
+    message = f"""
+    Hello,
+
+    A new event has been created in your society: {event.society.name}
+
+    Title: {event.title}
+    Description: {event.description}
+    Start: {event.start_time}
+    End: {event.end_time}
+
+    Please check the portal for more details.
+    """
 
     send_mail(
-        subject="Event Created Successfully",
-        message=f"""
-Your event "{event.title}" has been created successfully.
-
-Date: {event.start_time}
-Location: {event.location}
-""",
-        from_email=None,
-        recipient_list=[user.email],
+        subject=subject,
+        message=message,
+        from_email="no-reply@yoursite.com",  # replace with your from email
+        recipient_list=recipient_emails,
         fail_silently=False,
     )
 
