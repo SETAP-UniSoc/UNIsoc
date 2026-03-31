@@ -327,7 +327,7 @@ class NotificationView(APIView):
         for pref in preferences:
             data.append({
                 "society": pref.society.name,
-                "event_notifications": pref.event_notifications
+                "notify_new_events": pref.notify_new_events,  # ✅ FIXED
             })
 
         return Response(data)
@@ -338,7 +338,7 @@ class NotificationView(APIView):
         society_id = request.data.get("society_id")
 
         # safer boolean handling
-        event_notifications = str(request.data.get("event_notifications")).lower() == "true"
+        notify_new_events = str(request.data.get("event_notifications")).lower() == "true"
 
         try:
             society = Society.objects.get(id=society_id)
@@ -352,7 +352,7 @@ class NotificationView(APIView):
             user=user,
             society=society,
             defaults={
-                "notify_new_events": event_notifications
+                "notify_new_events": notify_new_events
             }
         )
 
@@ -361,7 +361,6 @@ class NotificationView(APIView):
             "society": society.name,
             "notify_new_events": pref.notify_new_events
         })
-
 
 
 # def send_event_confirmation(user, event):
@@ -442,7 +441,7 @@ def send_event_reminders():
             if not NotificationPreference.objects.filter(
                 user=user,
                 society=event.society,
-                notify_new_events=True
+                notify_24hr_reminder=True
             ).exists():
                 continue
 
