@@ -352,14 +352,14 @@ class NotificationView(APIView):
             user=user,
             society=society,
             defaults={
-                "event_notifications": event_notifications
+                "notify_new_events": event_notifications
             }
         )
 
         return Response({
             "message": "Notification preferences updated",
             "society": society.name,
-            "event_notifications": pref.event_notifications
+            "notify_new_events": pref.notify_new_events
         })
 
 
@@ -368,7 +368,7 @@ class NotificationView(APIView):
 #     if not NotificationPreference.objects.filter(
 #         user=user,
 #         society=event.society,
-#         event_notifications=True
+#         notify_new_events=True
 #     ).exists():
 #         return
 
@@ -442,7 +442,7 @@ def send_event_reminders():
             if not NotificationPreference.objects.filter(
                 user=user,
                 society=event.society,
-                event_notifications=True
+                notify_new_events=True
             ).exists():
                 continue
 
