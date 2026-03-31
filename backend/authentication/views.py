@@ -132,6 +132,7 @@ class CreateEventView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+
         if request.user.role != "admin":
             return Response({"error": "Admins only"}, status=403)
 
@@ -140,19 +141,16 @@ class CreateEventView(APIView):
         except Society.DoesNotExist:
             return Response({"error": "No society found"}, status=404)
 
-        data = request.data.copy()
-        # Set society automatically; don't pass created_by unless model has it
-        data["society"] = society.id
-
-        serializer = EventSerializer(data=data)
+        serializer = EventSerializer(data=request.data)
 
         if serializer.is_valid():
-            event = serializer.save()  # society is already set
-            # Send confirmation emails if needed
+            #  Pass society HERE (correct way)
+            event = serializer.save(society=society)
+
             send_event_confirmation(request.user, event)
+
             return Response(serializer.data, status=201)
 
-        # Return serializer errors for debugging
         return Response(serializer.errors, status=400)
 
 class ListEventsView(APIView):
