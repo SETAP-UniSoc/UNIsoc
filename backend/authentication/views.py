@@ -127,39 +127,39 @@ class DeleteEventView(generics.DestroyAPIView):
 #         return Response(serializer.errors, status=400)
 
 
-class CreateEventView(APIView):
-    permission_classes = [IsAuthenticated]
+# class CreateEventView(APIView):
+#     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+#     def post(self, request):
 
-        if request.user.role != "admin":
-            return Response({"error": "Admins only"}, status=403)
+#         if request.user.role != "admin":
+#             return Response({"error": "Admins only"}, status=403)
 
-        try:
-            society = Society.objects.get(admin=request.user)
-        except Society.DoesNotExist:
-            return Response({"error": "No society found"}, status=404)
+#         try:
+#             society = Society.objects.get(admin=request.user)
+#         except Society.DoesNotExist:
+#             return Response({"error": "No society found"}, status=404)
 
-        data = request.data.copy()
+#         data = request.data.copy()
 
-        # 🔥 FIX capacity issue
-        if data.get("capacity_limit") in [0, "0", ""]:
-            data["capacity_limit"] = None
+#         # 🔥 FIX capacity issue
+#         if data.get("capacity_limit") in [0, "0", ""]:
+#             data["capacity_limit"] = None
 
-        serializer = EventSerializer(data=data)
+#         serializer = EventSerializer(data=data)
 
-        if serializer.is_valid():
-            event = serializer.save(
-                society=society,            # ✅ FIXES NULL ERROR
-                created_by=request.user     # ✅ GOOD PRACTICE
-            )
+#         if serializer.is_valid():
+#             event = serializer.save(
+#                 society=society,            # ✅ FIXES NULL ERROR
+#                 created_by=request.user     # ✅ GOOD PRACTICE
+#             )
 
-            send_event_confirmation(request.user, event)
+#             send_event_confirmation(request.user, event)
 
-            return Response(serializer.data, status=201)
+#             return Response(serializer.data, status=201)
 
-        print(serializer.errors)  # DEBUG
-        return Response(serializer.errors, status=400)
+#         print(serializer.errors)  # DEBUG
+#         return Response(serializer.errors, status=400)
     
 class SocietyEventView(APIView):
     permission_classes = [IsAuthenticated]
@@ -185,15 +185,25 @@ class SocietyEventView(APIView):
             return Response({"error": "Society not found or not admin"}, status=404)
 
         data = request.data.copy()
-        data["society"] = society.id
-        data["created_by"] = request.user.id
+
+        # ✅ Fix capacity issue
+        if data.get("capacity_limit") in [0, "0", ""]:
+            data["capacity_limit"] = None
 
         serializer = EventSerializer(data=data)
 
         if serializer.is_valid():
-            serializer.save()
+            # 🔥 THIS IS THE FIX
+            event = serializer.save(
+                society=society,
+                created_by=request.user
+            )
+
+            send_event_confirmation(request.user, event)
+
             return Response(serializer.data, status=201)
 
+        print("❌ ERRORS:", serializer.errors)
         return Response(serializer.errors, status=400)
 
 class EventDetailView(generics.RetrieveAPIView):
