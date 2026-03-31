@@ -16,7 +16,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-
 from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
@@ -141,38 +140,26 @@ class CreateEventView(APIView):
         except Society.DoesNotExist:
             return Response({"error": "No society found"}, status=404)
 
-        serializer = EventSerializer(data=request.data)
+        data = request.data.copy()
+
+        # 🔥 FIX capacity issue
+        if data.get("capacity_limit") in [0, "0", ""]:
+            data["capacity_limit"] = None
+
+        serializer = EventSerializer(data=data)
 
         if serializer.is_valid():
-            #  Pass society HERE (correct way)
-            event = serializer.save(society=society)
+            event = serializer.save(
+                society=society,            # ✅ FIXES NULL ERROR
+                created_by=request.user     # ✅ GOOD PRACTICE
+            )
 
             send_event_confirmation(request.user, event)
 
             return Response(serializer.data, status=201)
 
+        print(serializer.errors)  # DEBUG
         return Response(serializer.errors, status=400)
-
-class ListEventsView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        from django.utils.timezone import now
-
-        if request.user.role == "admin":
-            society = Society.objects.get(admin=request.user)
-            events = Event.objects.filter(
-                society=society,
-                start_time__gte=now()
-            )
-        else:
-            events = Event.objects.filter(
-                society__membership__user=request.user,
-                start_time__gte=now()
-            ).distinct()
-
-        serializer = EventSerializer(events, many=True)
-        return Response(serializer.data)
     
 class SocietyEventView(APIView):
     permission_classes = [IsAuthenticated]
