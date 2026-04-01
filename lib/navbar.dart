@@ -4,6 +4,7 @@ import 'screens/my_account_page.dart';
 import 'screens/my_events_page.dart';
 import 'screens/user_mysoc_page.dart';
 import 'screens/login_screen.user.dart';
+import 'services/api_services.dart';
 
 // A reusable navbar for the logged-in home page
 class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
@@ -50,7 +51,15 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
                 );
                 break;
               case _MenuAction.logout:
-                // TODO: implement logout
+                // Clear token then go back to login screen
+                ApiService.authToken = null;
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LoginScreenUser(),
+                  ),
+                  (route) => false, // remove all previous routes
+                );
                 break;
             }
           },
@@ -125,8 +134,7 @@ class HomeHeader extends StatelessWidget {
                     vertical: 0,
                   ),
                 ),
-                onChanged: (value) {
-                },
+                onChanged: (value) {},
               ),
             ],
           ),
