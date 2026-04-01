@@ -72,9 +72,12 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
           societyData = data;
           descController.text = data["description"] ?? "";
         });
+        print(" Loaded society: ${data["name"]} (ID: ${widget.societyId})");
+      } else {
+        print(" Failed to load society: ${response.statusCode}");
       }
     } catch (e) {
-      print("Error loading society: $e");
+      print(" Error loading society: $e");
     }
   }
 
@@ -90,14 +93,16 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         final now = DateTime.now();
         setState(() {
           final upcoming = data
-.where((e) => DateTime.parse(e["start_time"]).isAfter(now))
-.toList();
+              .where((e) => DateTime.parse(e["start_time"]).isAfter(now))
+              .toList();
 
-upcoming.sort((a, b) =>
-DateTime.parse(a["start_time"])
-.compareTo(DateTime.parse(b["start_time"])));
+          upcoming.sort(
+            (a, b) => DateTime.parse(
+              a["start_time"],
+            ).compareTo(DateTime.parse(b["start_time"])),
+          );
 
-events = upcoming;
+          events = upcoming;
         });
       }
     } catch (e) {
@@ -198,7 +203,6 @@ events = upcoming;
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   // society header card
                   Container(
                     width: double.infinity,
@@ -347,6 +351,3 @@ events = upcoming;
     );
   }
 }
-
-
-

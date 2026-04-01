@@ -96,7 +96,8 @@ class AnalyticsView(APIView):
             "live_count": live_count,
             "total_events": total_events,
             "events_stats": list(events_stats),
-            "most_popular": most_popular
+            "most_popular": most_popular,
+            "event_attendance": list(events_stats)
         })
 
         

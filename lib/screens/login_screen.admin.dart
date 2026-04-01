@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -46,7 +45,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
 
     setState(() => isLoading = true);
 
-    final url = Uri.parse("http://10.128.4.122:8000/api/login/");
+    final url = Uri.parse("http://10.128.5.136:8000/api/login/");
 
     final body = {
       "name": name, // backend ignores this (kept as requested)
@@ -98,6 +97,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
         const SnackBar(
           content: Text("Unable to connect to server"),
         ),
+      
       );
     }
 

@@ -105,36 +105,21 @@ class _AdminHomepageState extends State<AdminHomepage> {
   Future<void> loadEvents() async {
     try {
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/events/"), // 👈 GET ALL EVENTS
+        Uri.parse("${ApiService.baseUrl}/events/all/"),
         headers: ApiService.headers,
       );
 
-      print("EVENTS RESPONSE: ${response.statusCode}");
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as List;
-        final now = DateTime.now();
-
-        final upcoming = data
-            .where((e) => DateTime.parse(e["start_time"]).isAfter(now))
-            .toList();
-
-        // ✅ SORT newest first
-        upcoming.sort(
-          (a, b) => DateTime.parse(
-            b["start_time"],
-          ).compareTo(DateTime.parse(a["start_time"])),
-        );
 
         setState(() {
-          events = upcoming.take(5).toList(); // 👈 ONLY 5 EVENTS
+          events = data;
         });
 
-        print("Loaded ${events.length} latest events");
+        print("Loaded ${events.length} global events");
       }
     } catch (e) {
       print("Error loading events: $e");
-      setState(() => events = []);
     }
   }
 
@@ -174,7 +159,26 @@ class _AdminHomepageState extends State<AdminHomepage> {
     });
   }
 
-  // rest of the code is in the build method and widget builders
+  // Helper method to navigate to society page with correct isAdmin flag
+  void navigateToSociety(int societyId, String societyName) {
+    // Check if this is the admin's own society
+    final bool isOwnSociety = societyId == ApiService.societyId;
+
+    print(" Navigating to society: $societyName (ID: $societyId)");
+    print(" Admin's own society ID: ${ApiService.societyId}");
+    print(" Setting isAdmin: $isOwnSociety");
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SocietyProfilePage(
+          societyId: societyId,
+          isAdmin: isOwnSociety, // Only true if it's their own society
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -206,7 +210,10 @@ class _AdminHomepageState extends State<AdminHomepage> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFCE93D8), Color(0xFF9C27B0)],
+          colors: [
+            Color.fromARGB(255, 175, 147, 216),
+            Color.fromARGB(255, 94, 39, 176),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

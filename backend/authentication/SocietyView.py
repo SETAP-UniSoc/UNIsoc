@@ -5,27 +5,6 @@ from django.db.models import Count, Q
 from .models import Society, Membership
 
 
-class SocietyListView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        societies = Society.objects.filter(is_active=True).annotate(
-            member_count=Count(
-                'membership',
-                filter=Q(membership__left_at__isnull=True)
-            )
-        ).order_by('name')
-
-        data = [{
-            "id": s.id,
-            "name": s.name,
-            "category": s.category,
-            "description": s.description,
-            "member_count": s.member_count,
-        } for s in societies]
-
-        return Response(data)
-
 
 class SocietyDetailView(APIView):
     permission_classes = [IsAuthenticated]
