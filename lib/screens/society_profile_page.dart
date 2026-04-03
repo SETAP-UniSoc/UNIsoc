@@ -63,7 +63,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   Future<void> loadSociety() async {
     try {
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/"),
+        Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/"),
         headers: ApiService.headers,
       );
       if (response.statusCode == 200) {
@@ -85,7 +85,9 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   Future<void> loadEvents() async {
     try {
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
+        Uri.parse(
+          "${ApiService.baseUrl}/societies/${widget.societyId}/events/",
+        ),
         headers: ApiService.headers,
       );
       if (response.statusCode == 200) {
@@ -115,7 +117,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     try {
       final response = await http.get(
         Uri.parse(
-          "${ApiService.baseUrl}/society/${widget.societyId}/is-member/",
+          "${ApiService.baseUrl}/societies/${widget.societyId}/is-member/",
         ),
         headers: ApiService.headers,
       );
@@ -132,7 +134,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   Future<void> saveDescription() async {
     try {
       final response = await http.patch(
-        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/"),
+        Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/"),
         headers: ApiService.headers,
         body: jsonEncode({"description": descController.text}),
       );
