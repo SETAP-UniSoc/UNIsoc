@@ -182,10 +182,18 @@ class _HomeHeaderState extends State<HomeHeader> {
                             );
                           }
 
+                          // make EVERY featured card tappable
                           return _SocietyLogoCard(
                             label: name,
-                            color: Colors.indigo, // temp color
+                            color: index == 0
+                                ? Colors.deepPurple
+                                : Colors.indigo, // just styling
                             icon: Icons.group,
+                            UserSocietyPage: UserSocietyPage(
+                              societyId: id,
+                              societyName: name,
+                              description: description,
+                            ),
                           );
                         },
                       ),
