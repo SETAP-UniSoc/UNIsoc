@@ -114,16 +114,25 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
 
   // check if user is already a member
   Future<void> checkMembership() async {
+    final url =
+        "${ApiService.baseUrl}/societies/${widget.societyId}/is-member/";
+    print("DEBUG checkMembership URL: $url");
+    print("DEBUG checkMembership headers: ${ApiService.headers}");
+
     try {
       final response = await http.get(
-        Uri.parse(
-          "${ApiService.baseUrl}/societies/${widget.societyId}/is-member/",
-        ),
+        Uri.parse(url),
         headers: ApiService.headers,
       );
+      print("DEBUG checkMembership status: ${response.statusCode}");
+      print("DEBUG checkMembership body: ${response.body}");
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() => isMember = data["is_member"] ?? false);
+        print("DEBUG isMember set to: $isMember");
+      } else {
+        print("Failed to check membership: ${response.statusCode}");
       }
     } catch (e) {
       print("Error checking membership: $e");
