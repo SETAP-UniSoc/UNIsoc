@@ -163,7 +163,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
-                      height: 100,
+                      height: 120,
                       child: _topSocieties.isEmpty
                           ? const Center(
                               child: Text('No featured societies yet'),
