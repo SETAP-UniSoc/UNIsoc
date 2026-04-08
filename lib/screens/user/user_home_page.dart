@@ -164,46 +164,41 @@ class _HomeHeaderState extends State<HomeHeader> {
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 80,
-                      child: PageView.builder(
-                        controller: _societyPageController,
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _societies.length,
-                        //changing one of the feature socs to be a button that goes to a different page for now
-                        itemBuilder: (context, index) {
-                          final soc = _societies[index] as Map<String, dynamic>;
-                          final name = soc['name'] as String? ?? '';
-                          final description =
-                              soc['description'] as String? ?? '';
-                          final id = soc['id'] as int? ?? 0;
+                      child: _topSocieties.isEmpty
+                          ? const Center(
+                              child: Text('No featured societies yet'),
+                            )
+                          : PageView.builder(
+                              controller: _societyPageController,
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _topSocieties.length, // use top 3
+                              itemBuilder: (context, index) {
+                                final soc =
+                                    _topSocieties[index]
+                                        as Map<String, dynamic>;
+                                final name = soc['name'] as String? ?? '';
+                                final description =
+                                    soc['description'] as String? ?? '';
+                                final id = soc['id'] as int? ?? 0;
+                                final memberCount =
+                                    (soc['member_count'] as int?) ?? 0;
 
-                          if (index == 0) {
-                            return _SocietyLogoCard(
-                              label: name,
-                              color: Colors.deepPurple, // temp color
-                              icon: Icons.group,
-                              UserSocietyPage: UserSocietyPage(
-                                societyId: id,
-                                societyName: name,
-                                description: description,
-                              ),
-                            );
-                          }
-
-                          // make EVERY featured card tappable
-                          return _SocietyLogoCard(
-                            label: name,
-                            color: index == 0
-                                ? Colors.deepPurple
-                                : Colors.indigo, // just styling
-                            icon: Icons.group,
-                            UserSocietyPage: UserSocietyPage(
-                              societyId: id,
-                              societyName: name,
-                              description: description,
+                                return _SocietyLogoCard(
+                                  label: name,
+                                  subtitle:
+                                      '$memberCount member${memberCount == 1 ? '' : 's'}',
+                                  color: index == 0
+                                      ? Colors.deepPurple
+                                      : Colors.indigo,
+                                  icon: Icons.group,
+                                  UserSocietyPage: UserSocietyPage(
+                                    societyId: id,
+                                    societyName: name,
+                                    description: description,
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
                     ),
                     const SizedBox(height: 24),
 
