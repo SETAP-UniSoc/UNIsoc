@@ -328,12 +328,14 @@ class _HomeHeaderState extends State<HomeHeader> {
 
 class _SocietyLogoCard extends StatelessWidget {
   final String label;
+  final String? subtitle;
   final Color color;
   final IconData icon;
   final Widget? UserSocietyPage;
 
   const _SocietyLogoCard({
     required this.label,
+    this.subtitle,
     required this.color,
     required this.icon,
     this.UserSocietyPage,
@@ -371,6 +373,14 @@ class _SocietyLogoCard extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                subtitle!,
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ],
         ),
       ),
