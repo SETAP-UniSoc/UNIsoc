@@ -47,6 +47,7 @@ class _HomeHeaderState extends State<HomeHeader> {
   Timer? _societyTimer;
 
   List<dynamic> _societies = [];
+  List<dynamic> _topSocieties = [];
   List<dynamic> _events = [];
   bool _loading = true;
   String? _error;
