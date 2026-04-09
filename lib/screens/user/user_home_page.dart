@@ -110,6 +110,7 @@ class _HomeHeaderState extends State<HomeHeader> {
   @override
   void dispose() {
     _societyTimer?.cancel();
+    _debounce?.cancel();
     _societyPageController.dispose();
     super.dispose();
   }
