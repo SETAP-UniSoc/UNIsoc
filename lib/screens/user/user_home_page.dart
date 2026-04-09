@@ -88,6 +88,7 @@ class _HomeHeaderState extends State<HomeHeader> {
 
       setState(() {
         _societies = societies;
+        _filteredSocieties = societies;
         _topSocieties = topSocieties.take(3).toList();
         _loading = false;
         _error = null;
