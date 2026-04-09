@@ -265,6 +265,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                         );
                       },
                     ),
+                    _buildSearchDropdown(),
                     const SizedBox(height: 24),
                     const Text(
                       'Featured Societies',
