@@ -371,10 +371,11 @@ class _HomeHeaderState extends State<HomeHeader> {
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _societies.length,
+                            itemCount: _filteredSocieties.length,
                             itemBuilder: (context, index) {
                               final soc =
-                                  _societies[index] as Map<String, dynamic>;
+                                  _filteredSocieties[index]
+                                      as Map<String, dynamic>;
                               final id = soc['id'] as int? ?? 0;
                               final name = soc['name'] as String? ?? '';
                               final description =
