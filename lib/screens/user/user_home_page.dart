@@ -48,6 +48,7 @@ class _HomeHeaderState extends State<HomeHeader> {
 
   List<dynamic> _societies = [];
   List<dynamic> _topSocieties = [];
+  List<dynamic> _filteredSocieties = [];
   List<dynamic> _events = [];
   bool _loading = true;
   String? _error;
