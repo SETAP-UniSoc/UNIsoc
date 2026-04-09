@@ -114,6 +114,56 @@ class _HomeHeaderState extends State<HomeHeader> {
     super.dispose();
   }
 
+  Widget _buildSearchDropdown() {
+    if (_searchResults.isEmpty) return const SizedBox();
+
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
+      ),
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: _searchResults.length,
+        itemBuilder: (context, index) {
+          final item = _searchResults[index] as Map<String, dynamic>;
+          final type = (item['type'] ?? '') as String;
+          final name = item['name'] ?? item['title'] ?? '';
+
+          return ListTile(
+            leading: Icon(
+              type == 'event' ? Icons.event : Icons.group,
+              color: Colors.deepPurple,
+            ),
+            title: Text(name.toString()),
+            subtitle: Text(type),
+            onTap: () {
+              if (type == 'society') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => UserSocietyPage(
+                      societyId: item['id'],
+                      societyName: item['name'] ?? '',
+                      description: item['description'] ?? '',
+                    ),
+                  ),
+                );
+              }
+              // you can later handle events similarly
+
+              setState(() {
+                _searchResults = [];
+              });
+            },
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
