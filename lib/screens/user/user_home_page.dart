@@ -4,6 +4,8 @@ import '../../models/event_model.dart';
 import '../../services/api_services.dart';
 import 'user_society_page.dart'; //importing user society page to be used as a button in the home page
 import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -52,6 +54,9 @@ class _HomeHeaderState extends State<HomeHeader> {
   List<dynamic> _events = [];
   bool _loading = true;
   String? _error;
+  List<dynamic> _searchResults = [];
+  Timer? _debounce;
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -151,8 +156,42 @@ class _HomeHeaderState extends State<HomeHeader> {
                           vertical: 0,
                         ),
                       ),
-                      onChanged: (value) {
-                        // TODO: hook up search logic later
+                      onChanged: (query) {
+                        // debounce (prevents spam requests)
+                        if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+                        _debounce = Timer(
+                          const Duration(milliseconds: 300),
+                          () async {
+                            if (query.isEmpty) {
+                              setState(() {
+                                _searchResults = [];
+                              });
+                              return;
+                            }
+
+                            setState(() => _isSearching = true);
+
+                            try {
+                              final response = await http.get(
+                                Uri.parse(
+                                  "${ApiService.baseUrl}/search?q=$query",
+                                ),
+                                headers: ApiService.headers,
+                              );
+
+                              if (response.statusCode == 200) {
+                                setState(() {
+                                  _searchResults = json.decode(response.body);
+                                  _isSearching = false;
+                                });
+                              }
+                            } catch (e) {
+                              print("Search error: $e");
+                              setState(() => _isSearching = false);
+                            }
+                          },
+                        );
                       },
                     ),
                     const SizedBox(height: 24),
