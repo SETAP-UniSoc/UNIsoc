@@ -147,7 +147,28 @@ class _HomeHeaderState extends State<HomeHeader> {
                     TextField(
                       decoration: InputDecoration(
                         hintText: 'Search events or societies',
-                        prefixIcon: const Icon(Icons.search),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: Color(0xFF9C27B0),
+                        ),
+                        suffixIcon: _isSearching
+                            ? const Padding(
+                                padding: EdgeInsets.all(12),
+                                child: SizedBox(
+                                  height: 16,
+                                  width: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              )
+                            : null,
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF9C27B0),
+                          ),
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                         ),
