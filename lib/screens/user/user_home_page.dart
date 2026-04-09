@@ -245,21 +245,31 @@ class _HomeHeaderState extends State<HomeHeader> {
                             setState(() => _isSearching = true);
 
                             try {
+                              final url =
+                                  "${ApiService.baseUrl}/search?q=$query";
+                              print("USER SEARCH URL: $url");
+
                               final response = await http.get(
-                                Uri.parse(
-                                  "${ApiService.baseUrl}/search?q=$query",
-                                ),
+                                Uri.parse(url),
                                 headers: ApiService.headers,
                               );
+
+                              print(
+                                "USER SEARCH STATUS: ${response.statusCode}",
+                              );
+                              print("USER SEARCH BODY: ${response.body}");
 
                               if (response.statusCode == 200) {
                                 setState(() {
                                   _searchResults = json.decode(response.body);
                                   _isSearching = false;
                                 });
+                              } else {
+                                // non‑200 (401/403/500 etc.)
+                                setState(() => _isSearching = false);
                               }
                             } catch (e) {
-                              print("Search error: $e");
+                              print("User search error: $e");
                               setState(() => _isSearching = false);
                             }
                           },
