@@ -21,6 +21,26 @@ from datetime import timedelta
 from .models import NotificationPreference, Society, Membership, Event
 
 
+class MySocietiesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Fetch societies the user has joined
+        societies = Society.objects.filter(members=request.user)
+        data = [
+            {
+                "id": s.id,
+                "name": s.name,
+                "description": s.description,
+                "member_count": s.members.count(),
+            }
+            for s in societies
+        ]
+        return Response(data)
+
+
+
+
 
 
 class UserListView(generics.ListAPIView):
