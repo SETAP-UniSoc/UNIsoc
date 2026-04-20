@@ -21,24 +21,38 @@ from datetime import timedelta
 from .models import NotificationPreference, Society, Membership, Event
 
 
+
 class MySocietiesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Fetch societies the user has joined
-        societies = Society.objects.filter(members=request.user)
-        data = [
-            {
-                "id": s.id,
-                "name": s.name,
-                "description": s.description,
-                "member_count": s.members.count(),
-            }
-            for s in societies
-        ]
-        return Response(data)
+        try:
+            # Debug: Log the user making the request
+            print(f"Fetching societies for user: {request.user}")
 
+            # Fetch societies the user has joined using the Membership model
+            memberships = Membership.objects.filter(user=request.user, left_at__isnull=True)
+            societies = [membership.society for membership in memberships]
 
+            # Debug: Log the societies fetched
+            print(f"Societies fetched: {societies}")
+
+            data = [
+                {
+                    "id": s.id,
+                    "name": s.name,
+                    "description": s.description,
+                    "member_count": s.member_count,
+                }
+                for s in societies
+            ]
+
+            return Response(data)
+
+        except Exception as e:
+             # Debug: Log the error
+            print(f"Error in MySocietiesView: {e}")
+            return Response({"error": str(e)}, status=500)
 
 
 
