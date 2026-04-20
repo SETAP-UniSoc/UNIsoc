@@ -24,6 +24,21 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
+  static Future<List> getMySocieties() async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/my-societies/"),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as List;
+    }
+
+    throw Exception(
+      "Failed to load my societies: ${response.statusCode} ${response.body}",
+    );
+  }
+
   static Future<List> getSocietyEvents(int id) async {
     final response = await http.get(
       Uri.parse("$baseUrl/society/$id/events/"),
