@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from django.utils import timezone
 from .models import Society, Membership
 
 class LeaveSocietyView(APIView):
@@ -23,6 +24,8 @@ class LeaveSocietyView(APIView):
             membership = Membership.objects.get(
                 user=user,
                 society=society,
+                left_at__isnull=True
+                
             )
         except Membership.DoesNotExist:
             return Response(
@@ -30,8 +33,8 @@ class LeaveSocietyView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Simple approach: remove the membership row
-        membership.delete()
+        membership.left_at = membership.delete = timezone.now()
+        membership.save()
 
         return Response(
             {"message": "Successfully left society"},
