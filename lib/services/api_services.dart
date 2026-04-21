@@ -16,13 +16,21 @@ class ApiService {
 
   // -------- PUBLIC ENDPOINTS --------
 
-  // static Future<List> getSocieties() async {
-  //   final response = await http.get(
-  //     Uri.parse("$baseUrl/society/"),
-  //     headers: headers,
-  //   );
-  //   return jsonDecode(response.body);
-  // }
+static Future<List> getSocieties() async {
+  final response = await http.get(
+    Uri.parse("$baseUrl/societies/"),
+    headers: headers,
+  );
+
+  print("STATUS: ${response.statusCode}");
+  print("BODY: ${response.body}");
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body);
+  } else {
+    throw Exception("API Error: ${response.statusCode}");
+  }
+}
 
   static Future<List> getMySocieties() async {
     final response = await http.get(
