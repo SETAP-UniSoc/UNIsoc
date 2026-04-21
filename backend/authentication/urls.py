@@ -50,7 +50,7 @@ urlpatterns = [
     path('events/<int:id>/update/', UpdateEventView.as_view(), name='update-event'),
     path('events/all/', AllEventsView.as_view(), name='all-events'),
     path('events/my/', MyCreatedEventsView.as_view(), name='my-events'),
-    path('societies/<int:society_id>/events/', IsMemberView.as_view(), name='society-events'),
+    path('societies/<int:society_id>/is-member/', IsMemberView.as_view(), name='is-member'),
 
     # Analytics
     path("my-analytics/", AnalyticsView.as_view(), name="analytics"),
