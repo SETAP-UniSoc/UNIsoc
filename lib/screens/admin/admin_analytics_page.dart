@@ -31,10 +31,9 @@
 //     WidgetsBinding.instance.addPostFrameCallback((_) { //added temporatily to delay the initial fetch until after the first frame so that the circular progress indicator shows up while loading instead of a blank screen. Can remove this once we have the event attendance data to show on the second graph, as then the initial fetch will be fast enough that the loading indicator isn't needed
 //       fetchAnalytics(selectedPeriod);
 //     });
-    
+
 //     startLiveUpdates(); // was  temporarily commnted out live updates until we have the event attendance data to show on the second graph. No point refreshing the member count every 5 seconds if the event attendance graph just shows "No data yet"
 //   }
-
 
 //   @override
 //   void dispose() {
@@ -193,7 +192,6 @@
 
 //             const SizedBox(height: 40),
 
-            
 //             // event attendance graph - BAR CHART
 // const Text(
 //   "Event Attendance",
@@ -307,7 +305,6 @@
 //   );
 // }
 
-
 //   Widget _buildEventBarChart(List<double> data, List<String> names) {
 //   if (data.isEmpty || names.isEmpty) {
 //     return const Center(
@@ -383,7 +380,6 @@
 //   );
 // }
 
-
 //   Widget _buildPeriodButton(String value, String label) {
 //     final bool isSelected = selectedPeriod == value;
 
@@ -413,61 +409,6 @@
 //   }
 // }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -490,7 +431,6 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   List<String> labels = [];
   List<double> values = [];
   List<double> eventValues = [];
-  List<String> eventNames = [];
   int liveCount = 0;
   bool isLoading = false;
   Timer? liveTimer;
@@ -498,13 +438,13 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) { //added temporatily to delay the initial fetch until after the first frame so that the circular progress indicator shows up while loading instead of a blank screen. Can remove this once we have the event attendance data to show on the second graph, as then the initial fetch will be fast enough that the loading indicator isn't needed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      //added temporatily to delay the initial fetch until after the first frame so that the circular progress indicator shows up while loading instead of a blank screen. Can remove this once we have the event attendance data to show on the second graph, as then the initial fetch will be fast enough that the loading indicator isn't needed
       fetchAnalytics(selectedPeriod);
     });
-    
+
     startLiveUpdates(); // was  temporarily commnted out live updates until we have the event attendance data to show on the second graph. No point refreshing the member count every 5 seconds if the event attendance graph just shows "No data yet"
   }
-
 
   @override
   void dispose() {
@@ -533,19 +473,14 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
         final data = jsonDecode(response.body);
         setState(() {
           labels = List<String>.from(data["labels"] ?? []);
-          values = List<dynamic>.from(data["totals"] ?? [])
-              .map((e) => (e as num).toDouble())
-              .toList();
+          values = List<dynamic>.from(
+            data["totals"] ?? [],
+          ).map((e) => (e as num).toDouble()).toList();
           liveCount = data["live_count"] ?? 0;
 
-           eventValues = List<dynamic>.from(data["event_attendance"] ?? [])
-            .map((e) => (e as num).toDouble())
-            .toList();
-
-           if (values.isNotEmpty) {
-    values[values.length - 1] = liveCount.toDouble();
-  }
-
+          if (values.isNotEmpty) {
+            values[values.length - 1] = liveCount.toDouble();
+          }
         });
       }
     } catch (e) {
@@ -564,8 +499,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
         build: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text("Society Analytics",
-                style: pw.TextStyle(fontSize: 22)),
+            pw.Text("Society Analytics", style: pw.TextStyle(fontSize: 22)),
             pw.SizedBox(height: 10),
             pw.Text("Live Members: $liveCount"),
             pw.SizedBox(height: 20),
@@ -579,9 +513,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
       ),
     );
 
-    await Printing.layoutPdf(
-      onLayout: (format) async => pdf.save(),
-    );
+    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
   }
 
   @override
@@ -627,15 +559,12 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
             // const SizedBox(height: 20),
 
             // current member count
-Text(
-  values.isNotEmpty
-      ? values.last.toStringAsFixed(0)
-      : liveCount.toString(),
-  style: const TextStyle(
-    fontSize: 32,
-    fontWeight: FontWeight.bold,
-  ),
-),
+            Text(
+              values.isNotEmpty
+                  ? values.last.toStringAsFixed(0)
+                  : liveCount.toString(),
+              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            ),
 
             // membership trend graph
             SizedBox(
@@ -650,8 +579,7 @@ Text(
             // live member count
             Text(
               "Live Members: $liveCount",
-              style: const TextStyle(
-                  fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
@@ -671,10 +599,7 @@ Text(
 
             const SizedBox(height: 20),
 
-            SizedBox(
-              height: 250,
-              child: _buildChart(eventValues),
-            ),
+            SizedBox(height: 250, child: _buildChart(eventValues)),
 
             const SizedBox(height: 50),
           ],
@@ -700,14 +625,10 @@ Text(
           gridData: const FlGridData(show: false),
           borderData: FlBorderData(show: false),
           titlesData: const FlTitlesData(
-            leftTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: false)),
-            rightTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: false)),
-            topTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: false)),
-            bottomTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: false)),
+            leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),
           lineBarsData: [
             LineChartBarData(

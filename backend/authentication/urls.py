@@ -5,6 +5,7 @@ from .AnalyticsView import AnalyticsView
 from .JoinSoc import JoinSocietyView
 from .LeaveSoc import LeaveSocietyView
 from .SocietyDetailView import SocietyDetailView
+from .IsMemberView import IsMemberView
 from .serializer import EventSerializer
 from .views import (
     AddEventView,
@@ -14,7 +15,8 @@ from .views import (
     DeleteEventView,
     MyCreatedEventsView,
     SocietyEventView, 
-    SocietyListSearchView, 
+    SocietyListSearchView,
+    MySocietiesView,
     UserListView,
     SocietyListSearchView,
     EventDetailView,
@@ -29,14 +31,15 @@ urlpatterns = [
     # Authentication
     path("login/", LoginView.as_view(), name="login"),
     path("user/register/", RegisterView.as_view(), name="register"),
-    # Society management
     path("society/<int:society_id>/join/", JoinSocietyView.as_view(), name="join-society"),
     path("society/<int:society_id>/leave/", LeaveSocietyView.as_view(), name="leave-society"),
     path('societies/', SocietyListSearchView.as_view(), name='society-list-create'),
     path('societies/<int:society_id>/', SocietyDetailView.as_view(), name='society-detail'),
     path('users/', UserListView.as_view(), name='user-list-create'),
+    path("my-societies/", MySocietiesView.as_view(), name="my-societies"),
     #path('societies/', SocietyListSearchView.as_view(), name='society-list-create'),
     path('societies/<int:society_id>/events/', SocietyEventView.as_view(), name='society-events'),
+    path("societies/<int:society_id>/is-member/", IsMemberView.as_view(), name="society-is-member",),
     # Admin event management
     path('events/<int:id>/delete/', DeleteEventView.as_view(), name='delete-event'),
     path('events/', SocietyEventView.as_view(), name='event-list'),
