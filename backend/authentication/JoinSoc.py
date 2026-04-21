@@ -30,6 +30,7 @@ class JoinSocietyView(APIView):
             else:
         # Rejoining
                 membership.left_at = None
+                membership.joined_at = timezone.now()
                 membership.save()
                 return Response({"message": "Rejoined successfully"}, status=200)
     

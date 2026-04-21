@@ -24,6 +24,7 @@ class IsMemberView(APIView):
         is_member = Membership.objects.filter(
             user=user,
             society=society,
+            left_at__isnull=True
         ).exists()
 
         return Response({"is_member": is_member}, status=status.HTTP_200_OK)
