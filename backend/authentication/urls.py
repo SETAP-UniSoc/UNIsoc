@@ -67,7 +67,7 @@ urlpatterns = [
 
   
 
-
+##smth gtuivgl
 
 
 

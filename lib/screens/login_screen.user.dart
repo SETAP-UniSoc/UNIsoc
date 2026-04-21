@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -69,6 +70,9 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
       } else {
         _showError("Login failed (${response.statusCode})");
       }
+    } on TimeoutException {
+      _showError("Login request timed out. Check server connection.");
+      print("Error during login: request timed out after 10 seconds");
     } catch (e) {
       _showError("Network or server error");
       print("Error during login: $e");
