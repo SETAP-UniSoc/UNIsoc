@@ -149,8 +149,8 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(isMember
-                ? "Successfully joined society 🎉"
-                : "Successfully left society"),
+                ? "Successfully left society"
+                :  "Successfully joined society 🎉"),
           ),
         );
       }
