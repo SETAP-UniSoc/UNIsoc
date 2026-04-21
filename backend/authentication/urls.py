@@ -8,6 +8,7 @@ from .JoinSoc import JoinSocietyView
 from .LeaveSoc import LeaveSocietyView
 from .SocietyDetailView import SocietyDetailView
 from .serializer import EventSerializer
+from .IsMemberView import IsMemberView
 from .views import (
     AllEventsView,
     ChangeEmailView, 
@@ -23,6 +24,7 @@ from .views import (
     UpdateEventView,
     ChangePasswordView,
     NotificationView,
+    IsAuthenticated,
     MyEventsView)
 
 
