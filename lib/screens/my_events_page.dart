@@ -1,7 +1,39 @@
 import 'package:flutter/material.dart';
+import '../../services/api_services.dart';
 
-class MyEventsPage extends StatelessWidget {
+class MyEventsPage extends StatefulWidget {
   const MyEventsPage({super.key});
+
+  @override
+  State<MyEventsPage> createState() => _MyEventsPageState();
+}
+
+class _MyEventsPageState extends State<MyEventsPage> {
+  late Future<List> _futureMyEvents;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureMyEvents = _loadMyEvents();
+  }
+
+  Future<List> _loadMyEvents() async {
+    try {
+      // Fetch the societies the user has joined
+      final societies = await ApiService.getMySocieties();
+
+      // Fetch events for each society
+      List events = [];
+      for (var society in societies) {
+        final societyEvents = await ApiService.getSocietyEvents(society['id']);
+        events.addAll(societyEvents);
+      }
+
+      return events;
+    } catch (e) {
+      throw Exception("Failed to load events: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -10,35 +42,45 @@ class MyEventsPage extends StatelessWidget {
         title: const Text('My Events'),
         backgroundColor: const Color(0xFF4A235A),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          EventCard(
-            day: '25',
-            month: 'FEB',
-            eventName: 'Varsity Wednesday',
-          ),
-          EventCard(
-            day: '24',
-            month: 'FEB',
-            eventName: 'Goose & Gander Pop Up',
-          ),
-          EventCard(
-            day: '25',
-            month: 'FEB',
-            eventName: 'Winter Pop-Up Pantry',
-          ),
-          EventCard(
-            day: '25',
-            month: 'FEB',
-            eventName: 'Board Games Cafe',
-          ),
-          EventCard(
-            day: '26',
-            month: 'FEB',
-            eventName: 'Handmade with Pride',
-          ),
-        ],
+      body: FutureBuilder<List>(
+        future: _futureMyEvents,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                textAlign: TextAlign.center,
+              ),
+            );
+          }
+
+          final events = snapshot.data ?? [];
+          if (events.isEmpty) {
+            return const Center(
+              child: Text(
+                'You have no upcoming events.',
+                textAlign: TextAlign.center,
+              ),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: events.length,
+            itemBuilder: (context, index) {
+              final event = events[index] as Map<String, dynamic>;
+              final day = event['date'].split('-')[2]; // Extract day from date
+              final month = event['date'].split(
+                '-',
+              )[1]; // Extract month from date
+              final eventName = event['title'] as String? ?? '';
+
+              return EventCard(day: day, month: month, eventName: eventName);
+            },
+          );
+        },
       ),
     );
   }
@@ -66,7 +108,6 @@ class EventCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            // ignore: deprecated_member_use
             color: Colors.grey.withOpacity(0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),

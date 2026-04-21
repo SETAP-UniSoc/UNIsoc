@@ -34,3 +34,5 @@ class JoinSocietyView(APIView):
             {"message": "Successfully joined"},
             status=status.HTTP_201_CREATED
         )
+    
+    #hi

@@ -1,11 +1,9 @@
-//imports
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:unisoc/services/api_services.dart';
 import 'package:unisoc/screens/admin/admin_bottom_nav.dart';
-
 //society profile page used by both users and admins — shows society details and upcoming events. Admins can also edit the description
 class SocietyProfilePage extends StatefulWidget {
   final int societyId;
@@ -63,7 +61,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   Future<void> loadSociety() async {
     try {
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/"),
+        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/"),
         headers: ApiService.headers,
       );
       if (response.statusCode == 200) {
@@ -72,12 +70,9 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
           societyData = data;
           descController.text = data["description"] ?? "";
         });
-        print(" Loaded society: ${data["name"]} (ID: ${widget.societyId})");
-      } else {
-        print(" Failed to load society: ${response.statusCode}");
       }
     } catch (e) {
-      print(" Error loading society: $e");
+      print("Error loading society: $e");
     }
   }
 
@@ -85,26 +80,16 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   Future<void> loadEvents() async {
     try {
       final response = await http.get(
-        Uri.parse(
-          "${ApiService.baseUrl}/societies/${widget.societyId}/events/",
-        ),
+        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
         headers: ApiService.headers,
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as List;
         final now = DateTime.now();
         setState(() {
-          final upcoming = data
-              .where((e) => DateTime.parse(e["start_time"]).isAfter(now))
-              .toList();
-
-          upcoming.sort(
-            (a, b) => DateTime.parse(
-              a["start_time"],
-            ).compareTo(DateTime.parse(b["start_time"])),
-          );
-
-          events = upcoming;
+          events = data.where((e) =>
+            DateTime.parse(e["start_time"]).isAfter(now)
+          ).toList();
         });
       }
     } catch (e) {
@@ -114,25 +99,14 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
 
   // check if user is already a member
   Future<void> checkMembership() async {
-    final url =
-        "${ApiService.baseUrl}/societies/${widget.societyId}/is-member/";
-    print("DEBUG checkMembership URL: $url");
-    print("DEBUG checkMembership headers: ${ApiService.headers}");
-
     try {
       final response = await http.get(
-        Uri.parse(url),
+        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/is-member/"),
         headers: ApiService.headers,
       );
-      print("DEBUG checkMembership status: ${response.statusCode}");
-      print("DEBUG checkMembership body: ${response.body}");
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() => isMember = data["is_member"] ?? false);
-        print("DEBUG isMember set to: $isMember");
-      } else {
-        print("Failed to check membership: ${response.statusCode}");
       }
     } catch (e) {
       print("Error checking membership: $e");
@@ -143,15 +117,15 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   Future<void> saveDescription() async {
     try {
       final response = await http.patch(
-        Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/"),
+        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/"),
         headers: ApiService.headers,
         body: jsonEncode({"description": descController.text}),
       );
       if (response.statusCode == 200) {
         setState(() => isEditing = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Description updated ✅")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Description updated ✅")),
+        );
         loadSociety();
       }
     } catch (e) {
@@ -159,51 +133,29 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     }
   }
 
+  // user joins or leaves society
   Future<void> toggleJoinSociety() async {
     final endpoint = isMember
         ? "/society/${widget.societyId}/leave/"
         : "/society/${widget.societyId}/join/";
-    final url = "${ApiService.baseUrl}$endpoint";
-
-    print("DEBUG toggleJoinSociety URL: $url");
-    print("DEBUG toggleJoinSociety headers: ${ApiService.headers}");
 
     try {
       final response = await http.post(
-        Uri.parse(url),
+        Uri.parse("${ApiService.baseUrl}$endpoint"),
         headers: ApiService.headers,
       );
-      print("DEBUG toggleJoinSociety status: ${response.statusCode}");
-      print("DEBUG toggleJoinSociety body: ${response.body}");
-
       if (response.statusCode == 201 || response.statusCode == 200) {
-        // Refresh from backend instead of only flipping locally
-        await checkMembership();
-
+        setState(() => isMember = !isMember);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              isMember
-                  ? "Successfully joined society 🎉"
-                  : "Successfully left society",
-            ),
+            content: Text(isMember
+                ? "Successfully joined society 🎉"
+                : "Successfully left society"),
           ),
         );
-      } else {
-        String msg = "Error: ${response.statusCode}";
-        try {
-          final data = jsonDecode(response.body);
-          msg = (data['error'] ?? data['message'] ?? msg).toString();
-        } catch (_) {}
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(msg)));
       }
     } catch (e) {
       print("Error toggling membership: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 
@@ -234,6 +186,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+
                   // society header card
                   Container(
                     width: double.infinity,
@@ -274,8 +227,10 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                       child: ElevatedButton(
                         onPressed: toggleJoinSociety,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isMember ? Colors.red : Colors.blue,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          backgroundColor:
+                              isMember ? Colors.red : Colors.blue,
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -295,7 +250,10 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                   // about section
                   const Text(
                     "About",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 8),
 
@@ -303,19 +261,21 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                       ? TextField(
                           controller: descController,
                           maxLines: 4,
+                          autofocus: true,
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            hintText: "Write a description for your society...",
+                            hintText:
+                                "Write a description for your society...",
                           ),
                         )
                       : Text(
                           societyData["description"]?.isNotEmpty == true
                               ? societyData["description"]
                               : widget.isAdmin
-                              ? "No description yet — tap edit to add one."
-                              : "No description yet.",
+                                  ? "No description yet — tap edit to add one."
+                                  : "No description yet.",
                           style: const TextStyle(
                             fontSize: 15,
                             color: Colors.black87,
@@ -328,7 +288,10 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                   // upcoming events section
                   const Text(
                     "Upcoming Events",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 12),
 
@@ -343,9 +306,9 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                           itemCount: events.length,
                           itemBuilder: (context, index) {
                             final event = events[index];
-                            final startTime = DateTime.parse(
-                              event["start_time"],
-                            ).toLocal();
+                            final startTime =
+                                DateTime.parse(event["start_time"])
+                                    .toLocal();
                             return Card(
                               margin: const EdgeInsets.only(bottom: 10),
                               shape: RoundedRectangleBorder(
@@ -382,3 +345,4 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     );
   }
 }
+

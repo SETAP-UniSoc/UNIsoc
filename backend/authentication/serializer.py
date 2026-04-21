@@ -4,7 +4,7 @@ from .models import Event, NotificationPreference
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = Society
         fields = '__all__'
 
 class SocietySerializer(serializers.ModelSerializer):

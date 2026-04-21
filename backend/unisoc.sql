@@ -118,10 +118,6 @@ CREATE INDEX idx_event_rsvp_user ON event_rsvps(user_id);
 
 
 
-<<<<<<< HEAD
--
-=======
 
 
  
->>>>>>> origin/main

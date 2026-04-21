@@ -14,20 +14,6 @@ class ApiService {
     if (authToken != null) "Authorization": "Token $authToken",
   };
 
-  // Save login data after admin login
-  static void saveAdminLogin(String token, int id, String name) {
-    authToken = token;
-    societyId = id;
-    societyName = name;
-  }
-
-  // Clear login data on logout
-  static void clearAdminLogin() {
-    authToken = null;
-    societyId = null;
-    societyName = null;
-  }
-
   // -------- PUBLIC ENDPOINTS --------
 
   static Future<List> getSocieties() async {
@@ -38,10 +24,24 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
-  // Get events for a specific society
+  static Future<List> getMySocieties() async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/my-societies/"),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as List;
+    }
+
+    throw Exception(
+      "Failed to load my societies: ${response.statusCode} ${response.body}",
+    );
+  }
+
   static Future<List> getSocietyEvents(int id) async {
     final response = await http.get(
-      Uri.parse("$baseUrl/societies/$id/events/"),
+      Uri.parse("$baseUrl/society/$id/events/"),
       headers: headers,
     );
     return jsonDecode(response.body);
@@ -58,34 +58,13 @@ class ApiService {
   // -------- JOIN / LEAVE --------
 
   static Future<http.Response> joinSociety(int id) {
-    return http.post(
-      Uri.parse("$baseUrl/societies/$id/join/"),
-      headers: headers,
-    );
+    return http.post(Uri.parse("$baseUrl/society/$id/join/"), headers: headers);
   }
 
   static Future<http.Response> leaveSociety(int id) {
     return http.post(
-      Uri.parse("$baseUrl/societies/$id/leave/"),
+      Uri.parse("$baseUrl/society/$id/leave/"),
       headers: headers,
-    );
-  }
-
-  // -------- SOCIETY DETAILS --------
-
-  static Future<Map<String, dynamic>> getSocietyDetails(int id) async {
-    final response = await http.get(
-      Uri.parse("$baseUrl/societies/$id/"),
-      headers: headers,
-    );
-    return jsonDecode(response.body);
-  }
-
-  static Future<http.Response> updateSocietyDescription(int id, String description) async {
-    return await http.patch(
-      Uri.parse("$baseUrl/societies/$id/"),
-      headers: headers,
-      body: jsonEncode({"description": description}),
     );
   }
 }
