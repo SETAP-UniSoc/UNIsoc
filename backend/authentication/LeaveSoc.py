@@ -33,7 +33,7 @@ class LeaveSocietyView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        membership.left_at = membership.delete = timezone.now()
+        membership.left_at = timezone.now()
         membership.save()
 
         return Response(
