@@ -5,10 +5,8 @@ from .AnalyticsView import AnalyticsView
 from .JoinSoc import JoinSocietyView
 from .LeaveSoc import LeaveSocietyView
 from .SocietyDetailView import SocietyDetailView
-from .IsMemberView import IsMemberView
 from .serializer import EventSerializer
 from .views import (
-    AddEventView,
     AllEventsView,
     ChangeEmailView, 
     SocietyEventView,
