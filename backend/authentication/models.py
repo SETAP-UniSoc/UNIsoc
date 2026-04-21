@@ -78,7 +78,7 @@ class Society(models.Model):
 
     @property
     def member_count(self):
-        return self.membership_set.filter(left_at__isnull=True).count()
+        return self.membership.filter(left_at__isnull=True).count()
 
     def __str__(self):
         return self.name
