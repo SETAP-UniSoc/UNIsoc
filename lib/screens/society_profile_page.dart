@@ -54,7 +54,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     await Future.wait([
       loadSociety(),
       loadEvents(),
-      // if (!widget.isAdmin) checkMembership(),
+       if (!widget.isAdmin) checkMembership(),
     ]);
     setState(() => isLoading = false);
   }
@@ -113,31 +113,31 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   }
 
   // check if user is already a member
-  // Future<void> checkMembership() async {
-  //   final url =
-  //       "${ApiService.baseUrl}/societies/${widget.societyId}/is-member/";
-  //   print("DEBUG checkMembership URL: $url");
-  //   print("DEBUG checkMembership headers: ${ApiService.headers}");
+  Future<void> checkMembership() async {
+    final url =
+        "${ApiService.baseUrl}/societies/${widget.societyId}/is-member/";
+    print("DEBUG checkMembership URL: $url");
+    print("DEBUG checkMembership headers: ${ApiService.headers}");
 
-  //   try {
-  //     final response = await http.get(
-  //       Uri.parse(url),
-  //       headers: ApiService.headers,
-  //     );
-  //     print("DEBUG checkMembership status: ${response.statusCode}");
-  //     print("DEBUG checkMembership body: ${response.body}");
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: ApiService.headers,
+      );
+      print("DEBUG checkMembership status: ${response.statusCode}");
+      print("DEBUG checkMembership body: ${response.body}");
 
-  //     if (response.statusCode == 200) {
-  //       final data = jsonDecode(response.body);
-  //       setState(() => isMember = data["is_member"] ?? false);
-  //       print("DEBUG isMember set to: $isMember");
-  //     } else {
-  //       print("Failed to check membership: ${response.statusCode}");
-  //     }
-  //   } catch (e) {
-  //     print("Error checking membership: $e");
-  //   }
-  // }
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() => isMember = data["is_member"] ?? false);
+        print("DEBUG isMember set to: $isMember");
+      } else {
+        print("Failed to check membership: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error checking membership: $e");
+    }
+  }
 
   // admin saves description
   Future<void> saveDescription() async {
@@ -178,7 +178,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         // Refresh from backend instead of only flipping locally
-        // await checkMembership();
+        await checkMembership();
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
