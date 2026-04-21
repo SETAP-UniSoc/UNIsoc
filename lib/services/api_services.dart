@@ -16,13 +16,13 @@ class ApiService {
 
   // -------- PUBLIC ENDPOINTS --------
 
-  // static Future<List> getSocieties() async {
-  //   final response = await http.get(
-  //     Uri.parse("$baseUrl/society/"),
-  //     headers: headers,
-  //   );
-  //   return jsonDecode(response.body);
-  // }
+  static Future<List> getSocieties() async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/society/"),
+      headers: headers,
+    );
+    return jsonDecode(response.body);
+  }
 
   static Future<List> getMySocieties() async {
     final response = await http.get(
