@@ -12,6 +12,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  bool notificationsEnabled = true;
   bool emailUpdates = true;
   bool loadingEmailPref = true;
   bool savingEmailPref = false;
@@ -220,6 +221,19 @@ class _SettingsPageState extends State<SettingsPage> {
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[700],
               ),
+            ),
+          ),
+          ListTile(
+            title: const Text('Enable Notifications'),
+            subtitle: const Text('Receive event and society notifications'),
+            trailing: Switch(
+              value: notificationsEnabled,
+              onChanged: (value) {
+                setState(() {
+                  notificationsEnabled = value;
+                });
+              },
+              activeThumbColor: const Color(0xFF4A235A),
             ),
           ),
           ListTile(

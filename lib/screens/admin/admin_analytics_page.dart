@@ -1,4 +1,3 @@
-// admin analytics page
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -6,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:unisoc/services/api_services.dart';
+import 'package:unisoc/screens/admin/admin_bottom_nav.dart';
 
 class AdminAnalyticsPage extends StatefulWidget {
   const AdminAnalyticsPage({super.key});
@@ -16,27 +17,23 @@ class AdminAnalyticsPage extends StatefulWidget {
 
 class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   String selectedPeriod = "year";
-  String statusMessage = "Loading analytics...";
-
   List<String> labels = [];
   List<double> values = [];
-
-  List<String> eventLabels = [];
   List<double> eventValues = [];
-
   int liveCount = 0;
-
   bool isLoading = false;
   Timer? liveTimer;
 
   @override
   void initState() {
     super.initState();
-    fetchTrend(selectedPeriod);
-    fetchLiveCount();
-    fetchEventAttendance();
-    startLiveUpdates();
+    WidgetsBinding.instance.addPostFrameCallback((_) { //added temporatily to delay the initial fetch until after the first frame so that the circular progress indicator shows up while loading instead of a blank screen. Can remove this once we have the event attendance data to show on the second graph, as then the initial fetch will be fast enough that the loading indicator isn't needed
+      fetchAnalytics(selectedPeriod);
+    });
+    
+    startLiveUpdates(); // was  temporarily commnted out live updates until we have the event attendance data to show on the second graph. No point refreshing the member count every 5 seconds if the event attendance graph just shows "No data yet"
   }
+
 
   @override
   void dispose() {
@@ -45,100 +42,45 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   }
 
   void startLiveUpdates() {
-    liveTimer = Timer.periodic(const Duration(seconds: 5), (_) { //live memebr cout refrehes evry 5 seconds
-      fetchLiveCount();
+    // live member count refreshes every 5 seconds
+    liveTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      fetchAnalytics(selectedPeriod);
     });
   }
 
-// soc memebrship trend graph
-  Future<void> fetchTrend(String week) async {
-    setState(() {
-      isLoading = true;
-      statusMessage = "Loading analytics...";
-    });
-
-    final url = Uri.parse(
-      "http://10.128.5.47:8000/api/my-analytics/society/?period=$week",
-    );
+  // single endpoint for all analytics — uses logged in admin's token automatically
+  Future<void> fetchAnalytics(String period) async {
+    setState(() => isLoading = true);
 
     try {
       final response = await http.get(
-        url,
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization":
-              "Token 67a80ebb9c0f939fe04164f66ed5165f65d3e66",
-        },
+        Uri.parse("${ApiService.baseUrl}/my-analytics/?period=$period"),
+        headers: ApiService.headers,
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
-        final rawLabels = data["labels"] ?? [];
-        final rawValues = data["totals"] ?? [];
-
         setState(() {
-          labels = List<String>.from(rawLabels);
-          values = List<dynamic>.from(rawValues)
+          labels = List<String>.from(data["labels"] ?? []);
+          values = List<dynamic>.from(data["totals"] ?? [])
               .map((e) => (e as num).toDouble())
               .toList();
+          liveCount = data["live_count"] ?? 0;
+
+           if (values.isNotEmpty) {
+    values[values.length - 1] = liveCount.toDouble();
+  }
+
         });
       }
+    } catch (e) {
+      print("Analytics error: $e");
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
     }
   }
 
-// live member count
-  Future<void> fetchLiveCount() async {
-    final url = Uri.parse(
-      "http://10.128.5.47:8000/api/analytics/society/1/live-count/",
-    );
-
-    final response = await http.get(
-      url,
-      headers: {
-        "Authorization":
-            "Token 67a80ebb9c0f939fe04164f66ed5165f65d3e66",
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      setState(() {
-        liveCount = data["live_count"] ?? 0;
-      });
-    }
-  }
-
-  //event attendence graph 
-  Future<void> fetchEventAttendance() async {
-    final url = Uri.parse(
-      "http://10.128.5.47:8000/api/analytics/society/1/event-attendance/",
-    );
-
-    final response = await http.get(
-      url,
-      headers: {
-        "Authorization":
-            "Token 67a80ebb9c0f939fe04164f66ed5165f65d3e66",
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-
-      setState(() {
-        eventLabels = List<String>.from(data["labels"] ?? []);
-        eventValues = List<dynamic>.from(data["totals"] ?? [])
-            .map((e) => (e as num).toDouble())
-            .toList();
-      });
-    }
-  }
-//exporting pdf 
+  // export analytics as PDF
   Future<void> exportPdf() async {
     final pdf = pw.Document();
 
@@ -167,14 +109,12 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
     );
   }
 
-  // ==========================
-  // UI
-  // ==========================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -188,10 +128,9 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
           children: [
             const SizedBox(height: 20),
 
-            // PERIOD SELECTOR
+            // period selector
             Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildPeriodButton("week", "1W"),
                 _buildPeriodButton("month", "1M"),
@@ -202,34 +141,31 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
 
             const SizedBox(height: 30),
 
-            // CURRENT VALUE
+            // current member count
             if (values.isNotEmpty)
               Text(
                 values.last.toStringAsFixed(0),
                 style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold),
+                    fontSize: 32, fontWeight: FontWeight.bold),
               ),
 
             const SizedBox(height: 20),
 
-            // MEMBERSHIP GRAPH
+            // membership trend graph
             SizedBox(
               height: 250,
               child: isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator())
+                  ? const Center(child: CircularProgressIndicator())
                   : _buildChart(values),
             ),
 
             const SizedBox(height: 20),
 
-            // LIVE MEMBER COUNT
+            // live member count
             Text(
               "Live Members: $liveCount",
               style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold),
+                  fontSize: 24, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
@@ -241,12 +177,10 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
 
             const SizedBox(height: 40),
 
-            // EVENT ATTENDANCE GRAPH
+            // event attendance graph — shows "No data" until events have attendance
             const Text(
               "Event Attendance",
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 20),
@@ -260,12 +194,13 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
           ],
         ),
       ),
+      bottomNavigationBar: const AdminBottomNav(currentIndex: 1),
     );
   }
 
   Widget _buildChart(List<double> data) {
     if (data.isEmpty) {
-      return const Center(child: Text("No data"));
+      return const Center(child: Text("No data yet"));
     }
 
     return Padding(
@@ -275,8 +210,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
           minX: 0,
           maxX: (data.length - 1).toDouble(),
           minY: 0,
-          maxY:
-              data.reduce((a, b) => a > b ? a : b) * 1.2,
+          maxY: data.reduce((a, b) => a > b ? a : b) * 1.2,
           gridData: const FlGridData(show: false),
           borderData: FlBorderData(show: false),
           titlesData: const FlTitlesData(
@@ -293,29 +227,24 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
             LineChartBarData(
               isCurved: true,
               barWidth: 3,
-              dotData:
-                  const FlDotData(show: false),
+              dotData: const FlDotData(show: false),
               gradient: const LinearGradient(
-                colors: [
-                  Colors.purple,
-                  Colors.deepPurple
-                ],
+                colors: [Colors.purple, Colors.deepPurple],
               ),
               belowBarData: BarAreaData(
                 show: true,
                 gradient: LinearGradient(
                   colors: [
                     Colors.purple
-                        .withValues(alpha: 0.4),
+                        .withOpacity(0.4),
                     Colors.purple
-                        .withValues(alpha: 0.05),
+                        .withOpacity(0.05),
                   ],
                 ),
               ),
               spots: List.generate(
                 data.length,
-                (i) =>
-                    FlSpot(i.toDouble(), data[i]),
+                (i) => FlSpot(i.toDouble(), data[i]),
               ),
             ),
           ],
@@ -324,17 +253,13 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
     );
   }
 
-  Widget _buildPeriodButton(
-      String value, String label) {
-    final bool isSelected =
-        selectedPeriod == value;
+  Widget _buildPeriodButton(String value, String label) {
+    final bool isSelected = selectedPeriod == value;
 
     return GestureDetector(
       onTap: () {
-        setState(() {
-          selectedPeriod = value;
-        });
-        fetchTrend(value);
+        setState(() => selectedPeriod = value);
+        fetchAnalytics(value);
       },
       child: Column(
         children: [
@@ -342,18 +267,14 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
             label,
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              color: isSelected
-                  ? Colors.purple
-                  : Colors.grey,
+              color: isSelected ? Colors.purple : Colors.grey,
             ),
           ),
           const SizedBox(height: 4),
           Container(
             height: 2,
             width: 30,
-            color: isSelected
-                ? Colors.purple
-                : Colors.transparent,
+            color: isSelected ? Colors.purple : Colors.transparent,
           ),
         ],
       ),

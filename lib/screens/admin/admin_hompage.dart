@@ -39,34 +39,32 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-  // header
-
+  // HEADER
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      color: Colors.white,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFCE93D8), Color(0xFF9C27B0)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // UniSoc + Dropdown
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
               Text(
                 "UniSoc",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
               AdminDropdownMenu(),
             ],
           ),
-
           const SizedBox(height: 8),
-
-          // Welcome + Name (same line)
           Text(
             "Welcome $adminName",
             style: const TextStyle(
@@ -74,10 +72,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
               color: Colors.grey,
             ),
           ),
-
           const SizedBox(height: 16),
-
-          // Search bar
           TextField(
             decoration: InputDecoration(
               hintText: "Search events or societies",
@@ -93,94 +88,88 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-  // Top socs
-
+  // TOP SOCIETIES CAROUSEL
   Widget _buildTopSocietiesCarousel() {
-    List<String> topSocieties = [
-      "Gaming Society",
-      "Art Society",
-      "Tech Society",
-    ];
-
     return Column(
       children: [
         const Text(
           "Top Societies",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
-        const SizedBox(height: 12),
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            CarouselSlider(
-              carouselController: _societyController,
-              options: CarouselOptions(
-                height: 180,
-                autoPlay: true,
-                autoPlayInterval: const Duration(seconds: 4),
-                enlargeCenterPage: true,
-                viewportFraction: 0.8,
-              ),
-              items: topSocieties.map((society) {
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AdminSocietyPage(),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Center(
-                      child: Text(
-                        society,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+        const SizedBox(height: 50),
+        if (isLoading)
+          const CircularProgressIndicator()
+        else if (top5.isEmpty)
+          const Text("No societies yet")
+        else
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              CarouselSlider(
+                carouselController: _societyController,
+                options: CarouselOptions(
+                  height: 180,
+                  autoPlay: true,
+                  autoPlayInterval: const Duration(seconds: 4),
+                  enlargeCenterPage: true,
+                  viewportFraction: 0.8,
+                ),
+                items: top5.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final society = entry.value;
+                  final colour = carouselColours[index % carouselColours.length];
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => SocietyProfilePage(
+                            societyId: society["id"],
+                            isAdmin: false,
+                          ),
                         ),
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [colour, colour.withOpacity(0.7)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
-            ),
-
-            Positioned(
-              left: 0,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_ios),
-                onPressed: () => _societyController.previousPage(),
+                  );
+                }).toList(),
               ),
-            ),
-
-            Positioned(
-              right: 0,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_forward_ios),
-                onPressed: () => _societyController.nextPage(),
+              Positioned(
+                left: 0,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios),
+                  onPressed: () => _societyController.previousPage(),
+                ),
               ),
-            ),
-          ],
-        ),
+              Positioned(
+                right: 0,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_forward_ios),
+                  onPressed: () => _societyController.nextPage(),
+                ),
+              ),
+            ],
+          ),
       ],
     );
   }
 
-  // browse soc
-
+  // BROWSE SOCIETIES
   Widget _buildBrowseSocietiesSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -197,14 +186,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
                   DropdownButton<String>(
                     hint: const Text("Sort by"),
                     items: const [
-                      DropdownMenuItem(
-                        value: "name",
-                        child: Text("Name"),
-                      ),
-                      DropdownMenuItem(
-                        value: "members",
-                        child: Text("Members"),
-                      ),
+                      DropdownMenuItem(value: "name", child: Text("Name")),
+                      DropdownMenuItem(value: "members", child: Text("Members")),
                     ],
                     onChanged: (value) {},
                   ),
@@ -212,10 +195,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
                   DropdownButton<String>(
                     hint: const Text("Filter by"),
                     items: const [
-                      DropdownMenuItem(
-                        value: "category",
-                        child: Text("Category"),
-                      ),
+                      DropdownMenuItem(value: "category", child: Text("Category")),
                     ],
                     onChanged: (value) {},
                   ),
@@ -246,23 +226,13 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-  // events
-
+  // EVENTS CAROUSEL
   Widget _buildEventsCarousel() {
-    List<String> topEvents = [
-      "Hackathon 2024",
-      "Gaming Tournament",
-      "Art Exhibition",
-    ];
-
     return Column(
       children: [
         const Text(
           "Events",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
         CarouselSlider(
@@ -298,7 +268,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
   }
 }
 
-// Temporary Blank Page
+// TEMPORARY PAGE
 class AdminSocietyPage extends StatelessWidget {
   const AdminSocietyPage({super.key});
 
@@ -310,3 +280,4 @@ class AdminSocietyPage extends StatelessWidget {
     );
   }
 }
+

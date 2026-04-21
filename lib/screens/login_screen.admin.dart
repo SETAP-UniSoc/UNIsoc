@@ -188,8 +188,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:unisoc/screens/admin/admin_hompage.dart';
+//import 'package:unisoc/screens/admin/admin_hompage.dart';
 import 'forgotten_password_screen.dart';
 import 'signup_user_page.dart';
+import 'package:unisoc/services/api_services.dart'; 
 
 class LoginScreenAdmin extends StatefulWidget {
   const LoginScreenAdmin({super.key});
@@ -229,7 +231,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
 
     setState(() => isLoading = true);
 
-    final url = Uri.parse("http://10.128.4.196:8000/api/login/");
+    final url = Uri.parse("http://10.128.4.122:8000/api/login/");
 
     final body = {
       "name": name, // backend ignores this (kept as requested)
@@ -247,13 +249,33 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
       if (!mounted) return;
 
       if (response.statusCode == 200) {
+<<<<<<< HEAD
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
+            //chnaging  page it goes to as error wih adminhomepage
             builder: (context) => const AdminHomepage(),
           ),
         );
       } else if (response.statusCode == 401) {
+=======
+  final responseData = jsonDecode(response.body);
+
+  print("Full response: $responseData");
+  print("Society ID: ${responseData['society_id']}");
+
+  ApiService.authToken = responseData["token"];
+  ApiService.societyId = responseData["society_id"];
+  ApiService.societyName = responseData["society_name"];
+
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const AdminHomepage(),
+    ),
+  );
+}else if (response.statusCode == 401) {
+>>>>>>> Maya-up2266552
         // ✅ Generic message (backend unchanged)
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

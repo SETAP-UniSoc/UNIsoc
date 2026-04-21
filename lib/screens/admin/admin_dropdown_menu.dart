@@ -10,7 +10,15 @@ class AdminDropdownMenu extends StatelessWidget {
       onSelected: (value) {
         switch (value) {
           case "account":
-            // Navigate to My Account page later
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => SocietyProfilePage(
+                  societyId: ApiService.societyId ?? 0,
+                  isAdmin: true,
+                ),
+              ),
+            );
             break;
           case "settings":
             // Navigate to Settings page later
@@ -21,18 +29,9 @@ class AdminDropdownMenu extends StatelessWidget {
         }
       },
       itemBuilder: (context) => const [
-        PopupMenuItem(
-          value: "account",
-          child: Text("My Account"),
-        ),
-        PopupMenuItem(
-          value: "settings",
-          child: Text("Settings"),
-        ),
-        PopupMenuItem(
-          value: "logout",
-          child: Text("Logout"),
-        ),
+        PopupMenuItem(value: "account", child: Text("My Account")),
+        PopupMenuItem(value: "settings", child: Text("Settings")),
+        PopupMenuItem(value: "logout", child: Text("Logout")),
       ],
     );
   }
