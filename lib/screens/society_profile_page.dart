@@ -178,7 +178,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         // Refresh from backend instead of only flipping locally
-        // await checkMembership();
+        await checkMembership();
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
