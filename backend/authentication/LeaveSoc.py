@@ -40,3 +40,6 @@ class LeaveSocietyView(APIView):
             {"message": "Successfully left society"},
             status=status.HTTP_200_OK,
         )
+    
+
+    #smth
