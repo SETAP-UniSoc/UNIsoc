@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:unisoc/screens/admin/admin_hompage.dart';
@@ -45,7 +46,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
 
     setState(() => isLoading = true);
 
-    final url = Uri.parse("http://10.128.4.102:8000/api/login/");
+    final url = Uri.parse("${ApiService.baseUrl}/login/");
 
     final body = {
       "name": name, // backend ignores this (kept as requested)
@@ -54,11 +55,13 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     };
 
     try {
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(body),
-      );
+      final response = await http
+          .post(
+            url,
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (!mounted) return;
 
@@ -92,6 +95,12 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
           ),
         );
       }
+    } on TimeoutException {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Login request timed out. Check server connection"),
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
