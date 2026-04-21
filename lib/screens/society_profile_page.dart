@@ -130,7 +130,7 @@ events = upcoming;
     try {
       if (descController.text != societyData["description"]) {
         final response = await http.patch(
-          Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/"),
+          Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/"),
           headers: ApiService.headers,
           body: jsonEncode({"description": descController.text}),
         );
@@ -159,8 +159,8 @@ events = upcoming;
 
   Future<void> toggleJoinSociety() async {
     final endpoint = isMember
-        ? "/societies/${widget.societyId}/leave/"
-        : "/societies/${widget.societyId}/join/";
+        ? "/society/${widget.societyId}/leave/"
+        : "/society/${widget.societyId}/join/";
 
     try {
       final response = await http.post(
