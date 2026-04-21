@@ -1,6 +1,5 @@
 from django.urls import path
-
-from backend.authentication import IsMemberView #include
+#include
 from .RegisterView import RegisterView
 from .LoginView import LoginView
 from .AnalyticsView import AnalyticsView
