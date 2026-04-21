@@ -112,7 +112,7 @@ events = upcoming;
     try {
       final response = await http.get(
         Uri.parse(
-          "${ApiService.baseUrl}/societies/${widget.societyId}/is-member/",
+          "${ApiService.baseUrl}/society/${widget.societyId}/is-member/",
         ),
         headers: ApiService.headers,
       );
