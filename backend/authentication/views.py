@@ -179,14 +179,20 @@ class SocietyEventView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, society_id):
-
         try:
+            print(f"Fetching society with ID: {society_id}")
             society = Society.objects.get(id=society_id)
         except Society.DoesNotExist:
+            print(f"Society with ID {society_id} not found")
             return Response({"error": "Society not found"}, status=404)
 
+        print(f"Fetching events for society: {society.name}")
         events = Event.objects.filter(society=society)
+        print(f"Events found: {events.count()}")
+
         serializer = EventSerializer(events, many=True)
+        print(f"Serialized events: {serializer.data}")
+
         return Response(serializer.data)
     
     def post(self, request, society_id):
