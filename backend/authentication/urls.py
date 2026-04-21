@@ -39,7 +39,7 @@ urlpatterns = [
     path("my-societies/", MySocietiesView.as_view(), name="my-societies"),
     #path('societies/', SocietyListSearchView.as_view(), name='society-list-create'),
     path('societies/<int:society_id>/events/', SocietyEventView.as_view(), name='society-events'),
-    path("societies/<int:society_id>/is-member/", IsMemberView.as_view(), name="society-is-member",),
+
     # Admin event management
     path('events/<int:id>/delete/', DeleteEventView.as_view(), name='delete-event'),
     path('events/', SocietyEventView.as_view(), name='event-list'),
