@@ -52,8 +52,19 @@ class ApiService {
       Uri.parse("$baseUrl/society/$id/events/"),
       headers: headers,
     );
-    return jsonDecode(response.body);
+
+    print("STATUS: ${response.statusCode}"); // helpful for debugging
+    print("BODY: ${response.body}");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as List;
+    } else {
+      throw Exception(
+        "Failed to load events: ${response.statusCode} ${response.body}",
+      );
+    }
   }
+  //add debugging
 
   static Future<Map<String, dynamic>> getEventCount(int id) async {
     final response = await http.get(
