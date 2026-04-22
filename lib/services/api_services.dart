@@ -49,7 +49,7 @@ class ApiService {
 
   static Future<List> getSocietyEvents(int id) async {
     final response = await http.get(
-      Uri.parse("$baseUrl/society/$id/events/"),
+      Uri.parse("$baseUrl/societies/$id/events/"),
       headers: headers,
     );
 
