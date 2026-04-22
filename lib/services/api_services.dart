@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = "http://10.128.4.102:8000/api";
+  static const String baseUrl = "http://10.0.2.2:8000/api";
 
   static String? authToken;
   static int? societyId; // Admin's society ID
@@ -16,21 +16,21 @@ class ApiService {
 
   // -------- PUBLIC ENDPOINTS --------
 
-static Future<List> getSocieties() async {
-  final response = await http.get(
-    Uri.parse("$baseUrl/societies/"),
-    headers: headers,
-  );
+  static Future<List> getSocieties() async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/societies/"),
+      headers: headers,
+    );
 
-  print("STATUS: ${response.statusCode}");
-  print("BODY: ${response.body}");
+    print("STATUS: ${response.statusCode}");
+    print("BODY: ${response.body}");
 
-  if (response.statusCode == 200) {
-    return jsonDecode(response.body);
-  } else {
-    throw Exception("API Error: ${response.statusCode}");
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception("API Error: ${response.statusCode}");
+    }
   }
-}
 
   static Future<List> getMySocieties() async {
     final response = await http.get(
@@ -76,5 +76,3 @@ static Future<List> getSocieties() async {
     );
   }
 }
-
-
