@@ -19,20 +19,35 @@ class _MyEventsPageState extends State<MyEventsPage> {
 
   Future<List> _loadMyEvents() async {
     try {
-      // Fetch the societies the user has joined
       final societies = await ApiService.getMySocieties();
-
-      // Fetch events for each society
       List events = [];
       for (var society in societies) {
         final societyEvents = await ApiService.getSocietyEvents(society['id']);
         events.addAll(societyEvents);
       }
-
       return events;
     } catch (e) {
       throw Exception("Failed to load events: $e");
     }
+  }
+
+  String _monthName(String m) {
+    const months = [
+      '',
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC',
+    ];
+    return months[int.tryParse(m) ?? 0];
   }
 
   @override
@@ -71,10 +86,12 @@ class _MyEventsPageState extends State<MyEventsPage> {
             itemCount: events.length,
             itemBuilder: (context, index) {
               final event = events[index] as Map<String, dynamic>;
-              final day = event['date'].split('-')[2]; // Extract day from date
-              final month = event['date'].split(
-                '-',
-              )[1]; // Extract month from date
+              final startTime = event['start_time'] as String? ?? '';
+              final parts = startTime.isNotEmpty
+                  ? startTime.split('T')[0].split('-')
+                  : ['??', '??', '??'];
+              final day = parts[2];
+              final month = _monthName(parts[1]);
               final eventName = event['title'] as String? ?? '';
 
               return EventCard(day: day, month: month, eventName: eventName);
