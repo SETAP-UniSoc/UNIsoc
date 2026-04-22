@@ -54,7 +54,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     await Future.wait([
       loadSociety(),
       loadEvents(),
-       if (!widget.isAdmin) checkMembership(),
+      if (!widget.isAdmin) checkMembership(),
     ]);
     setState(() => isLoading = false);
   }
