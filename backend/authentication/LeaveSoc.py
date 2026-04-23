@@ -1,3 +1,4 @@
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -9,7 +10,6 @@ class LeaveSocietyView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, society_id):
-
         user = request.user
 
         try:
@@ -17,19 +17,20 @@ class LeaveSocietyView(APIView):
         except Society.DoesNotExist:
             return Response(
                 {"error": "Society not found"},
-                status=status.HTTP_404_NOT_FOUND
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         try:
             membership = Membership.objects.get(
                 user=user,
                 society=society,
-                left_at__isnull=True   # Only active membership
+                left_at__isnull=True
+                
             )
         except Membership.DoesNotExist:
             return Response(
                 {"error": "You are not an active member"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         membership.left_at = timezone.now()
@@ -37,5 +38,8 @@ class LeaveSocietyView(APIView):
 
         return Response(
             {"message": "Successfully left society"},
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
+    
+
+    #smth
