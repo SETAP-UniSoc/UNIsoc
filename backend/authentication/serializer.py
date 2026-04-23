@@ -1,3 +1,6 @@
+"""
+Serializers for converting UNIsoc models to JSON.
+"""
 
 from rest_framework import serializers
 from .models import NotificationPreference, Society, User
