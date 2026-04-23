@@ -20,17 +20,18 @@ class JoinSocietyView(APIView):
             )
 
         membership, created = Membership.objects.get_or_create(
-            user=user,
-            society=society
-        )
+        user=user,
+        society=society
+    )
 
         if not created:
-            return Response(
-                {"message": "Already joined"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        return Response(
-            {"message": "Successfully joined"},
-            status=status.HTTP_201_CREATED
-        )
+            if membership.left_at is None:
+                return Response({"message": "Already joined"}, status=200)
+            else:
+        # Rejoining
+                membership.left_at = None
+                membership.joined_at = timezone.now()
+                membership.save()
+                return Response({"message": "Rejoined successfully"}, status=200)
+    
+    #hi
