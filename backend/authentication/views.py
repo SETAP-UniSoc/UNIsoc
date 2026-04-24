@@ -1566,4 +1566,24 @@ class AnalyticsView(APIView):
             "event_attendance": list(events_stats)
         })
 
-        
+class IsMemberView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, society_id):
+        user = request.user
+
+        try:
+            society = Society.objects.get(id=society_id)
+        except Society.DoesNotExist:
+            return Response(
+                {"error": "Society not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        is_member = Membership.objects.filter(
+            user=user,
+            society=society,
+            left_at__isnull=True
+        ).exists()
+
+        return Response({"is_member": is_member}, status=status.HTTP_200_OK)
