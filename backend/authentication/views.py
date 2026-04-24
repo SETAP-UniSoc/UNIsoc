@@ -653,68 +653,6 @@ class DeleteEventView(generics.DestroyAPIView):
 
     serializer_class = SocietySerializer
 
-# class CreateEventView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-
-#         if request.user.role != "admin":
-#             return Response({"error": "Admins only"}, status=403)
-
-#         try:
-#             society = Society.objects.get(admin=request.user)
-#         except Society.DoesNotExist:
-#             return Response({"error": "No society found"}, status=404)
-
-#         data = request.data.copy()
-#         data["society"] = society.id
-#         data["created_by"] = request.user.id
-
-#         serializer = EventSerializer(data=data)
-
-#         if serializer.is_valid():
-#             event = serializer.save()   # capture the event
-
-#             send_event_confirmation(request.user, event)
-
-#             return Response(serializer.data, status=201)
-
-#         return Response(serializer.errors, status=400)
-
-
-# class CreateEventView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-
-#         if request.user.role != "admin":
-#             return Response({"error": "Admins only"}, status=403)
-
-#         try:
-#             society = Society.objects.get(admin=request.user)
-#         except Society.DoesNotExist:
-#             return Response({"error": "No society found"}, status=404)
-
-#         data = request.data.copy()
-
-#         # 🔥 FIX capacity issue
-#         if data.get("capacity_limit") in [0, "0", ""]:
-#             data["capacity_limit"] = None
-
-#         serializer = EventSerializer(data=data)
-
-#         if serializer.is_valid():
-#             event = serializer.save(
-#                 society=society,            # ✅ FIXES NULL ERROR
-#                 created_by=request.user     # ✅ GOOD PRACTICE
-#             )
-
-#             send_event_confirmation(request.user, event)
-
-#             return Response(serializer.data, status=201)
-
-#         print(serializer.errors)  # DEBUG
-#         return Response(serializer.errors, status=400)
     
 class SocietyEventView(APIView):
     """API view to retrieve or create events for a specific society.
