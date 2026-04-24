@@ -688,7 +688,16 @@ Text(
     if (data.isEmpty) {
       return const Center(child: Text("No data yet"));
     }
+  /////////////////////
+     double maxY = data.reduce((a, b) => a > b ? a : b);
+  double minY = data.reduce((a, b) => a < b ? a : b);
 
+  if (maxY == minY) {
+    maxY += 1;
+  }
+
+  maxY = maxY * 1.2;
+///////////////////////////
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: LineChart(
@@ -696,7 +705,8 @@ Text(
           minX: 0,
           maxX: (data.length - 1).toDouble(),
           minY: 0,
-          maxY: data.reduce((a, b) => a > b ? a : b) * 1.2,
+          //maxY: data.reduce((a, b) => a > b ? a : b) * 1.2,
+          maxY: maxY,
           gridData: const FlGridData(show: false),
           borderData: FlBorderData(show: false),
           titlesData: const FlTitlesData(
@@ -726,11 +736,16 @@ Text(
                   ],
                 ),
               ),
-              spots: List.generate(
-                data.length,
-                (i) => FlSpot(i.toDouble(), data[i]),
+              // spots: List.generate(
+              //   data.length,
+              //   (i) => FlSpot(i.toDouble(), data[i]),
+              spots: data.asMap().entries.map((entry) {
+  final index = entry.key;
+  final value = entry.value;
+  return FlSpot(index.toDouble(), value);
+}).toList(),
               ),
-            ),
+            
           ],
         ),
       ),
