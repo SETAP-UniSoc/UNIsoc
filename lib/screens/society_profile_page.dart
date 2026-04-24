@@ -33,8 +33,8 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   @override
   void initState() {
     super.initState();
-     print("🔍 SocietyProfilePage INIT - isAdmin: ${widget.isAdmin}, societyId: ${widget.societyId}");
-     print("🔍 ApiService.societyId: ${ApiService.societyId}");
+     print(" SocietyProfilePage INIT - isAdmin: ${widget.isAdmin}, societyId: ${widget.societyId}");
+     print(" ApiService.societyId: ${ApiService.societyId}");
     loadData();
     if (!widget.isAdmin) startPolling();
   }
@@ -157,15 +157,13 @@ Future<void> toggleJoinSociety() async {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       
-      if (data["message"] == "Already joined") {
-        setState(() => isMember = true);
-      } else if (data["message"] == "Successfully joined society") {
-        setState(() => isMember = true);
-      } else if (data["message"] == "Successfully left society") {
-        setState(() => isMember = false);
-      } else {
-        setState(() => isMember = !isMember);
-      }
+      if (data["message"] == "Successfully joined society") {
+  setState(() => isMember = true);
+  ApiService.joinedSocieties.add(widget.societyId);
+} else if (data["message"] == "Successfully left society") {
+  setState(() => isMember = false);
+  ApiService.joinedSocieties.remove(widget.societyId);
+}
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(data["message"] ?? "Success")),
