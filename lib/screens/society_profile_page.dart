@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:unisoc/services/api_services.dart';
 import 'package:unisoc/screens/admin/admin_bottom_nav.dart';
+import 'package:unisoc/screens/admin/admin_events_page.dart';
+import 'package:unisoc/screens/my_events_page.dart';
 
 //society profile page used by both users and admins — shows society details and upcoming events. Admins can also edit the description
 class SocietyProfilePage extends StatefulWidget {
@@ -106,6 +108,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
 
           events = upcoming;
         });
+        print("Loaded ${events.length} events");
       }
     } catch (e) {
       print("Error loading events: $e");
@@ -184,8 +187,8 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
           SnackBar(
             content: Text(
               isMember
-                  ? "Successfully joined society 🎉"
-                  : "Successfully left society",
+                  ? "Successfully left society"
+                  :  "Successfully joined society 🎉",
             ),
           ),
         );
@@ -310,69 +313,159 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                             hintText: "Write a description for your society...",
                           ),
                         )
-                      : Text(
-                          societyData["description"]?.isNotEmpty == true
-                              ? societyData["description"]
-                              : widget.isAdmin
-                              ? "No description yet — tap edit to add one."
-                              : "No description yet.",
-                          style: const TextStyle(
-                            fontSize: 15,
-                            color: Colors.black87,
-                            height: 1.5,
-                          ),
-                        ),
+                      : SizedBox(
+  height: 320,
+  child: ListView.builder(
+    scrollDirection: Axis.horizontal,
+    itemCount: events.length,
+    itemBuilder: (context, index) {
+      final event = events[index];
+      final startTime = DateTime.parse(event["start_time"]).toLocal();
 
-                  const SizedBox(height: 24),
+      // return Container(
+      //   width: 300,
+      //   margin: const EdgeInsets.only(right: 16),
+      //   child: Card(
 
-                  // upcoming events section
-                  const Text(
-                    "Upcoming Events",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+      // elevation: 0,
+      // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      // child: Column(
+      //   crossAxisAlignment: CrossAxisAlignment.start,
+      //   children: [
+
+      return GestureDetector(
+        onTap: widget.isAdmin
+            ? null
+            : () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => MyEventsPage()
+                      
+                    
                   ),
-                  const SizedBox(height: 12),
-
-                  events.isEmpty
-                      ? const Text(
-                          "No upcoming events",
-                          style: TextStyle(color: Colors.grey),
-                        )
-                      : ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: events.length,
-                          itemBuilder: (context, index) {
-                            final event = events[index];
-                            final startTime = DateTime.parse(
-                              event["start_time"],
-                            ).toLocal();
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: ListTile(
-                                leading: const Icon(
-                                  Icons.event,
-                                  color: Colors.blue,
-                                ),
-                                title: Text(event["title"]),
-                                subtitle: Text(
-                                  "${startTime.day}/${startTime.month}/${startTime.year} — ${event["location"] ?? 'No location'}",
-                                ),
-                                trailing: event["capacity_limit"] != null
-                                    ? Text(
-                                        "Cap: ${event["capacity_limit"]}",
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                            );
-                          },
+                );
+              },
+        child: Container(
+          width: 300,
+          margin: const EdgeInsets.only(right: 16),
+          child: Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        event["title"],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.calendar_today,
+                              size: 14, color: Colors.white70),
+                          const SizedBox(width: 6),
+                          Text(
+                            "${startTime.day}/${startTime.month}/${startTime.year}",
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 13),
+                          ),
+                          const SizedBox(width: 16),
+                          const Icon(Icons.access_time,
+                              size: 14, color: Colors.white70),
+                          const SizedBox(width: 6),
+                          Text(
+                            "${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}",
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        event["description"] ?? "No description",
+                        style: const TextStyle(
+                            fontSize: 14, color: Color(0xFF4B5563)),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on,
+                              size: 16, color: Color(0xFF9CA3AF)),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              event["location"] ?? "No location",
+                              style: const TextStyle(
+                                  fontSize: 13, color: Color(0xFF6B7280)),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (event["capacity_limit"] != null) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.people,
+                                size: 16, color: Color(0xFF9CA3AF)),
+                            const SizedBox(width: 6),
+                            Text(
+                              "Capacity: ${event["capacity_limit"]}",
+                              style: const TextStyle(
+                                  fontSize: 13, color: Color(0xFF6B7280)),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  ),
+),
+                  
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
