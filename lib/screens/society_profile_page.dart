@@ -56,7 +56,6 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     await Future.wait([
       loadSociety(),
       loadEvents(),
-      if (!widget.isAdmin) checkMembership(),
     ]);
     setState(() => isLoading = false);
   }
@@ -109,23 +108,7 @@ events = upcoming;
     }
   }
 
-  Future<void> checkMembership() async {
-    try {
-      final response = await http.get(
-        Uri.parse(
-          "${ApiService.baseUrl}/societies/${widget.societyId}/check-membership/",
-        ),
-        headers: ApiService.headers,
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() => isMember = data["check-membership"] ?? false);
-      }
-    } catch (e) {
-      print("Error checking membership: $e");
-    }
-  }
-
+ 
   // Admin saves description - PERSISTS in database!
   Future<void> saveDescription() async {
     try {
@@ -158,33 +141,40 @@ events = upcoming;
     }
   }
 
-  Future<void> toggleJoinSociety() async {
-    final endpoint = isMember
-        ? "/societies/${widget.societyId}/leave/"
-        : "/societies/${widget.societyId}/join/";
 
-    try {
-      final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}$endpoint"),
-        headers: ApiService.headers,
-      );
-      if (response.statusCode == 201 || response.statusCode == 200) {
+Future<void> toggleJoinSociety() async {
+  final endpoint = isMember
+      ? "/societies/${widget.societyId}/leave/"
+      : "/societies/${widget.societyId}/join/";
+
+  try {
+    final response = await http.post(
+      Uri.parse("${ApiService.baseUrl}$endpoint"),
+      headers: ApiService.headers,
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      
+      if (data["message"] == "Already joined") {
+        setState(() => isMember = true);
+      } else if (data["message"] == "Successfully joined society") {
+        setState(() => isMember = true);
+      } else if (data["message"] == "Successfully left society") {
+        setState(() => isMember = false);
+      } else {
         setState(() => isMember = !isMember);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isMember
-                  ? "Successfully left society"
-                  :  "Successfully joined society 🎉",
-            ),
-          ),
-        );
       }
-    } catch (e) {
-      print("Error toggling membership: $e");
-    }
-  }
 
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(data["message"] ?? "Success")),
+      );
+    }
+  } catch (e) {
+    print("Error toggling membership: $e");
+  }
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
