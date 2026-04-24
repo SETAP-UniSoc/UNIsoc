@@ -113,13 +113,13 @@ events = upcoming;
     try {
       final response = await http.get(
         Uri.parse(
-          "${ApiService.baseUrl}/societies/${widget.societyId}/is-member/",
+          "${ApiService.baseUrl}/societies/${widget.societyId}/check-membership/",
         ),
         headers: ApiService.headers,
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        setState(() => isMember = data["is_member"] ?? false);
+        setState(() => isMember = data["check-membership"] ?? false);
       }
     } catch (e) {
       print("Error checking membership: $e");
@@ -139,7 +139,7 @@ events = upcoming;
         if (response.statusCode == 200) {
           setState(() => isEditing = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Description saved ✅")),
+            const SnackBar(content: Text("Description saved ")),
           );
           loadSociety(); // Refresh to show updated data
         } else {
@@ -151,7 +151,7 @@ events = upcoming;
         setState(() => isEditing = false);
       }
     } catch (e) {
-      print("❌ Error saving description: $e");
+      print(" Error saving description: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error saving description")),
       );
