@@ -462,8 +462,7 @@
 ###################################################################################
 
 
-from multiprocessing.managers import Token
-
+from rest_framework.authtoken.models import Token
 from flask import request
 from rest_framework import generics
 from .models import EventAttendance, User, Event, Society
