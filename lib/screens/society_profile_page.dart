@@ -124,7 +124,9 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
 
     try {
       final response = await http.get(
-        Uri.parse(url),
+        Uri.parse(
+          "${ApiService.baseUrl}/societies/${widget.societyId}/check-membership/",
+        ),
         headers: ApiService.headers,
       );
       print("DEBUG checkMembership status: ${response.statusCode}");
@@ -132,10 +134,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        setState(() => isMember = data["is_member"] ?? false);
-        print("DEBUG isMember set to: $isMember");
-      } else {
-        print("Failed to check membership: ${response.statusCode}");
+        setState(() => isMember = data["check-membership"] ?? false);
       }
     } catch (e) {
       print("Error checking membership: $e");
@@ -145,12 +144,25 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   // admin saves description
   Future<void> saveDescription() async {
     try {
-      final response = await http.patch(
-        Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/"),
-        headers: ApiService.headers,
-        body: jsonEncode({"description": descController.text}),
-      );
-      if (response.statusCode == 200) {
+      if (descController.text != societyData["description"]) {
+        final response = await http.patch(
+          Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/"),
+          headers: ApiService.headers,
+          body: jsonEncode({"description": descController.text}),
+        );
+        
+        if (response.statusCode == 200) {
+          setState(() => isEditing = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Description saved ")),
+          );
+          loadSociety(); // Refresh to show updated data
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Failed to save: ${response.statusCode}")),
+          );
+        }
+      } else {
         setState(() => isEditing = false);
         ScaffoldMessenger.of(
           context,
@@ -158,7 +170,10 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         loadSociety();
       }
     } catch (e) {
-      print("Error saving description: $e");
+      print(" Error saving description: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error saving description")),
+      );
     }
   }
 
