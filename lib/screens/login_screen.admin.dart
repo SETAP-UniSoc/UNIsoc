@@ -20,6 +20,9 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  List societies = [];
+  String? selectedSociety;
+
   bool isLoading = false;
 
   Future<void> loginUser() async {
@@ -29,7 +32,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     final email = emailController.text.trim();
     final password = passwordController.text;
 
-    // ✅ Basic frontend validation only
+  
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Email and Password are required")),

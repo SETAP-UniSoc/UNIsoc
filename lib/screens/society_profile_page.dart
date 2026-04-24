@@ -56,7 +56,6 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     await Future.wait([
       loadSociety(),
       loadEvents(),
-       if (!widget.isAdmin) checkMembership(),
     ]);
     setState(() => isLoading = false);
   }
@@ -115,42 +114,29 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     }
   }
 
-  // check if user is already a member
-  Future<void> checkMembership() async {
-    final url =
-        "${ApiService.baseUrl}/societies/${widget.societyId}/is-member/";
-    print("DEBUG checkMembership URL: $url");
-    print("DEBUG checkMembership headers: ${ApiService.headers}");
-
-    try {
-      final response = await http.get(
-        Uri.parse(url),
-        headers: ApiService.headers,
-      );
-      print("DEBUG checkMembership status: ${response.statusCode}");
-      print("DEBUG checkMembership body: ${response.body}");
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() => isMember = data["is_member"] ?? false);
-        print("DEBUG isMember set to: $isMember");
-      } else {
-        print("Failed to check membership: ${response.statusCode}");
-      }
-    } catch (e) {
-      print("Error checking membership: $e");
-    }
-  }
-
-  // admin saves description
+ 
+  // Admin saves description - PERSISTS in database!
   Future<void> saveDescription() async {
     try {
-      final response = await http.patch(
-        Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/"),
-        headers: ApiService.headers,
-        body: jsonEncode({"description": descController.text}),
-      );
-      if (response.statusCode == 200) {
+      if (descController.text != societyData["description"]) {
+        final response = await http.patch(
+          Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/"),
+          headers: ApiService.headers,
+          body: jsonEncode({"description": descController.text}),
+        );
+        
+        if (response.statusCode == 200) {
+          setState(() => isEditing = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Description saved ")),
+          );
+          loadSociety(); // Refresh to show updated data
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Failed to save: ${response.statusCode}")),
+          );
+        }
+      } else {
         setState(() => isEditing = false);
         ScaffoldMessenger.of(
           context,
@@ -158,58 +144,47 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         loadSociety();
       }
     } catch (e) {
-      print("Error saving description: $e");
-    }
-  }
-
-  Future<void> toggleJoinSociety() async {
-    final endpoint = isMember
-        ? "/society/${widget.societyId}/leave/"
-        : "/society/${widget.societyId}/join/";
-    final url = "${ApiService.baseUrl}$endpoint";
-
-    print("DEBUG toggleJoinSociety URL: $url");
-    print("DEBUG toggleJoinSociety headers: ${ApiService.headers}");
-
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: ApiService.headers,
+      print(" Error saving description: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error saving description")),
       );
-      print("DEBUG toggleJoinSociety status: ${response.statusCode}");
-      print("DEBUG toggleJoinSociety body: ${response.body}");
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        // Refresh from backend instead of only flipping locally
-        await checkMembership();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isMember
-                  ? "Successfully left society"
-                  :  "Successfully joined society 🎉",
-            ),
-          ),
-        );
-      } else {
-        String msg = "Error: ${response.statusCode}";
-        try {
-          final data = jsonDecode(response.body);
-          msg = (data['error'] ?? data['message'] ?? msg).toString();
-        } catch (_) {}
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(msg)));
-      }
-    } catch (e) {
-      print("Error toggling membership: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 
+
+Future<void> toggleJoinSociety() async {
+  final endpoint = isMember
+      ? "/societies/${widget.societyId}/leave/"
+      : "/societies/${widget.societyId}/join/";
+
+  try {
+    final response = await http.post(
+      Uri.parse("${ApiService.baseUrl}$endpoint"),
+      headers: ApiService.headers,
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      
+      if (data["message"] == "Already joined") {
+        setState(() => isMember = true);
+      } else if (data["message"] == "Successfully joined society") {
+        setState(() => isMember = true);
+      } else if (data["message"] == "Successfully left society") {
+        setState(() => isMember = false);
+      } else {
+        setState(() => isMember = !isMember);
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(data["message"] ?? "Success")),
+      );
+    }
+  } catch (e) {
+    print("Error toggling membership: $e");
+  }
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
