@@ -56,10 +56,6 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     await Future.wait([
       loadSociety(),
       loadEvents(),
-<<<<<<< HEAD
-       if (!widget.isAdmin) checkMembership(),
-=======
->>>>>>> Maya-up2266552
     ]);
     setState(() => isLoading = false);
   }
@@ -118,38 +114,8 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     }
   }
 
-<<<<<<< HEAD
-  // check if user is already a member
-  Future<void> checkMembership() async {
-    final url =
-        "${ApiService.baseUrl}/societies/${widget.societyId}/is-member/";
-    print("DEBUG checkMembership URL: $url");
-    print("DEBUG checkMembership headers: ${ApiService.headers}");
-
-    try {
-      final response = await http.get(
-        Uri.parse(
-          "${ApiService.baseUrl}/societies/${widget.societyId}/check-membership/",
-        ),
-        headers: ApiService.headers,
-      );
-      print("DEBUG checkMembership status: ${response.statusCode}");
-      print("DEBUG checkMembership body: ${response.body}");
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() => isMember = data["check-membership"] ?? false);
-      }
-    } catch (e) {
-      print("Error checking membership: $e");
-    }
-  }
-
-  // admin saves description
-=======
  
   // Admin saves description - PERSISTS in database!
->>>>>>> Maya-up2266552
   Future<void> saveDescription() async {
     try {
       if (descController.text != societyData["description"]) {
@@ -185,55 +151,6 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     }
   }
 
-<<<<<<< HEAD
-  Future<void> toggleJoinSociety() async {
-    final endpoint = isMember
-        ? "/society/${widget.societyId}/leave/"
-        : "/society/${widget.societyId}/join/";
-    final url = "${ApiService.baseUrl}$endpoint";
-
-    print("DEBUG toggleJoinSociety URL: $url");
-    print("DEBUG toggleJoinSociety headers: ${ApiService.headers}");
-
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: ApiService.headers,
-      );
-      print("DEBUG toggleJoinSociety status: ${response.statusCode}");
-      print("DEBUG toggleJoinSociety body: ${response.body}");
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        // Refresh from backend instead of only flipping locally
-        await checkMembership();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isMember
-                  ? "Successfully left society"
-                  :  "Successfully joined society 🎉",
-            ),
-          ),
-        );
-      } else {
-        String msg = "Error: ${response.statusCode}";
-        try {
-          final data = jsonDecode(response.body);
-          msg = (data['error'] ?? data['message'] ?? msg).toString();
-        } catch (_) {}
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(msg)));
-      }
-    } catch (e) {
-      print("Error toggling membership: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
-    }
-  }
-=======
 
 Future<void> toggleJoinSociety() async {
   final endpoint = isMember
@@ -259,7 +176,6 @@ Future<void> toggleJoinSociety() async {
       } else {
         setState(() => isMember = !isMember);
       }
->>>>>>> Maya-up2266552
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(data["message"] ?? "Success")),
