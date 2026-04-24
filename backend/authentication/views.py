@@ -462,7 +462,7 @@
 ###################################################################################
 
 
-
+from flask import request
 from rest_framework import generics
 from .models import User, Event, Society
 from .serializer import UserSerializer
@@ -475,12 +475,51 @@ from .serializer import EventSerializer
 from .import serializer
 from django.utils.timezone import now
 from django.db.models import Count, Q
-
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
 
 from .models import NotificationPreference, Society, Membership, Event
+
+
+
+class MySocietiesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Debug: Log the user making the request
+            print(f"Fetching societies for user: {request.user}")
+
+            # Fetch societies the user has joined using the Membership model
+            memberships = Membership.objects.filter(user=request.user, left_at__isnull=True)
+            societies = [membership.society for membership in memberships]
+
+            # Debug: Log the societies fetched
+            print(f"Societies fetched: {societies}")
+
+            data = [
+                {
+                    "id": s.id,
+                    "name": s.name,
+                    "description": s.description,
+                    "member_count": s.member_count,
+                }
+                for s in societies
+            ]
+
+            return Response(data)
+
+        except Exception as e:
+             # Debug: Log the error
+            print(f"Error in MySocietiesView: {e}")
+            return Response({"error": str(e)}, status=500)
+
+
 
 
 class UserListView(generics.ListAPIView):
@@ -587,6 +626,7 @@ class AddEventView(generics.CreateAPIView):
             created_by=self.request.user,
             society=society
         )
+    serializer_class = SocietySerializer
 
 
 class DeleteEventView(generics.DestroyAPIView):
@@ -608,6 +648,71 @@ class DeleteEventView(generics.DestroyAPIView):
         return Event.objects.filter(created_by=self.request.user)
 
 
+    serializer_class = SocietySerializer
+
+# class CreateEventView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+
+#         if request.user.role != "admin":
+#             return Response({"error": "Admins only"}, status=403)
+
+#         try:
+#             society = Society.objects.get(admin=request.user)
+#         except Society.DoesNotExist:
+#             return Response({"error": "No society found"}, status=404)
+
+#         data = request.data.copy()
+#         data["society"] = society.id
+#         data["created_by"] = request.user.id
+
+#         serializer = EventSerializer(data=data)
+
+#         if serializer.is_valid():
+#             event = serializer.save()   # capture the event
+
+#             send_event_confirmation(request.user, event)
+
+#             return Response(serializer.data, status=201)
+
+#         return Response(serializer.errors, status=400)
+
+
+# class CreateEventView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+
+#         if request.user.role != "admin":
+#             return Response({"error": "Admins only"}, status=403)
+
+#         try:
+#             society = Society.objects.get(admin=request.user)
+#         except Society.DoesNotExist:
+#             return Response({"error": "No society found"}, status=404)
+
+#         data = request.data.copy()
+
+#         # 🔥 FIX capacity issue
+#         if data.get("capacity_limit") in [0, "0", ""]:
+#             data["capacity_limit"] = None
+
+#         serializer = EventSerializer(data=data)
+
+#         if serializer.is_valid():
+#             event = serializer.save(
+#                 society=society,            # ✅ FIXES NULL ERROR
+#                 created_by=request.user     # ✅ GOOD PRACTICE
+#             )
+
+#             send_event_confirmation(request.user, event)
+
+#             return Response(serializer.data, status=201)
+
+#         print(serializer.errors)  # DEBUG
+#         return Response(serializer.errors, status=400)
+    
 class SocietyEventView(APIView):
     """API view to retrieve or create events for a specific society.
 
@@ -620,7 +725,15 @@ class SocietyEventView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, society_id):
+        """Return all events for the specified society.
 
+        :param request: The HTTP request.
+        :type request: Request
+        :param society_id: The ID of the society to fetch events for.
+        :type society_id: int
+        :return: Serialized list of events, or 404 if society not found.
+        :rtype: Response
+        """
         try:
             print(f"Fetching society with ID: {society_id}")
             society = Society.objects.get(id=society_id)
