@@ -53,12 +53,14 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   }
 
   Future<void> loadData() async {
-    await Future.wait([
-      loadSociety(),
-      loadEvents(),
-    ]);
-    setState(() => isLoading = false);
-  }
+  await Future.wait([
+    loadSociety(),
+    loadEvents(),
+    if (!widget.isAdmin) checkMembership(),
+  ]);
+
+  setState(() => isLoading = false); // ALSO MISSING
+}
 
   Future<void> loadSociety() async {
     try {
@@ -84,7 +86,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   Future<void> loadEvents() async {
     try {
       final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
+        Uri.parse("${ApiService.baseUrl}/society/${widget.societyId}/events/"),
         headers: ApiService.headers,
       );
       if (response.statusCode == 200) {
@@ -141,6 +143,25 @@ events = upcoming;
     }
   }
 
+  Future<void> checkMembership() async {
+  try {
+    final response = await http.get(
+      Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/check-membership/"),
+      headers: ApiService.headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      setState(() {
+        isMember = data["is_member"] ?? false;
+      });
+    }
+  } catch (e) {
+    print("Error checking membership: $e");
+  }
+}
+
 
 Future<void> toggleJoinSociety() async {
   final endpoint = isMember
@@ -156,14 +177,9 @@ Future<void> toggleJoinSociety() async {
     final data = jsonDecode(response.body);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      
-      if (data["message"] == "Successfully joined society") {
-  setState(() => isMember = true);
-  ApiService.joinedSocieties.add(widget.societyId);
-} else if (data["message"] == "Successfully left society") {
-  setState(() => isMember = false);
-  ApiService.joinedSocieties.remove(widget.societyId);
-}
+
+      // ALWAYS refresh from backend (PERMANENT FIX)
+      await checkMembership();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(data["message"] ?? "Success")),
@@ -173,6 +189,8 @@ Future<void> toggleJoinSociety() async {
     print("Error toggling membership: $e");
   }
 }
+
+     
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -395,7 +413,9 @@ Future<void> toggleJoinSociety() async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => MyEventsPage()
+                   builder: (_) => MyEventsPage(
+                    societyId: widget.societyId,
+                    )
                       
                     
                   ),
