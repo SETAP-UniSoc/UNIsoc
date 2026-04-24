@@ -469,10 +469,11 @@ from rest_framework import generics
 from .models import EventAttendance, User, Event, Society
 from .serializer import UserSerializer
 from .serializer import SocietySerializer
-from rest_framework.views import APIView, PermissionDenied
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 from .serializer import EventSerializer
 from .import serializer
 from django.utils.timezone import now
@@ -487,42 +488,6 @@ from datetime import timedelta
 import re
 
 from .models import NotificationPreference, Society, Membership, Event
-
-
-
-class MySocietiesView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        try:
-            # Debug: Log the user making the request
-            print(f"Fetching societies for user: {request.user}")
-
-            # Fetch societies the user has joined using the Membership model
-            memberships = Membership.objects.filter(user=request.user, left_at__isnull=True)
-            societies = [membership.society for membership in memberships]
-
-            # Debug: Log the societies fetched
-            print(f"Societies fetched: {societies}")
-
-            data = [
-                {
-                    "id": s.id,
-                    "name": s.name,
-                    "description": s.description,
-                    "member_count": s.member_count,
-                }
-                for s in societies
-            ]
-
-            return Response(data)
-
-        except Exception as e:
-             # Debug: Log the error
-            print(f"Error in MySocietiesView: {e}")
-            return Response({"error": str(e)}, status=500)
-
-
 
 
 class UserListView(generics.ListAPIView):
@@ -629,7 +594,6 @@ class AddEventView(generics.CreateAPIView):
             created_by=self.request.user,
             society=society
         )
-    serializer_class = SocietySerializer
 
 
 class DeleteEventView(generics.DestroyAPIView):
@@ -651,9 +615,6 @@ class DeleteEventView(generics.DestroyAPIView):
         return Event.objects.filter(created_by=self.request.user)
 
 
-    serializer_class = SocietySerializer
-
-    
 class SocietyEventView(APIView):
     """API view to retrieve or create events for a specific society.
 
@@ -676,19 +637,12 @@ class SocietyEventView(APIView):
         :rtype: Response
         """
         try:
-            print(f"Fetching society with ID: {society_id}")
             society = Society.objects.get(id=society_id)
         except Society.DoesNotExist:
-            print(f"Society with ID {society_id} not found")
             return Response({"error": "Society not found"}, status=404)
 
-        print(f"Fetching events for society: {society.name}")
         events = Event.objects.filter(society=society)
-        print(f"Events found: {events.count()}")
-
         serializer = EventSerializer(events, many=True)
-        print(f"Serialized events: {serializer.data}")
-
         return Response(serializer.data)
 
     def post(self, request, society_id):
@@ -936,27 +890,6 @@ class User_ProfileView(APIView):
         user.name = new_name
         user.save()
         return Response({"message": "Name changed successfully"})
-    
-# def send_event_confirmation(user, event):
-#     if not NotificationPreference.objects.filter(
-#         user=user,
-#         society=event.society,
-#         notify_new_events=True
-#     ).exists():
-#         return
-
-#     send_mail(
-#         subject="Event Created Successfully",
-#         message=f"""
-# Your event "{event.title}" has been created successfully.
-
-# Date: {event.start_time}
-# Location: {event.location}
-# """,
-#         from_email=None,
-#         recipient_list=[user.email],
-#         fail_silently=False,
-#     )
 
 
 class NotificationView(APIView):
@@ -1504,125 +1437,4 @@ class AnalyticsView(APIView):
             "event_attendance": list(events_stats)
         })
 
-class IsMemberView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, society_id):
-        user = request.user
-
-        try:
-            society = Society.objects.get(id=society_id)
-        except Society.DoesNotExist:
-            return Response(
-                {"error": "Society not found"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        is_member = Membership.objects.filter(
-            user=user,
-            society=society,
-            left_at__isnull=True
-        ).exists()
-
-        return Response({"is_member": is_member}, status=status.HTTP_200_OK)
-    
-class EventListCreateView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, society_id):   #gets all eventts for socities doesnt include canceled and removed events 
-        events = Event.objects.filter(
-            society_id=society_id
-        ).exclude(status='cancelled')
         
-        data = [{
-            "id": e.id,
-            "title": e.title,
-            "description": e.description,
-            "location": e.location,
-            "start_time": e.start_time,
-            "end_time": e.end_time,
-            "capacity_limit": e.capacity_limit,
-            "status": e.status,
-            "attendee_count": e.rsvps.filter(rsvp_status='attending').count()
-        } for e in events]
-
-        return Response(data)
-
-    def post(self, request, society_id):
-        if request.user.role != 'admin':
-            return Response(
-                {"error": "Admin only"},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        try:
-            society = Society.objects.get(id=society_id)
-        except Society.DoesNotExist:
-            return Response({"error": "Society not found"}, status=404)
-
-        data = request.data
-
-        event = Event.objects.create(
-            society=society,
-            title=data.get("title"),
-            description=data.get("description", ""),
-            location=data.get("location", ""),
-            start_time=data.get("start_time"),
-            end_time=data.get("end_time"),
-            capacity_limit=data.get("capacity_limit"),
-            created_by=request.user,
-        )
-
-        return Response({
-            "id": event.id,
-            "title": event.title,
-            "message": "Event created successfully"
-        }, status=status.HTTP_201_CREATED)
-
-
-class EventDetailView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, request, event_id):
-        if request.user.role != 'admin':
-            return Response(
-                {"error": "Admin only"},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        try:
-            event = Event.objects.get(id=event_id)
-        except Event.DoesNotExist:
-            return Response({"error": "Event not found"}, status=404)
-
-        event.status = 'cancelled'
-        event.save()
-
-        return Response({"message": "Event removed"}, status=200)
-
-
-class EventEditView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def patch(self, request, event_id):
-        if request.user.role != 'admin':
-            return Response({"error": "Admin only"}, status=403)
-
-        try:
-            event = Event.objects.get(id=event_id)
-        except Event.DoesNotExist:
-            return Response({"error": "Event not found"}, status=404)
-
-        event.title = request.data.get("title", event.title)
-        event.description = request.data.get("description", event.description)
-        event.location = request.data.get("location", event.location)
-        event.start_time = request.data.get("start_time", event.start_time)
-        event.end_time = request.data.get("end_time", event.end_time)
-        event.capacity_limit = request.data.get("capacity_limit", event.capacity_limit)
-        event.save()
-
-        return Response({
-            "id": event.id,
-            "title": event.title,
-            "message": "Event updated successfully"
-        }, status=200)
