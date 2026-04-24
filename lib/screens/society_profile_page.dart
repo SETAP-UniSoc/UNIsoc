@@ -56,7 +56,10 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     await Future.wait([
       loadSociety(),
       loadEvents(),
+<<<<<<< HEAD
        if (!widget.isAdmin) checkMembership(),
+=======
+>>>>>>> Maya-up2266552
     ]);
     setState(() => isLoading = false);
   }
@@ -115,6 +118,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     }
   }
 
+<<<<<<< HEAD
   // check if user is already a member
   Future<void> checkMembership() async {
     final url =
@@ -142,6 +146,10 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   }
 
   // admin saves description
+=======
+ 
+  // Admin saves description - PERSISTS in database!
+>>>>>>> Maya-up2266552
   Future<void> saveDescription() async {
     try {
       if (descController.text != societyData["description"]) {
@@ -177,6 +185,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     }
   }
 
+<<<<<<< HEAD
   Future<void> toggleJoinSociety() async {
     final endpoint = isMember
         ? "/society/${widget.societyId}/leave/"
@@ -224,7 +233,42 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
       ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
+=======
 
+Future<void> toggleJoinSociety() async {
+  final endpoint = isMember
+      ? "/societies/${widget.societyId}/leave/"
+      : "/societies/${widget.societyId}/join/";
+
+  try {
+    final response = await http.post(
+      Uri.parse("${ApiService.baseUrl}$endpoint"),
+      headers: ApiService.headers,
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      
+      if (data["message"] == "Already joined") {
+        setState(() => isMember = true);
+      } else if (data["message"] == "Successfully joined society") {
+        setState(() => isMember = true);
+      } else if (data["message"] == "Successfully left society") {
+        setState(() => isMember = false);
+      } else {
+        setState(() => isMember = !isMember);
+      }
+>>>>>>> Maya-up2266552
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(data["message"] ?? "Success")),
+      );
+    }
+  } catch (e) {
+    print("Error toggling membership: $e");
+  }
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
