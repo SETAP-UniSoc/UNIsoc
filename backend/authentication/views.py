@@ -462,6 +462,8 @@
 ###################################################################################
 
 
+from multiprocessing.managers import Token
+
 from flask import request
 from rest_framework import generics
 from .models import EventAttendance, User, Event, Society
@@ -1193,7 +1195,6 @@ class LoginView(APIView):
             if user.check_password(password):
                 token, _ = Token.objects.get_or_create(user=user)
 
-                # ✅ GET SOCIETY FOR ADMIN
                 society_id = None
                 society_name = None
 
