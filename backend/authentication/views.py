@@ -463,22 +463,18 @@
 
 
 from rest_framework.authtoken.models import Token
-from flask import request
 from rest_framework import generics
 from .models import EventAttendance, User, Event, Society
 from .serializer import UserSerializer
 from .serializer import SocietySerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from .serializer import EventSerializer
 from .import serializer
 from django.utils.timezone import now
 from django.db.models import Count, Q
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
@@ -1043,7 +1039,17 @@ Location: {event.location}
                 fail_silently=False,
             )
 
-class SocietyDetailView(APIView):
+class SocietyAdminDetailView(APIView):
+    """
+    API view to retrieve detailed information about a society,
+    including its events.
+
+    Returns:
+    - Society details
+    - List of associated events
+
+    Does not require admin privileges.
+    """
     permission_classes = [IsAuthenticated]
 
     # GET society details — used by both admin and user society page
@@ -1105,6 +1111,9 @@ class SocietyMembershipCheckView(APIView):
         }, status=status.HTTP_200_OK)
     
 class SocietyDetailView(APIView):
+    """
+    Retrieve a society along with its events.
+    """
     def get(self, request, society_id):
         try:
             society = Society.objects.get(id=society_id)
@@ -1132,7 +1141,29 @@ class SocietyDetailView(APIView):
         })   
 
 class RegisterView(APIView):
+    '''
+    API view to handle user registration.
+    Accepts user details including first name, last name, email,
+    university number (UP number), and password.
+
+    Validates:
+    - All required fields are provided
+    - Passwords match
+    - Password strength (length, uppercase, number, special character)
+
+    Returns:
+    - 201 Created on success
+    - 400 Bad Request on validation failure
+    '''
     def post(self, request):
+        """
+        Handle user registration.
+
+        :param request: HTTP request containing user registration data
+        :type request: Request
+        :return: Success or error response
+        :rtype: Response
+        """        
         first_name = request.data.get("first_name")
         last_name = request.data.get("last_name")
         email = request.data.get("email")
@@ -1180,7 +1211,26 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
+    """
+    API view to authenticate a user and return an auth token.
+
+    Users can log in using either:
+    - Email
+    - University number (UP number)
+
+    Returns:
+    - Auth token and user details on success
+    - 401 Unauthorized if credentials are invalid
+    """
     def post(self, request):
+        """
+        Authenticate the user and generate a token.
+
+        :param request: HTTP request containing login credentials
+        :type request: Request
+        :return: Authentication token and user info
+        :rtype: Response
+        """
         email = request.data.get("email")
         up_number = request.data.get("up_number")
         password = request.data.get("password")
@@ -1228,6 +1278,14 @@ class LoginView(APIView):
         return Response({"error": "Invalid credentials"}, status=401)
     
 class LeaveSocietyView(APIView):
+    """
+    API view to allow a user to leave a society.
+
+    Sets the `left_at` timestamp on the membership record
+    instead of deleting it.
+
+    Requires authentication.
+    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request, society_id):
@@ -1263,6 +1321,13 @@ class LeaveSocietyView(APIView):
         )
     
 class LeaveEventView(APIView):
+    """
+    API view to allow a user to leave an event.
+
+    Marks attendance as inactive by setting `left_at`.
+
+    Requires authentication.
+    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request, event_id):
@@ -1285,6 +1350,16 @@ class LeaveEventView(APIView):
         return Response({"message": "Left event successfully"})
     
 class JoinSocietyView(APIView):
+    """
+    API view to allow a user to join a society.
+
+    Behaviour:
+    - Creates a new membership if none exists
+    - Returns 'Already joined' if user is already active
+    - Re-activates membership if previously left
+
+    Requires authentication.
+    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request, society_id):
@@ -1320,6 +1395,19 @@ class JoinSocietyView(APIView):
         return Response({"message": "Rejoined successfully"}, status=200)
             
 class JoinEventView(APIView):
+    """
+    API view to allow a user to join an event.
+
+    Behaviour:
+    - Prevents joining past events
+    - Creates attendance record if not existing
+    - Re-activates attendance if previously left
+
+    Returns updated attendee count.
+
+    Requires authentication.
+    """
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request, event_id):
@@ -1361,6 +1449,22 @@ class JoinEventView(APIView):
         })
     
 class AnalyticsView(APIView):
+    """
+    API view to provide analytics for a society admin.
+
+    Includes:
+    - Membership growth over time
+    - Total active members
+    - Total events
+    - Event attendance statistics
+    - Most popular event
+
+    Query Parameters:
+    - period: 'week', 'month', '6months', 'year'
+
+    Requires:
+    - Authenticated admin user
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
