@@ -483,6 +483,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
+import re
 
 from .models import NotificationPreference, Society, Membership, Event
 
@@ -1121,4 +1122,48 @@ class SocietyDetailView(APIView):
             "events": event_data
         })   
 
+class RegisterView(APIView):
+    def post(self, request):
+        first_name = request.data.get("first_name")
+        last_name = request.data.get("last_name")
+        email = request.data.get("email")
+        up_number = request.data.get("up_number")
+        password = request.data.get("password")
+        confirm_password = request.data.get("confirm_password")
 
+        if not all([first_name, last_name, email, up_number, password, confirm_password]):
+            return Response(
+                {"error": "All fields are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if password != confirm_password:
+            return Response(
+                {"error": "Passwords do not match"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Password strength validation
+        if len(password) < 8:
+            return Response(
+                {"error": "Password must be at least 8 characters long"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not re.search(r"[A-Z]", password):
+            return Response(
+                {"error": "Password must contain at least one uppercase letter"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not re.search(r"[0-9]", password):
+            return Response(
+                {"error": "Password must contain at least one number"},
+                status=status.HTTP_400_BAD_REQUEST
+            )   
+
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+            return Response(
+                {"error": "Password must contain at least one special character"},
+                status=status.HTTP_400_BAD_REQUEST
+         )
