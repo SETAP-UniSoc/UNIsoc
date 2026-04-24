@@ -407,9 +407,9 @@ events = upcoming;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => MyEventsPage(
-                      societyId: widget.societyId,
-                    ),
+                    builder: (_) => MyEventsPage()
+                      
+                    
                   ),
                 );
               },
