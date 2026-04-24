@@ -8,7 +8,8 @@ from .views import (
     DeleteEventView,
     MyCreatedEventsView,
     SocietyEventView, 
-    SocietyListSearchView, 
+    SocietyListSearchView,
+    SocietyMembershipCheckView, 
     UserListView,
     SocietyListSearchView,
     EventDetailView,
@@ -38,6 +39,7 @@ urlpatterns = [
     path('users/', UserListView.as_view(), name='user-list-create'),
     #path('societies/', SocietyListSearchView.as_view(), name='society-list-create'),
     path('societies/<int:society_id>/events/', SocietyEventView.as_view(), name='society-events'),
+    path('societies/<int:society_id>/check-membership/', SocietyMembershipCheckView.as_view(), name='society-membership-check'),
     # Admin event management
     path('events/<int:id>/delete/', DeleteEventView.as_view(), name='delete-event'),
     path('events/', SocietyEventView.as_view(), name='event-list'),
