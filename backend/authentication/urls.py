@@ -38,7 +38,7 @@ urlpatterns = [
     path('societies/', SocietyListSearchView.as_view(), name='society-list-create'),
     path('societies/<int:society_id>/', SocietyDetailView.as_view(), name='society-detail'),
     path('societies/<int:society_id>/admin/', SocietyAdminDetailView.as_view(), name='society-admin-detail'),
-    path('societies/<int:society_id>/admin/events/', SocietyAdminEventView.as_view(), name='society-admin-events'),
+    path('societies/<int:society_id>/admin/events/', SocietyAdminDetailView.as_view(), name='society-admin-events'),
 
     path('users/', UserListView.as_view(), name='user-list-create'),
     #path('societies/', SocietyListSearchView.as_view(), name='society-list-create'),
