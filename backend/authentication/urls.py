@@ -1,6 +1,5 @@
 from django.urls import path 
 from .serializer import EventSerializer
-from .IsMemberView import IsMemberView
 from .views import (
     AllEventsView,
     ChangeEmailView, 
@@ -23,6 +22,7 @@ from .views import (
     JoinSocietyView,
     LeaveSocietyView,
     SocietyDetailView,
+    IsMemberView
     )
 
 
