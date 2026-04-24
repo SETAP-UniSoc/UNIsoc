@@ -1,10 +1,4 @@
-from django.urls import path #include
-from .RegisterView import RegisterView
-from .LoginView import LoginView
-from .AnalyticsView import AnalyticsView
-from .JoinSoc import JoinSocietyView
-from .LeaveSoc import LeaveSocietyView
-from .SocietyDetailView import SocietyDetailView
+from django.urls import path 
 from .serializer import EventSerializer
 from .views import (
     AddEventView,
@@ -21,7 +15,14 @@ from .views import (
     UpdateEventView,
     ChangePasswordView,
     NotificationView,
-    MyEventsView)
+    MyEventsView,
+    RegisterView,
+    LoginView,
+    AnalyticsView,
+    JoinSocietyView,
+    LeaveSocietyView,
+    SocietyDetailView,
+    )
 
 
 urlpatterns = [
