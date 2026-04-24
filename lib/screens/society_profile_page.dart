@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:unisoc/services/api_services.dart';
 import 'package:unisoc/screens/admin/admin_bottom_nav.dart';
 import 'package:unisoc/screens/admin/admin_events_page.dart';
+import 'package:unisoc/screens/my_events_page.dart';
 
 class SocietyProfilePage extends StatefulWidget {
   final int societyId;
@@ -101,10 +102,10 @@ DateTime.parse(a["start_time"])
 
 events = upcoming;
         });
-        print("✅ Loaded ${events.length} events");
+        print("Loaded ${events.length} events");
       }
     } catch (e) {
-      print("❌ Error loading events: $e");
+      print("Error loading events: $e");
     }
   }
 
@@ -173,8 +174,8 @@ events = upcoming;
           SnackBar(
             content: Text(
               isMember
-                  ? "Successfully joined society 🎉"
-                  : "Successfully left society",
+                  ? "Successfully left society"
+                  :  "Successfully joined society 🎉",
             ),
           ),
         );
@@ -380,116 +381,156 @@ events = upcoming;
                           ),
                         )
                       : SizedBox(
-                          height: 320,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: events.length,
-                            itemBuilder: (context, index) {
-                              final event = events[index];
-                              final startTime = DateTime.parse(event["start_time"]).toLocal();
-                              
-                              return Container(
-                                width: 300,
-                                margin: const EdgeInsets.only(right: 16),
-                                child: Card(
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        width: double.infinity,
-                                        padding: const EdgeInsets.all(16),
-                                        decoration: const BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          ),
-                                          borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(16),
-                                            topRight: Radius.circular(16),
-                                          ),
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              event["title"],
-                                              style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Row(
-                                              children: [
-                                                const Icon(Icons.calendar_today, size: 14, color: Colors.white70),
-                                                const SizedBox(width: 6),
-                                                Text(
-                                                  "${startTime.day}/${startTime.month}/${startTime.year}",
-                                                  style: const TextStyle(color: Colors.white70, fontSize: 13),
-                                                ),
-                                                const SizedBox(width: 16),
-                                                const Icon(Icons.access_time, size: 14, color: Colors.white70),
-                                                const SizedBox(width: 6),
-                                                Text(
-                                                  "${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}",
-                                                  style: const TextStyle(color: Colors.white70, fontSize: 13),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(16),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              event["description"] ?? "No description",
-                                              style: const TextStyle(fontSize: 14, color: Color(0xFF4B5563)),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 12),
-                                            Row(
-                                              children: [
-                                                const Icon(Icons.location_on, size: 16, color: Color(0xFF9CA3AF)),
-                                                const SizedBox(width: 6),
-                                                Expanded(
-                                                  child: Text(
-                                                    event["location"] ?? "No location",
-                                                    style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            if (event["capacity_limit"] != null) ...[
-                                              const SizedBox(height: 8),
-                                              Row(
-                                                children: [
-                                                  const Icon(Icons.people, size: 16, color: Color(0xFF9CA3AF)),
-                                                  const SizedBox(width: 6),
-                                                  Text(
-                                                    "Capacity: ${event["capacity_limit"]}",
-                                                    style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+  height: 320,
+  child: ListView.builder(
+    scrollDirection: Axis.horizontal,
+    itemCount: events.length,
+    itemBuilder: (context, index) {
+      final event = events[index];
+      final startTime = DateTime.parse(event["start_time"]).toLocal();
+
+      // return Container(
+      //   width: 300,
+      //   margin: const EdgeInsets.only(right: 16),
+      //   child: Card(
+
+      // elevation: 0,
+      // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      // child: Column(
+      //   crossAxisAlignment: CrossAxisAlignment.start,
+      //   children: [
+
+      return GestureDetector(
+        onTap: widget.isAdmin
+            ? null
+            : () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => MyEventsPage(
+                      societyId: widget.societyId,
+                    ),
+                  ),
+                );
+              },
+        child: Container(
+          width: 300,
+          margin: const EdgeInsets.only(right: 16),
+          child: Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        event["title"],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.calendar_today,
+                              size: 14, color: Colors.white70),
+                          const SizedBox(width: 6),
+                          Text(
+                            "${startTime.day}/${startTime.month}/${startTime.year}",
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 13),
+                          ),
+                          const SizedBox(width: 16),
+                          const Icon(Icons.access_time,
+                              size: 14, color: Colors.white70),
+                          const SizedBox(width: 6),
+                          Text(
+                            "${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}",
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        event["description"] ?? "No description",
+                        style: const TextStyle(
+                            fontSize: 14, color: Color(0xFF4B5563)),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on,
+                              size: 16, color: Color(0xFF9CA3AF)),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              event["location"] ?? "No location",
+                              style: const TextStyle(
+                                  fontSize: 13, color: Color(0xFF6B7280)),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (event["capacity_limit"] != null) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.people,
+                                size: 16, color: Color(0xFF9CA3AF)),
+                            const SizedBox(width: 6),
+                            Text(
+                              "Capacity: ${event["capacity_limit"]}",
+                              style: const TextStyle(
+                                  fontSize: 13, color: Color(0xFF6B7280)),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  ),
+),
                   
                   const SizedBox(height: 32),
                 ],
