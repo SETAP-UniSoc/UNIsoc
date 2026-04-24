@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:unisoc/screens/society_profile_page.dart';
 
-class UserSocietyPage extends StatelessWidget {
+class UserSocietyPage extends StatefulWidget {
   final int societyId;
   final String societyName;
   final String description;
@@ -18,113 +18,10 @@ class UserSocietyPage extends StatelessWidget {
 }
 
 class _UserSocietyPageState extends State<UserSocietyPage> {
-  List events = [];
-  bool joinedSociety = false;
-  Timer? pollingTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    loadEvents();
-    startPolling();
-  }
-
-  @override
-  void dispose() {
-    pollingTimer?.cancel();
-    super.dispose();
-  }
-
-  void startPolling() {
-    pollingTimer =
-        Timer.periodic(const Duration(seconds: 5), (_) {
-      loadEvents();
-    });
-  }
-
-  Future<void> loadEvents() async {
-    final data =
-        await ApiService.getSocietyEvents(widget.societyId);
-
-    for (var event in data) {
-      final countData =
-          await ApiService.getEventCount(event["id"]);
-      event["attendee_count"] =
-          countData["attendee_count"];
-    }
-
-    setState(() {
-      events = data;
-    });
-  }
-
-  Future<void> toggleJoinSociety() async {
-  final endpoint = joinedSociety
-      ? "/society/${widget.societyId}/leave/"
-      : "/society/${widget.societyId}/join/";
-
-  final url = Uri.parse("${ApiService.baseUrl}$endpoint");
-
-  try {
-    final response = await http.post(
-      url,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Token ${ApiService.authToken}",
-      },
-    );
-
-    if (response.statusCode == 201) {
-      setState(() {
-        joinedSociety = true;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Successfully joined society 🎉"),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    } 
-    else if (response.statusCode == 200) {
-      setState(() {
-        joinedSociety = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Successfully left society"),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Network error: $e"),
-      ),
-    );
-  }
-}
-
-  Future<void> toggleJoinEvent(int eventId) async {
-    final url =
-        Uri.parse("${ApiService.baseUrl}/event/$eventId/join/");
-
-    final response = await http.post(url);
-
-    final data = jsonDecode(response.body);
-
-    setState(() {
-      events.firstWhere((e) => e["id"] == eventId)
-          ["attendee_count"] = data["attendee_count"];
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return SocietyProfilePage(
-      societyId: societyId,
+      societyId: widget.societyId,
       isAdmin: false,
     );
   }

@@ -9,29 +9,39 @@ class AdminDropdownMenu extends StatelessWidget {
       icon: const Icon(Icons.more_vert),
       onSelected: (value) {
         switch (value) {
-          case "account":
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => SocietyProfilePage(
-                  societyId: ApiService.societyId ?? 0,
-                  isAdmin: true,
-                ),
+          case 'account':
+            showDialog<void>(
+              context: context,
+              builder: (_) => const AlertDialog(
+                title: Text('My Account'),
+                content: Text('Account details coming soon.'),
               ),
             );
             break;
-          case "settings":
-            // Navigate to Settings page later
+          case 'settings':
+            showDialog<void>(
+              context: context,
+              builder: (_) => const AlertDialog(
+                title: Text('Settings'),
+                content: Text('Settings page coming soon.'),
+              ),
+            );
             break;
-          case "logout":
-            // Handle logout later
+          case 'logout':
+            showDialog<void>(
+              context: context,
+              builder: (_) => const AlertDialog(
+                title: Text('Logout'),
+                content: Text('Logout is not wired up yet.'),
+              ),
+            );
             break;
         }
       },
       itemBuilder: (context) => const [
-        PopupMenuItem(value: "account", child: Text("My Account")),
-        PopupMenuItem(value: "settings", child: Text("Settings")),
-        PopupMenuItem(value: "logout", child: Text("Logout")),
+        PopupMenuItem(value: 'account', child: Text('My Account')),
+        PopupMenuItem(value: 'settings', child: Text('Settings')),
+        PopupMenuItem(value: 'logout', child: Text('Logout')),
       ],
     );
   }
