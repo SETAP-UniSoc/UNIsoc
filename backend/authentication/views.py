@@ -464,7 +464,7 @@
 
 from flask import request
 from rest_framework import generics
-from .models import User, Event, Society
+from .models import EventAttendance, User, Event, Society
 from .serializer import UserSerializer
 from .serializer import SocietySerializer
 from rest_framework.views import APIView
@@ -1275,3 +1275,5 @@ class LeaveEventView(APIView):
             left_at__isnull=True).count()
 
         return Response({"message": "Left event successfully"})
+    
+    
