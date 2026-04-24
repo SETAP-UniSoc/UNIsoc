@@ -1218,3 +1218,38 @@ class LoginView(APIView):
             pass
 
         return Response({"error": "Invalid credentials"}, status=401)
+    
+class LeaveSocietyView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, society_id):
+        user = request.user
+
+        try:
+            society = Society.objects.get(id=society_id)
+        except Society.DoesNotExist:
+            return Response(
+                {"error": "Society not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        try:
+            membership = Membership.objects.get(
+                user=user,
+                society=society,
+                left_at__isnull=True
+                
+            )
+        except Membership.DoesNotExist:
+            return Response(
+                {"error": "You are not an active member"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        membership.left_at = timezone.now()
+        membership.save()
+
+        return Response(
+            {"message": "Successfully left society"},
+            status=status.HTTP_200_OK,
+        )
