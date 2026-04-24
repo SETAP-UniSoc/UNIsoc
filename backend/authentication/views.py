@@ -1167,3 +1167,54 @@ class RegisterView(APIView):
                 {"error": "Password must contain at least one special character"},
                 status=status.HTTP_400_BAD_REQUEST
          )
+
+
+
+class LoginView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        up_number = request.data.get("up_number")
+        password = request.data.get("password")
+
+        if not password:
+            return Response({"error": "Password required"}, status=400)
+
+        try:
+            if email:
+                user = User.objects.get(email__iexact=email)
+            elif up_number:
+                up_number = up_number.lower()
+                if not up_number.startswith("up"):
+                    up_number = f"up{up_number}"
+                user = User.objects.get(up_number__iexact=up_number)
+            else:
+                return Response({"error": "Email or UP number required"}, status=400)
+
+            if user.check_password(password):
+                token, _ = Token.objects.get_or_create(user=user)
+
+                # ✅ GET SOCIETY FOR ADMIN
+                society_id = None
+                society_name = None
+
+                if user.role == "admin":
+                    try:
+                        society = Society.objects.get(admin=user)
+                        society_id = society.id
+                        society_name = society.name
+                    except Society.DoesNotExist:
+                        pass
+
+                return Response({
+                    "token": token.key,
+                    "role": user.role,
+                    "email": user.email,
+                    "up_number": user.up_number,
+                    "society_id": society_id,      
+                    "society_name": society_name   
+                })
+
+        except User.DoesNotExist:
+            pass
+
+        return Response({"error": "Invalid credentials"}, status=401)
