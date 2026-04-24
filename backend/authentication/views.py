@@ -1085,16 +1085,24 @@ class SocietyDetailView(APIView):
 
 
 class SocietyMembershipCheckView(APIView):
+    """
+    Check if the authenticated user is an active member of a society.
+    """
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, society_id):
+        # Check active membership (not left)
         is_member = Membership.objects.filter(
             user=request.user,
             society_id=society_id,
             left_at__isnull=True
         ).exists()
 
-        return Response({"is_member": is_member})
+        return Response({
+            "society_id": society_id,
+            "is_member": is_member
+        }, status=status.HTTP_200_OK)
     
 class SocietyDetailView(APIView):
     def get(self, request, society_id):
