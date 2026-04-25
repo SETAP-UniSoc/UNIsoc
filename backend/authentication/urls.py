@@ -48,7 +48,7 @@ urlpatterns = [
     path('societies/<int:society_id>/events/', SocietyEventView.as_view(), name='society-events'),
     path('societies/<int:society_id>/check-membership/', SocietyMembershipCheckView.as_view(), name='society-membership-check'),
     # Admin event management
-    path('events/<int:id>/delete/', DeleteEventView.as_view(), name='delete-event'),
+    path('events/<int:event_id>/delete/', DeleteEventView.as_view(), name='delete-event'),
     path('events/', SocietyEventView.as_view(), name='event-list'),
     # path('events/create/', SocietyEventView.as_view(), name='create-event'),
     path('events/my/', MyEventsView.as_view(), name='my-events'),
@@ -56,8 +56,8 @@ urlpatterns = [
     path('events/<int:id>/update/', UpdateEventView.as_view(), name='update-event'),
     path('events/all/', AllEventsView.as_view(), name='all-events'),
     path('events/my/', MyCreatedEventsView.as_view(), name='my-events'),
-    path('events/<int:id>/join/', JoinEventView.as_view(), name='join-event'),
-    path('events/<int:id>/leave/', LeaveEventView.as_view(), name='leave-event'),
+    path('events/<int:event_id>/join/', JoinEventView.as_view(), name='join-event'),
+    path('events/<int:event_id>/leave/', LeaveEventView.as_view(), name='leave-event'),
     path('events/<int:event_id>/attending/', CheckEventAttendanceView.as_view(), name='check-attending'),
 
 
