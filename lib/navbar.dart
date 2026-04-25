@@ -39,7 +39,7 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
               case _MenuAction.settings:
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SettingsPage()),
+                  MaterialPageRoute(builder: (context) => const UserSettingsPage()),
                 );
                 break;
               case _MenuAction.myAccount:

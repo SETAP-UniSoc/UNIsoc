@@ -179,7 +179,7 @@ class _MyAccountPageState extends State<MyAccountPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const SettingsPage(),
+                        builder: (context) => const UserSettingsPage(),
                       ),
                     );
                   },
