@@ -3,7 +3,9 @@ from .serializer import EventSerializer
 from .views import (
     AddEventView,
     AllEventsView,
-    ChangeEmailView, 
+    ChangeEmailView,
+    JoinEventView,
+    LeaveEventView, 
     SocietyEventView,
     DeleteEventView,
     MyCreatedEventsView,
@@ -24,6 +26,7 @@ from .views import (
     LeaveSocietyView,
     SocietyDetailView,
     SocietyAdminDetailView,
+    CheckEventAttendanceView,
     )
 
 
@@ -53,6 +56,10 @@ urlpatterns = [
     path('events/<int:id>/update/', UpdateEventView.as_view(), name='update-event'),
     path('events/all/', AllEventsView.as_view(), name='all-events'),
     path('events/my/', MyCreatedEventsView.as_view(), name='my-events'),
+    path('events/<int:id>/join/', JoinEventView.as_view(), name='join-event'),
+    path('events/<int:id>/leave/', LeaveEventView.as_view(), name='leave-event'),
+    path('events/<int:id>/attending/', CheckEventAttendanceView.as_view(), name='check-attending'),
+
 
     # Analytics
     path("my-analytics/", AnalyticsView.as_view(), name="analytics"),
