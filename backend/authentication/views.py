@@ -471,8 +471,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
-from .serializer import EventSerializer
-from .import serializer
+from .serializer import UserSerializer, SocietySerializer, EventSerializer
 from django.utils.timezone import now
 from django.db.models import Count, Q
 from rest_framework import status
