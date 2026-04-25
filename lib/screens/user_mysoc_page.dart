@@ -56,7 +56,7 @@ class _MySocietyPageState extends State<MySocietyPage> {
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: societies.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            separatorBuilder: (_, _) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final soc = societies[index] as Map<String, dynamic>;
               final id = soc['id'] as int? ?? 0;

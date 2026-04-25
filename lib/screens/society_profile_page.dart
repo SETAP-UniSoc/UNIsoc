@@ -540,6 +540,6 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
             ),
       bottomNavigationBar:
           widget.isAdmin ? const AdminBottomNav(currentIndex: 0) : null,
-    );
+    )
   }
 }
