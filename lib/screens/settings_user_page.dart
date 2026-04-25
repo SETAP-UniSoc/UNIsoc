@@ -12,7 +12,6 @@ class UserSettingsPage extends StatefulWidget {
 
 class _UserSettingsPageState extends State<UserSettingsPage> {
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _currentEmailController = TextEditingController();
   final TextEditingController _newEmailController = TextEditingController();
   final TextEditingController _currentPasswordController =
       TextEditingController();
@@ -23,7 +22,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
   bool _isEditingName = false;
   bool _isLoading = false;
   bool _notificationsEnabled = true;
-  int _selectedSocietyId = 0;
   List<Map<String, dynamic>> _notificationPrefs = [];
 
   bool _obscureCurrentPassword = true;
@@ -44,7 +42,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
   @override
   void dispose() {
     _nameController.dispose();
-    _currentEmailController.dispose();
     _newEmailController.dispose();
     _currentPasswordController.dispose();
     _newPasswordController.dispose();
@@ -59,7 +56,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     });
 
     try {
-      // Using the existing User_ProfileView endpoint
       final response = await http.get(
         Uri.parse("${ApiService.baseUrl}/user/profile/"),
         headers: ApiService.headers,
@@ -103,7 +99,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
 
   Future<void> _loadNotificationSettings() async {
     try {
-      // Using the existing NotificationView endpoint
       final response = await http.get(
         Uri.parse("${ApiService.baseUrl}/notifications/"),
         headers: ApiService.headers,
@@ -138,18 +133,12 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     setState(() => _isLoading = true);
 
     try {
-      // First society's preference (you can add a dropdown to select society if needed)
-      final societyName = _notificationPrefs[0]["society"];
-      
-      // Need to get society ID from name - you might want to store society IDs
-      // For now, let's show a dialog to select which society
       final societyId = await _showSocietySelectionDialog();
       if (societyId == null) {
         setState(() => _isLoading = false);
         return;
       }
 
-      // Using the existing NotificationView POST endpoint
       final response = await http.post(
         Uri.parse("${ApiService.baseUrl}/notifications/"),
         headers: ApiService.headers,
@@ -158,9 +147,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
           "event_notifications": enabled,
         }),
       );
-
-      print("📊 Update notification response: ${response.statusCode}");
-      print("📊 Response body: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         setState(() {
@@ -176,7 +162,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
           ),
         );
         
-        // Reload notification settings
         _loadNotificationSettings();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -230,7 +215,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     setState(() => _isLoading = true);
 
     try {
-      // Using the existing User_ProfileView POST endpoint
       final response = await http.post(
         Uri.parse("${ApiService.baseUrl}/user/profile/"),
         headers: ApiService.headers,
@@ -238,15 +222,8 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        String updatedName = newName;
-        if (data["name"] != null && data["name"].toString().isNotEmpty) {
-          updatedName = data["name"].toString();
-        }
-
         setState(() {
-          _userName = updatedName;
+          _userName = newName;
           _isEditingName = false;
         });
 
@@ -270,12 +247,11 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
   }
 
   Future<void> _updateEmail() async {
-    final currentEmail = _currentEmailController.text.trim();
     final newEmail = _newEmailController.text.trim();
 
-    if (currentEmail.isEmpty || newEmail.isEmpty) {
+    if (newEmail.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in both email fields")),
+        const SnackBar(content: Text("Please enter a new email")),
       );
       return;
     }
@@ -283,7 +259,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     setState(() => _isLoading = true);
 
     try {
-      // Using the existing ChangeEmailView endpoint
       final response = await http.post(
         Uri.parse("${ApiService.baseUrl}/change-email/"),
         headers: ApiService.headers,
@@ -293,16 +268,8 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        String updatedEmail = newEmail;
-        if (data["email"] != null && data["email"].toString().isNotEmpty) {
-          updatedEmail = data["email"].toString();
-        }
-
         setState(() {
-          _userEmail = updatedEmail;
-          _currentEmailController.clear();
+          _userEmail = newEmail;
           _newEmailController.clear();
         });
 
@@ -361,7 +328,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     setState(() => _isLoading = true);
 
     try {
-      // Using the existing ChangePasswordView endpoint
       final response = await http.post(
         Uri.parse("${ApiService.baseUrl}/change-password/"),
         headers: ApiService.headers,
@@ -409,7 +375,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        automaticallyImplyLeading: true,
+        automaticallyImplyLeading: true, // This gives you the back arrow!
         title: const Text(
           "My Account",
           style: TextStyle(fontWeight: FontWeight.w600),
@@ -418,6 +384,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
+      // NO BOTTOM NAVIGATION BAR - only back arrow in AppBar
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -574,7 +541,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
                   const Divider(),
                   const SizedBox(height: 16),
 
-                  // New Email (no current email needed based on your backend)
+                  // New Email
                   const Text(
                     "New Email",
                     style: TextStyle(
