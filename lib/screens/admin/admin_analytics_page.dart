@@ -400,39 +400,48 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
 
   // single endpoint for all analytics — uses logged in admin's token automatically
   Future<void> fetchAnalytics(String period) async {
-    setState(() => isLoading = true);
+  setState(() => isLoading = true);
 
-    try {
-      final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/my-analytics/?period=$period"),
-        headers: ApiService.headers,
-      );
+  try {
+    final response = await http.get(
+      Uri.parse("${ApiService.baseUrl}/my-analytics/?period=$period"),
+      headers: ApiService.headers,
+    );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          labels = List<String>.from(data["labels"] ?? []);
-          values = List<dynamic>.from(data["totals"] ?? [])
-              .map((e) => (e as num).toDouble())
-              .toList();
-          liveCount = data["live_count"] ?? 0;
+    print("📡 Status: ${response.statusCode}");
+    print("📡 Body: ${response.body}");
 
-          // Get events_stats from backend and extract values and names
-          final eventsStats = data["events_stats"] ?? [];
-          eventValues = eventsStats.map((e) => (e["attendee_count"] as num).toDouble()).toList();
-          eventNames = eventsStats.map((e) => e["title"].toString()).toList();
-          
-          if (values.isNotEmpty) {
-            values[values.length - 1] = liveCount.toDouble();
-          }
-        });
-      }
-    } catch (e) {
-      print("Analytics error: $e");
-    } finally {
-      setState(() => isLoading = false);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      
+      setState(() {
+        labels = List<String>.from(data["labels"] ?? []);
+        values = List<dynamic>.from(data["totals"] ?? [])
+            .map((e) => (e as num).toDouble())
+            .toList();
+        liveCount = data["live_count"] ?? 0;
+
+        // FIX: Use events_stats (not event_attendance) and extract attendee_count
+        final eventsStats = data["events_stats"] ?? [];
+        print("📊 eventsStats: $eventsStats");
+        
+        eventValues = eventsStats.map((e) => (e["attendee_count"] as num).toDouble()).toList();
+        eventNames = eventsStats.map((e) => e["title"].toString()).toList();
+        
+        print("📊 eventValues: $eventValues");
+        print("📊 eventNames: $eventNames");
+        
+        if (values.isNotEmpty) {
+          values[values.length - 1] = liveCount.toDouble();
+        }
+      });
     }
+  } catch (e) {
+    print("❌ Analytics error: $e");
+  } finally {
+    setState(() => isLoading = false);
   }
+}
 
   // export analytics as PDF
   Future<void> exportPdf() async {
