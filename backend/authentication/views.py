@@ -1586,7 +1586,11 @@ class CheckEventAttendanceView(APIView):
             "title": event.title,
             "location": event.location,
             "start_time": event.start_time,
-
+            "is_attending": EventAttendance.objects.filter(
+                event=event,
+                user=request.user,
+                left_at__isnull=True
+            ).exists(),
             "total_registered": total_registered,
             "active_attendees": active_attendees,
             "left_attendees": left_attendees
