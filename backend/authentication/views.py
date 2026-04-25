@@ -1553,4 +1553,42 @@ class AnalyticsView(APIView):
             "event_attendance": list(events_stats)
         })
 
+class CheckEventAttendanceView(APIView):
+    """
+    Returns attendance stats for a specific event:
+    - total registered attendees
+    - active attendees (not left)
+    - event details
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, event_id):
+        try:
+            event = Event.objects.get(id=event_id)
+        except Event.DoesNotExist:
+            return Response({"error": "Event not found"}, status=404)
+
+        total_registered = EventAttendance.objects.filter(event=event).count()
+
+        active_attendees = EventAttendance.objects.filter(
+            event=event,
+            left_at__isnull=True
+        ).count()
+
+        left_attendees = EventAttendance.objects.filter(
+            event=event,
+            left_at__isnull=False
+        ).count()
+
+        return Response({
+            "event_id": event.id,
+            "title": event.title,
+            "location": event.location,
+            "start_time": event.start_time,
+
+            "total_registered": total_registered,
+            "active_attendees": active_attendees,
+            "left_attendees": left_attendees
+        })
         
