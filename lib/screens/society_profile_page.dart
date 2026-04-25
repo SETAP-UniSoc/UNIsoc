@@ -389,9 +389,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (_) => MyEventsPage(
-                                              societyId: widget.societyId,
-                                            ),
+                                            builder: (_) => const MyEventsPage(),
                                           ),
                                         );
                                       },
