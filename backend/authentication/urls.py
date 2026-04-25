@@ -58,7 +58,7 @@ urlpatterns = [
     path('events/my/', MyCreatedEventsView.as_view(), name='my-events'),
     path('events/<int:id>/join/', JoinEventView.as_view(), name='join-event'),
     path('events/<int:id>/leave/', LeaveEventView.as_view(), name='leave-event'),
-    path('events/<int:id>/attending/', CheckEventAttendanceView.as_view(), name='check-attending'),
+    path('events/<int:event_id>/attending/', CheckEventAttendanceView.as_view(), name='check-attending'),
 
 
     # Analytics
