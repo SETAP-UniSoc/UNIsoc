@@ -1,4 +1,3 @@
-//imports
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -8,7 +7,6 @@ import 'package:unisoc/screens/admin/admin_bottom_nav.dart';
 import 'package:unisoc/screens/admin/admin_events_page.dart';
 import 'package:unisoc/screens/my_events_page.dart';
 
-//society profile page used by both users and admins — shows society details and upcoming events. Admins can also edit the description
 class SocietyProfilePage extends StatefulWidget {
   final int societyId;
   final bool isAdmin;
@@ -61,7 +59,6 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     setState(() => isLoading = false);
   }
 
-  // load society details
   Future<void> loadSociety() async {
     final endpoint = widget.isAdmin
         ? "${ApiService.baseUrl}/societies/${widget.societyId}/admin/"
@@ -84,13 +81,10 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     }
   }
 
-  // load upcoming events
   Future<void> loadEvents() async {
     try {
       final response = await http.get(
-        Uri.parse(
-          "${ApiService.baseUrl}/societies/${widget.societyId}/events/",
-        ),
+        Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
         headers: ApiService.headers,
       );
       if (response.statusCode == 200) {
@@ -132,10 +126,6 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         }
       } else {
         setState(() => isEditing = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Description updated ✅")));
-        loadSociety();
       }
     } catch (e) {
       print("Error saving description: $e");
@@ -227,7 +217,6 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                 children: [
                   Center(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         societyData["image_url"] != null &&
                                 societyData["image_url"].toString().isNotEmpty
@@ -277,15 +266,6 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          societyData["category"] ?? "",
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 16,
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -369,7 +349,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF1F2937)),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
 
                   events.isEmpty
                       ? Container(
@@ -540,6 +520,6 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
             ),
       bottomNavigationBar:
           widget.isAdmin ? const AdminBottomNav(currentIndex: 0) : null,
-    )
+    );
   }
 }
