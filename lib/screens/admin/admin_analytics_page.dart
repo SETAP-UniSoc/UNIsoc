@@ -32,9 +32,10 @@
 //     WidgetsBinding.instance.addPostFrameCallback((_) { //added temporatily to delay the initial fetch until after the first frame so that the circular progress indicator shows up while loading instead of a blank screen. Can remove this once we have the event attendance data to show on the second graph, as then the initial fetch will be fast enough that the loading indicator isn't needed
 //       fetchAnalytics(selectedPeriod);
 //     });
-
+    
 //     startLiveUpdates(); // was  temporarily commnted out live updates until we have the event attendance data to show on the second graph. No point refreshing the member count every 5 seconds if the event attendance graph just shows "No data yet"
 //   }
+
 
 //   @override
 //   void dispose() {
@@ -368,6 +369,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   List<String> labels = [];
   List<double> values = [];
   List<double> eventValues = [];
+  List<String> eventNames = [];
   int liveCount = 0;
   bool isLoading = false;
   Timer? liveTimer;
@@ -410,9 +412,9 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
         final data = jsonDecode(response.body);
         setState(() {
           labels = List<String>.from(data["labels"] ?? []);
-          values = List<dynamic>.from(
-            data["totals"] ?? [],
-          ).map((e) => (e as num).toDouble()).toList();
+          values = List<dynamic>.from(data["totals"] ?? [])
+              .map((e) => (e as num).toDouble())
+              .toList();
           liveCount = data["live_count"] ?? 0;
 
           // Get events_stats from backend and extract values and names
@@ -441,7 +443,8 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
         build: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text("Society Analytics", style: pw.TextStyle(fontSize: 22)),
+            pw.Text("Society Analytics",
+                style: pw.TextStyle(fontSize: 22)),
             pw.SizedBox(height: 10),
             pw.Text("Live Members: $liveCount"),
             pw.SizedBox(height: 20),
@@ -461,7 +464,9 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
       ),
     );
 
-    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+    await Printing.layoutPdf(
+      onLayout: (format) async => pdf.save(),
+    );
   }
 
   @override
@@ -520,7 +525,8 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
             // live member count
             Text(
               "Live Members: $liveCount",
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  fontSize: 24, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
