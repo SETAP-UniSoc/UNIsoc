@@ -193,25 +193,11 @@
 
 //             const SizedBox(height: 40),
 
-<<<<<<< HEAD
-//             // event attendance graph - BAR CHART
-// const Text(
-//   "Event Attendance",
-//   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-// ),
-// const SizedBox(height: 8),
-// const Text(
-//   "Number of attendees per event",
-//   style: TextStyle(fontSize: 12, color: Colors.grey),
-// ),
-// const SizedBox(height: 20),
-=======
 //             // event attendance graph — shows "No data" until events have attendance
 //             const Text(
 //               "Event Attendance",
 //               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
 //             ),
->>>>>>> Maya-up2266552
 
 //             const SizedBox(height: 20),
 
@@ -271,30 +257,6 @@
 //               gradient: const LinearGradient(
 //                 colors: [Colors.purple, Colors.deepPurple],
 //               ),
-<<<<<<< HEAD
-//             ),
-//             spots: List.generate(
-//               data.length,
-//               (i) => FlSpot(i.toDouble(), data[i]),
-//             ),
-//           ),
-//         ],
-//       ),
-//     ),
-//   );
-// }
-
-//   Widget _buildEventBarChart(List<double> data, List<String> names) {
-//   if (data.isEmpty || names.isEmpty) {
-//     return const Center(
-//       child: Column(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           Icon(Icons.bar_chart, size: 48, color: Colors.grey),
-//           SizedBox(height: 12),
-//           Text("No event attendance data yet", style: TextStyle(color: Colors.grey)),
-//         ],
-=======
 //               belowBarData: BarAreaData(
 //                 show: true,
 //                 gradient: LinearGradient(
@@ -316,75 +278,10 @@
             
 //           ],
 //         ),
->>>>>>> Maya-up2266552
 //       ),
 //     );
 //   }
 
-<<<<<<< HEAD
-//   return Padding(
-//     padding: const EdgeInsets.symmetric(horizontal: 16),
-//     child: BarChart(
-//       BarChartData(
-//         alignment: BarChartAlignment.spaceAround,
-//         maxY: data.reduce((a, b) => a > b ? a : b) * 1.2,
-//         titlesData: FlTitlesData(
-//           show: true,
-//           bottomTitles: AxisTitles(
-//             sideTitles: SideTitles(
-//               showTitles: true,
-//               reservedSize: 60,
-//               getTitlesWidget: (value, meta) {
-//                 if (value.toInt() < names.length) {
-//                   return Padding(
-//                     padding: const EdgeInsets.only(top: 8),
-//                     child: Transform.rotate(
-//                       angle: -0.4,
-//                       child: Text(
-//                         names[value.toInt()],
-//                         style: const TextStyle(fontSize: 10),
-//                         overflow: TextOverflow.ellipsis,
-//                       ),
-//                     ),
-//                   );
-//                 }
-//                 return const Text('');
-//               },
-//             ),
-//           ),
-//           leftTitles: AxisTitles(
-//             sideTitles: SideTitles(
-//               showTitles: true,
-//               reservedSize: 40,
-//               getTitlesWidget: (value, meta) => Text(value.toInt().toString()),
-//             ),
-//           ),
-//           rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-//           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-//         ),
-//         gridData: const FlGridData(show: false),
-//         borderData: FlBorderData(show: false),
-//         barGroups: List.generate(
-//           data.length,
-//           (index) => BarChartGroupData(
-//             x: index,
-//             barRods: [
-//               BarChartRodData(
-//                 toY: data[index],
-//                 color: Colors.purple,
-//                 width: 30,
-//                 borderRadius: BorderRadius.circular(4),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     ),
-//   );
-// }
-
-=======
->>>>>>> Maya-up2266552
 //   Widget _buildPeriodButton(String value, String label) {
 //     final bool isSelected = selectedPeriod == value;
 
@@ -414,8 +311,6 @@
 //   }
 // }
 
-<<<<<<< HEAD
-=======
 
 
 
@@ -451,7 +346,6 @@
 
 
 
->>>>>>> Maya-up2266552
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -485,13 +379,8 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
       //added temporatily to delay the initial fetch until after the first frame so that the circular progress indicator shows up while loading instead of a blank screen. Can remove this once we have the event attendance data to show on the second graph, as then the initial fetch will be fast enough that the loading indicator isn't needed
       fetchAnalytics(selectedPeriod);
     });
-<<<<<<< HEAD
-
-    startLiveUpdates(); // was  temporarily commnted out live updates until we have the event attendance data to show on the second graph. No point refreshing the member count every 5 seconds if the event attendance graph just shows "No data yet"
-=======
     
     startLiveUpdates(); // was temporarily commnted out live updates until we have the event attendance data to show on the second graph. No point refreshing the member count every 5 seconds if the event attendance graph just shows "No data yet"
->>>>>>> Maya-up2266552
   }
 
   @override
@@ -526,14 +415,11 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
           ).map((e) => (e as num).toDouble()).toList();
           liveCount = data["live_count"] ?? 0;
 
-<<<<<<< HEAD
-=======
           // Get events_stats from backend and extract values and names
           final eventsStats = data["events_stats"] ?? [];
           eventValues = eventsStats.map((e) => (e["attendee_count"] as num).toDouble()).toList();
           eventNames = eventsStats.map((e) => e["title"].toString()).toList();
           
->>>>>>> Maya-up2266552
           if (values.isNotEmpty) {
             values[values.length - 1] = liveCount.toDouble();
           }
@@ -611,31 +497,14 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
             const SizedBox(height: 30),
 
             // current member count
-<<<<<<< HEAD
-            // if (values.isNotEmpty)
-            //   Text(
-            //     values.last.toStringAsFixed(0),
-            //     style: const TextStyle(
-            //         fontSize: 32, fontWeight: FontWeight.bold),
-            //   ),
-
-            // const SizedBox(height: 20),
-
-            // current member count
-=======
->>>>>>> Maya-up2266552
             Text(
               values.isNotEmpty
                   ? values.last.toStringAsFixed(0)
                   : liveCount.toString(),
-<<<<<<< HEAD
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-=======
               style: const TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
               ),
->>>>>>> Maya-up2266552
             ),
 
             // membership trend graph
@@ -675,16 +544,12 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
             ),
             const SizedBox(height: 20),
 
-<<<<<<< HEAD
-            SizedBox(height: 250, child: _buildChart(eventValues)),
-=======
             SizedBox(
               height: 300,
               child: isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _buildEventBarChart(eventValues, eventNames),
             ),
->>>>>>> Maya-up2266552
 
             const SizedBox(height: 50),
           ],
