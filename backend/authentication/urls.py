@@ -48,7 +48,7 @@ urlpatterns = [
     path('societies/<int:society_id>/events/', SocietyEventView.as_view(), name='society-events'),
     path('societies/<int:society_id>/check-membership/', SocietyMembershipCheckView.as_view(), name='society-membership-check'),
     # Admin event management
-    path('events/<int:event_id >/delete/', DeleteEventView.as_view(), name='delete-event'),
+    path('events/<int:event_id>/delete/', DeleteEventView.as_view(), name='delete-event'),
     path('events/', SocietyEventView.as_view(), name='event-list'),
     # path('events/create/', SocietyEventView.as_view(), name='create-event'),
     path('events/my/', MyEventsView.as_view(), name='my-events'),
