@@ -688,113 +688,220 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
-  Widget _buildEventsSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Upcoming Events",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 12),
-          if (isLoading)
-            const Center(child: CircularProgressIndicator())
-          else if (events.isEmpty)
-            const Text(
-              "No upcoming events",
-              style: TextStyle(color: Colors.grey),
-            )
-          else
-            SizedBox(
-              height: 160,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: events.length,
-                itemBuilder: (context, index) {
-                  final event = events[index];
-                  final startTime = DateTime.parse(
-                    event["start_time"],
-                  ).toLocal();
+//   Widget _buildEventsSection() {
+//     return Padding(
+//       padding: const EdgeInsets.symmetric(horizontal: 16),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           const Text(
+//             "Upcoming Events",
+//             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+//           ),
+//           const SizedBox(height: 12),
+//           if (isLoading)
+//             const Center(child: CircularProgressIndicator())
+//           else if (events.isEmpty)
+//             const Text(
+//               "No upcoming events",
+//               style: TextStyle(color: Colors.grey),
+//             )
+//           else
+//             SizedBox(
+//               height: 160,
+//               child: ListView.builder(
+//                 scrollDirection: Axis.horizontal,
+//                 itemCount: events.length,
+//                 itemBuilder: (context, index) {
+//                   final event = events[index];
+//                   final startTime = DateTime.parse(event["start_time"]).toLocal();
 
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => SocietyProfilePage(
-                            societyId: event["society_id"],
-                            isAdmin: false,
-                          ),
+//                   return GestureDetector(
+//                     onTap: () {
+//                       navigateToSociety(event["society_id"], event["society_name"]);
+//                     },
+//                     child: Container(
+//                       width: 200,
+//                       margin: const EdgeInsets.only(right: 12),
+//                       padding: const EdgeInsets.all(16),
+//                       decoration: BoxDecoration(
+//                         gradient: const LinearGradient(
+//                           colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)],
+//                           begin: Alignment.topLeft,
+//                           end: Alignment.bottomRight,
+//                         ),
+//                         borderRadius: BorderRadius.circular(16),
+//                       ),
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.start,
+//                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                         children: [
+//                           Text(
+//                             event["title"],
+//                             style: const TextStyle(
+//                               color: Colors.white,
+//                               fontSize: 16,
+//                               fontWeight: FontWeight.bold,
+//                             ),
+//                             maxLines: 2,
+//                             overflow: TextOverflow.ellipsis,
+//                           ),
+//                           Column(
+//                             crossAxisAlignment: CrossAxisAlignment.start,
+//                             children: [
+//                               Text(
+//                                 "${startTime.day}/${startTime.month}/${startTime.year}",
+//                                 style: const TextStyle(
+//                                   color: Colors.white70,
+//                                   fontSize: 13,
+//                                 ),
+//                               ),
+//                               const SizedBox(height: 4),
+//                               Text(
+//                                 event["location"] ?? "",
+//                                 style: const TextStyle(
+//                                   color: Colors.white70,
+//                                   fontSize: 12,
+//                                 ),
+//                                 maxLines: 1,
+//                                 overflow: TextOverflow.ellipsis,
+//                               ),
+//                               if (event["capacity_limit"] != null)
+//                                 Text(
+//                                   "Cap: ${event["capacity_limit"]}",
+//                                   style: const TextStyle(
+//                                     color: Colors.white60,
+//                                     fontSize: 11,
+//                                   ),
+//                                 ),
+//                             ],
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                   );
+//                 },
+//               ),
+//             ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+
+Widget _buildEventsSection() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Upcoming Events",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        if (isLoading)
+          const Center(child: CircularProgressIndicator())
+        else if (events.isEmpty)
+          const Text(
+            "No upcoming events",
+            style: TextStyle(color: Colors.grey),
+          )
+        else
+          SizedBox(
+            height: 160,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: events.length,
+              itemBuilder: (context, index) {
+                final event = events[index];
+                final startTime = DateTime.parse(
+                  event["start_time"],
+                ).toLocal();
+                
+                // ✅ FIX: Check if this event belongs to admin's society
+                final bool isOwnSociety = event["society_id"] == ApiService.societyId;
+
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SocietyProfilePage(
+                          societyId: event["society_id"],
+                          isAdmin: isOwnSociety,  // ✅ Now sets true for admin's events
                         ),
-                      );
-                    },
-                    child: Container(
-                      width: 200,
-                      margin: const EdgeInsets.only(right: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            event["title"],
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "${startTime.day}/${startTime.month}/${startTime.year}",
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                event["location"] ?? "",
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              if (event["capacity_limit"] != null)
-                                Text(
-                                  "Cap: ${event["capacity_limit"]}",
-                                  style: const TextStyle(
-                                    color: Colors.white60,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ],
+                    );
+                  },
+                  child: Container(
+                    width: 200,
+                    margin: const EdgeInsets.only(right: 12),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  );
-                },
-              ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          event["title"],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "${startTime.day}/${startTime.month}/${startTime.year}",
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              event["location"] ?? "",
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (event["capacity_limit"] != null)
+                              Text(
+                                "Cap: ${event["capacity_limit"]}",
+                                style: const TextStyle(
+                                  color: Colors.white60,
+                                  fontSize: 11,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-        ],
-      ),
-    );
-  }
+          ),
+      ],
+    ),
+  );
 }
+
+}
+
