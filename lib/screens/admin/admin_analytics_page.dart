@@ -409,7 +409,6 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
     );
 
     print("📡 Status: ${response.statusCode}");
-    print("📡 Body: ${response.body}");
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -421,15 +420,15 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
             .toList();
         liveCount = data["live_count"] ?? 0;
 
-        // FIX: Use events_stats (not event_attendance) and extract attendee_count
+        // FIX: Explicitly convert to List<double> and List<String>
         final eventsStats = data["events_stats"] ?? [];
-        print("📊 eventsStats: $eventsStats");
         
-        eventValues = eventsStats.map((e) => (e["attendee_count"] as num).toDouble()).toList();
-        eventNames = eventsStats.map((e) => e["title"].toString()).toList();
+        // Create new lists with correct types
+        eventValues = eventsStats.map<double>((e) => (e["attendee_count"] as num).toDouble()).toList();
+        eventNames = eventsStats.map<String>((e) => e["title"].toString()).toList();
         
-        print("📊 eventValues: $eventValues");
-        print("📊 eventNames: $eventNames");
+        print("✅ eventValues (${eventValues.length}): $eventValues");
+        print("✅ eventNames (${eventNames.length}): $eventNames");
         
         if (values.isNotEmpty) {
           values[values.length - 1] = liveCount.toDouble();
