@@ -26,6 +26,7 @@ from .views import (
     LeaveSocietyView,
     SocietyDetailView,
     SocietyAdminDetailView,
+    CheckEventAttendanceView,
     )
 
 
