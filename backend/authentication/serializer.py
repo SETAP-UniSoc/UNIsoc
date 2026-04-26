@@ -43,6 +43,8 @@ from .models import Event
 
 class EventSerializer(serializers.ModelSerializer):
     attendee_count = serializers.SerializerMethodField(read_only=True)
+    society_name = serializers.CharField(source="society.name", read_only=True)
+    society_id = serializers.IntegerField(source="society.id", read_only=True)
 
     class Meta:
         model = Event
@@ -56,8 +58,10 @@ class EventSerializer(serializers.ModelSerializer):
             'capacity_limit',
             'status',
             'attendee_count',
+            'society_name',
+            'society_id'
         ]
-        read_only_fields = ['id', 'status', 'attendee_count']
+        read_only_fields = ['id', 'attendee_count', 'society_name', 'society_id']
 
     def get_attendee_count(self, obj):
         return obj.eventattendance_set.filter(left_at__isnull=True).count()
