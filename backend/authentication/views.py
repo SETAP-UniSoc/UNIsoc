@@ -462,6 +462,8 @@
 ###################################################################################
 
 
+from asyncio import events
+
 from rest_framework.authtoken.models import Token
 from rest_framework import generics
 from urllib3 import request
@@ -483,6 +485,7 @@ from datetime import timedelta
 import re
 
 from .models import NotificationPreference, Society, Membership, Event
+from backend.authentication import serializer
 
 
 class UserListView(generics.ListAPIView):
@@ -760,9 +763,10 @@ class AllEventsView(APIView):
         :return: Serialized list of up to 5 events.
         :rtype: Response
         """
-        events = Event.objects.all().order_by('-id')[:5]
-        serializer = EventSerializer(events, many=True)
-        return Response(serializer.data)
+        def get(self, request):
+            events = Event.objects.all().order_by('-id')[:5]
+            serializer = EventSerializer(events, many=True)
+            return Response(serializer.data)
 
 
 class MyCreatedEventsView(APIView):
