@@ -8,6 +8,7 @@
 // import 'admin_bottom_nav.dart';
 // import 'admin_dropdown_menu.dart';
 
+// //admin hompage with a carousel of top societies, a section to browse societies by category and a section for upcoming events. Also includes a search bar that searches both events and societies and shows results in a dropdown as the user types. Admin can also filter and sort societies in the browse section. This is the default page when admin logs in
 // class AdminHomepage extends StatefulWidget {
 //   const AdminHomepage({super.key});
 
@@ -16,7 +17,8 @@
 // }
 
 // class _AdminHomepageState extends State<AdminHomepage> {
-//   final CarouselSliderController _societyController = CarouselSliderController();
+//   final CarouselSliderController _societyController =
+//       CarouselSliderController();
 
 //   List societies = [];
 //   List filteredSocieties = [];
@@ -31,32 +33,37 @@
 //   Timer? debounce;
 //   bool isSearching = false;
 
-//   final List<String> categories = [
-//     "All", "Academic", "Cultural", "Sports", "Religious", "Extra-curricular"
-//   ];
-
-//   final Map<String, Color> categoryColours = {
-//     "Academic": const Color(0xFF5C6BC0),
-//     "Cultural": const Color(0xFF26A69A),
-//     "Sports": const Color(0xFF7E57C2),
-//     "Religious": const Color(0xFF8D6E63),
-//     "Extra-curricular": const Color(0xFF42A5F5),
-//     "All": const Color(0xFF7B1FA2),
-//   };
-
-//   final List<Color> carouselColours = [
-//     const Color(0xFF7B1FA2),
-//     const Color(0xFF6A1B9A),
-//     const Color(0xFF9C27B0),
-//     const Color(0xFF8E24AA),
-//     const Color(0xFF6D1F7B),
-//   ];
-
 //   @override
 //   void dispose() {
 //     debounce?.cancel();
 //     super.dispose();
 //   }
+
+//   final List<String> categories = [
+//     "All",
+//     "Academic",
+//     "Cultural",
+//     "Sports",
+//     "Religious",
+//     "Extra-curricular",
+//   ]; // list of catergies
+
+//   final Map<String, Color> categoryColours = {
+//     "Academic": const Color(0xFF5C6BC0), //indgo
+//     "Cultural": const Color(0xFF26A69A), //teal
+//     "Sports": const Color(0xFF7E57C2), //medium purple
+//     "Religious": const Color(0xFF8D6E63), //warm brown
+//     "Extra-curricular": const Color(0xFF42A5F5), //light blue
+//     "All": const Color(0xFF7B1FA2), //deep purple
+//   };
+
+//   final List<Color> carouselColours = [
+//     const Color(0xFF7B1FA2), //deep purple
+//     const Color(0xFF6A1B9A), //darker purple
+//     const Color(0xFF9C27B0), // purple
+//     const Color(0xFF8E24AA), // medium purple
+//     const Color(0xFF6D1F7B), // darkest purple
+//   ];
 
 //   @override
 //   void initState() {
@@ -78,7 +85,8 @@
 //         Uri.parse("${ApiService.baseUrl}/societies/"),
 //         headers: ApiService.headers,
 //       );
-//       print("SOC RESPONSE: ${response.statusCode}");
+//       print("SOC RESPONESE: ${response.statusCode}");
+//       print("SOC BODY: ${response.body}");
 
 //       if (response.statusCode == 200) {
 //         final data = jsonDecode(response.body) as List;
@@ -86,34 +94,33 @@
 //           societies = data;
 //           filteredSocieties = data;
 //         });
-//         print("Loaded ${societies.length} societies");
 //       }
 //     } catch (e) {
 //       print("Error loading societies: $e");
 //     }
-// }
+//     print("SOC DATA: $societies");
+//   }
 
-// Future<void> loadEvents() async {
-// try {
-// final response = await http.get(
-// Uri.parse("${ApiService.baseUrl}/events/all/"),
-// headers: ApiService.headers,
-// );
+//   Future<void> loadEvents() async {
+//     try {
+//       final response = await http.get(
+//         Uri.parse("${ApiService.baseUrl}/events/all/"),
+//         headers: ApiService.headers,
+//       );
 
-// if (response.statusCode == 200) {
-// final data = jsonDecode(response.body) as List;
+//       if (response.statusCode == 200) {
+//         final data = jsonDecode(response.body) as List;
 
-// setState(() {
-// events = data;
-// });
+//         setState(() {
+//           events = data;
+//         });
 
-// print("Loaded ${events.length} global events");
-// }
-// } catch (e) {
-// print("Error loading events: $e");
-// }
-// }
-
+//         print("Loaded ${events.length} global events");
+//       }
+//     } catch (e) {
+//       print("Error loading events: $e");
+//     }
+//   }
 
 //   void applyFilters() {
 //     List result = [...societies];
@@ -127,9 +134,13 @@
 //     } else if (sortBy == "Z-A") {
 //       result.sort((a, b) => b["name"].compareTo(a["name"]));
 //     } else if (sortBy == "Most Members") {
-//       result.sort((a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0));
+//       result.sort(
+//         (a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0),
+//       );
 //     } else if (sortBy == "Least Members") {
-//       result.sort((a, b) => (a["member_count"] ?? 0).compareTo(b["member_count"] ?? 0));
+//       result.sort(
+//         (a, b) => (a["member_count"] ?? 0).compareTo(b["member_count"] ?? 0),
+//       );
 //     }
 
 //     setState(() {
@@ -149,19 +160,19 @@
 
 //   // Helper method to navigate to society page with correct isAdmin flag
 //   void navigateToSociety(int societyId, String societyName) {
-//     // Check if this is the admin's own society
-//     final bool isOwnSociety = societyId == ApiService.societyId;
     
+//     final bool isOwnSociety = ApiService.societyId != null && societyId == ApiService.societyId;
+
 //     print(" Navigating to society: $societyName (ID: $societyId)");
 //     print(" Admin's own society ID: ${ApiService.societyId}");
 //     print(" Setting isAdmin: $isOwnSociety");
-    
+
 //     Navigator.push(
 //       context,
 //       MaterialPageRoute(
 //         builder: (_) => SocietyProfilePage(
 //           societyId: societyId,
-//           isAdmin: isOwnSociety,  // Only true if it's their own society
+//           isAdmin: isOwnSociety, // Only true if it's their own society AND societyId exists
 //         ),
 //       ),
 //     );
@@ -177,12 +188,7 @@
 //             children: [
 //               _buildHeader(),
 //               const SizedBox(height: 8),
-//               Column(
-//                 children: [
-//                   _buildSearchBar(),
-//                   _buildSearchDropdown(),
-//                 ],
-//               ),
+//               Column(children: [_buildSearchBar(), _buildSearchDropdown()]),
 //               const SizedBox(height: 20),
 //               _buildTopSocietiesCarousel(),
 //               const SizedBox(height: 30),
@@ -203,7 +209,10 @@
 //       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
 //       decoration: const BoxDecoration(
 //         gradient: LinearGradient(
-//           colors: [Color.fromARGB(255, 175, 147, 216), Color.fromARGB(255, 94, 39, 176)],
+//           colors: [
+//             Color.fromARGB(255, 175, 147, 216),
+//             Color.fromARGB(255, 94, 39, 176),
+//           ],
 //           begin: Alignment.topLeft,
 //           end: Alignment.bottomRight,
 //         ),
@@ -228,21 +237,20 @@
 //           const SizedBox(height: 8),
 //           Text(
 //             "Welcome — ${ApiService.societyName ?? 'Admin'}",
-//             style: const TextStyle(
-//               fontSize: 18,
-//               color: Colors.white70,
-//             ),
+//             style: const TextStyle(fontSize: 18, color: Colors.white70),
 //           ),
 //         ],
 //       ),
 //     );
 //   }
 
+//   //searchbar code important for both admin and user homepages
 //   Widget _buildSearchBar() {
 //     return Padding(
 //       padding: const EdgeInsets.symmetric(horizontal: 16),
 //       child: TextField(
 //         onChanged: (query) {
+//           // 🔥 debounce (prevents spam requests)
 //           if (debounce?.isActive ?? false) debounce!.cancel();
 
 //           debounce = Timer(const Duration(milliseconds: 300), () async {
@@ -276,6 +284,8 @@
 //         decoration: InputDecoration(
 //           hintText: "Search events or societies",
 //           prefixIcon: const Icon(Icons.search, color: Color(0xFF9C27B0)),
+
+//           // 🔥 loading indicator
 //           suffixIcon: isSearching
 //               ? const Padding(
 //                   padding: EdgeInsets.all(12),
@@ -286,13 +296,12 @@
 //                   ),
 //                 )
 //               : null,
+
 //           focusedBorder: OutlineInputBorder(
 //             borderRadius: BorderRadius.circular(24),
 //             borderSide: const BorderSide(color: Color(0xFF9C27B0)),
 //           ),
-//           border: OutlineInputBorder(
-//             borderRadius: BorderRadius.circular(24),
-//           ),
+//           border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
 //         ),
 //       ),
 //     );
@@ -306,12 +315,7 @@
 //       decoration: BoxDecoration(
 //         color: Colors.white,
 //         borderRadius: BorderRadius.circular(12),
-//         boxShadow: [
-//           BoxShadow(
-//             color: Colors.black12,
-//             blurRadius: 6,
-//           ),
-//         ],
+//         boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
 //       ),
 //       child: ListView.builder(
 //         shrinkWrap: true,
@@ -320,19 +324,27 @@
 //           final item = searchResults[index];
 
 //           return ListTile(
-//             leading: item["type"] == "society" 
-//                 ? const Icon(Icons.business, color: Color(0xFF9C27B0))
-//                 : const Icon(Icons.event, color: Color(0xFF3B82F6)),
+//             leading: const Icon(Icons.search),
 //             title: Text(item["name"] ?? item["title"] ?? ""),
-//             subtitle: Text(item["type"] == "society" 
-//                 ? "Society • ${item["category"] ?? ''}" 
-//                 : "Event • ${item["society_name"] ?? ''}"),
+//             subtitle: Text(item["type"] ?? ""),
+
 //             onTap: () {
 //               if (item["type"] == "society") {
-//                 navigateToSociety(item["id"], item["name"]);
-//               } else if (item["type"] == "event") {
-//                 navigateToSociety(item["society_id"], item["society_name"]);
+//                 // SAFE NULL CHECK for search results
+//                 final bool isOwnSociety = ApiService.societyId != null && 
+//                     item["id"] == ApiService.societyId;
+                    
+//                 Navigator.push(
+//                   context,
+//                   MaterialPageRoute(
+//                     builder: (_) => SocietyProfilePage(
+//                       societyId: item["id"],
+//                       isAdmin: isOwnSociety,
+//                     ),
+//                   ),
+//                 );
 //               }
+
 //               setState(() {
 //                 searchResults = [];
 //               });
@@ -345,7 +357,9 @@
 
 //   Widget _buildTopSocietiesCarousel() {
 //     final topSocieties = [...societies]
-//       ..sort((a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0));
+//       ..sort(
+//         (a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0),
+//       );
 //     final top5 = topSocieties.take(5).toList();
 
 //     return Column(
@@ -360,7 +374,7 @@
 //             ),
 //           ),
 //         ),
-//         const SizedBox(height: 50),
+//         const SizedBox(height: 12),
 //         if (isLoading)
 //           const CircularProgressIndicator()
 //         else if (top5.isEmpty)
@@ -381,11 +395,24 @@
 //                 items: top5.asMap().entries.map((entry) {
 //                   final index = entry.key;
 //                   final society = entry.value;
-//                   final colour = carouselColours[index % carouselColours.length];
+//                   final colour =
+//                       carouselColours[index % carouselColours.length];
+                  
+//                   // SAFE NULL CHECK for carousel
+//                   final bool isOwnSociety = ApiService.societyId != null && 
+//                       society["id"] == ApiService.societyId;
 
 //                   return GestureDetector(
 //                     onTap: () {
-//                       navigateToSociety(society["id"], society["name"]);
+//                       Navigator.push(
+//                         context,
+//                         MaterialPageRoute(
+//                           builder: (_) => SocietyProfilePage(
+//                             societyId: society["id"],
+//                             isAdmin: isOwnSociety,
+//                           ),
+//                         ),
+//                       );
 //                     },
 //                     child: Container(
 //                       decoration: BoxDecoration(
@@ -421,14 +448,14 @@
 //                               textAlign: TextAlign.center,
 //                             ),
 //                             const SizedBox(height: 8),
-//                             // Text(
-//                             //   "${society["member_count"]} members",
-//                             //   style: const TextStyle(
-//                             //     color: Colors.white60,
-//                             //     fontSize: 13,
-//                             //   ),
-//                             //   textAlign: TextAlign.center,
-//                             // ),
+//                             Text(
+//                               "${society["member_count"]} members",
+//                               style: const TextStyle(
+//                                 color: Colors.white60,
+//                                 fontSize: 13,
+//                               ),
+//                               textAlign: TextAlign.center,
+//                             ),
 //                           ],
 //                         ),
 //                       ),
@@ -474,11 +501,14 @@
 //                   PopupMenuButton<String>(
 //                     child: const Row(
 //                       children: [
-//                         Text("Sort by",
-//                             style: TextStyle(
-//                                 fontSize: 14, color: Color(0xFF9C27B0))),
-//                         Icon(Icons.arrow_drop_down,
-//                             color: Color(0xFF9C27B0)),
+//                         Text(
+//                           "Sort by",
+//                           style: TextStyle(
+//                             fontSize: 14,
+//                             color: Color(0xFF9C27B0),
+//                           ),
+//                         ),
+//                         Icon(Icons.arrow_drop_down, color: Color(0xFF9C27B0)),
 //                       ],
 //                     ),
 //                     onSelected: (value) {
@@ -489,22 +519,27 @@
 //                       PopupMenuItem(value: "A-Z", child: Text("A-Z")),
 //                       PopupMenuItem(value: "Z-A", child: Text("Z-A")),
 //                       PopupMenuItem(
-//                           value: "Most Members",
-//                           child: Text("Most Members")),
+//                         value: "Most Members",
+//                         child: Text("Most Members"),
+//                       ),
 //                       PopupMenuItem(
-//                           value: "Least Members",
-//                           child: Text("Least Members")),
+//                         value: "Least Members",
+//                         child: Text("Least Members"),
+//                       ),
 //                     ],
 //                   ),
 //                   const SizedBox(width: 8),
 //                   PopupMenuButton<String>(
 //                     child: const Row(
 //                       children: [
-//                         Text("Filter by",
-//                             style: TextStyle(
-//                                 fontSize: 14, color: Color(0xFF9C27B0))),
-//                         Icon(Icons.arrow_drop_down,
-//                             color: Color(0xFF9C27B0)),
+//                         Text(
+//                           "Filter by",
+//                           style: TextStyle(
+//                             fontSize: 14,
+//                             color: Color(0xFF9C27B0),
+//                           ),
+//                         ),
+//                         Icon(Icons.arrow_drop_down, color: Color(0xFF9C27B0)),
 //                       ],
 //                     ),
 //                     onSelected: (value) {
@@ -512,15 +547,18 @@
 //                       applyFilters();
 //                     },
 //                     itemBuilder: (_) => categories
-//                         .map((cat) =>
-//                             PopupMenuItem(value: cat, child: Text(cat)))
+//                         .map(
+//                           (cat) => PopupMenuItem(value: cat, child: Text(cat)),
+//                         )
 //                         .toList(),
 //                   ),
 //                 ],
 //               ),
 //             ],
 //           ),
+
 //           const SizedBox(height: 12),
+
 //           if (!showingCategories)
 //             TextButton.icon(
 //               onPressed: resetToCategories,
@@ -530,7 +568,9 @@
 //                 style: TextStyle(color: Color(0xFF9C27B0)),
 //               ),
 //             ),
+
 //           const SizedBox(height: 8),
+
 //           if (showingCategories)
 //             GridView.count(
 //               crossAxisCount: 2,
@@ -539,9 +579,7 @@
 //               crossAxisSpacing: 12,
 //               mainAxisSpacing: 12,
 //               childAspectRatio: 1.5,
-//               children: categories
-//                   .where((c) => c != "All")
-//                   .map((category) {
+//               children: categories.where((c) => c != "All").map((category) {
 //                 final colour = categoryColours[category] ?? Colors.purple;
 //                 final count = societies
 //                     .where((s) => s["category"] == category)
@@ -594,7 +632,9 @@
 //             ListView.builder(
 //               shrinkWrap: true,
 //               physics: const NeverScrollableScrollPhysics(),
-//               itemCount: filteredSocieties.isEmpty ? 1 : filteredSocieties.length,
+//               itemCount: filteredSocieties.isEmpty
+//                   ? 1
+//                   : filteredSocieties.length,
 //               itemBuilder: (context, index) {
 //                 if (filteredSocieties.isEmpty) {
 //                   return const Center(
@@ -606,7 +646,12 @@
 //                 }
 
 //                 final soc = filteredSocieties[index];
-//                 final colour = categoryColours[soc["category"]] ?? Colors.purple;
+//                 final colour =
+//                     categoryColours[soc["category"]] ?? Colors.purple;
+                
+//                 // SAFE NULL CHECK for browse list
+//                 final bool isOwnSociety = ApiService.societyId != null && 
+//                     soc["id"] == ApiService.societyId;
 
 //                 return Container(
 //                   margin: const EdgeInsets.only(bottom: 10),
@@ -635,7 +680,15 @@
 //                       style: const TextStyle(fontSize: 12, color: Colors.grey),
 //                     ),
 //                     onTap: () {
-//                       navigateToSociety(soc["id"], soc["name"]);
+//                       Navigator.push(
+//                         context,
+//                         MaterialPageRoute(
+//                           builder: (_) => SocietyProfilePage(
+//                             societyId: soc["id"],
+//                             isAdmin: isOwnSociety,
+//                           ),
+//                         ),
+//                       );
 //                     },
 //                   ),
 //                 );
@@ -645,110 +698,9 @@
 //       ),
 //     );
 //   }
-
-// //   Widget _buildEventsSection() {
-// //     return Padding(
-// //       padding: const EdgeInsets.symmetric(horizontal: 16),
-// //       child: Column(
-// //         crossAxisAlignment: CrossAxisAlignment.start,
-// //         children: [
-// //           const Text(
-// //             "Upcoming Events",
-// //             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-// //           ),
-// //           const SizedBox(height: 12),
-// //           if (isLoading)
-// //             const Center(child: CircularProgressIndicator())
-// //           else if (events.isEmpty)
-// //             const Text(
-// //               "No upcoming events",
-// //               style: TextStyle(color: Colors.grey),
-// //             )
-// //           else
-// //             SizedBox(
-// //               height: 160,
-// //               child: ListView.builder(
-// //                 scrollDirection: Axis.horizontal,
-// //                 itemCount: events.length,
-// //                 itemBuilder: (context, index) {
-// //                   final event = events[index];
-// //                   final startTime = DateTime.parse(event["start_time"]).toLocal();
-
-// //                   return GestureDetector(
-// //                     onTap: () {
-// //                       navigateToSociety(event["society_id"], event["society_name"]);
-// //                     },
-// //                     child: Container(
-// //                       width: 200,
-// //                       margin: const EdgeInsets.only(right: 12),
-// //                       padding: const EdgeInsets.all(16),
-// //                       decoration: BoxDecoration(
-// //                         gradient: const LinearGradient(
-// //                           colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)],
-// //                           begin: Alignment.topLeft,
-// //                           end: Alignment.bottomRight,
-// //                         ),
-// //                         borderRadius: BorderRadius.circular(16),
-// //                       ),
-// //                       child: Column(
-// //                         crossAxisAlignment: CrossAxisAlignment.start,
-// //                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-// //                         children: [
-// //                           Text(
-// //                             event["title"],
-// //                             style: const TextStyle(
-// //                               color: Colors.white,
-// //                               fontSize: 16,
-// //                               fontWeight: FontWeight.bold,
-// //                             ),
-// //                             maxLines: 2,
-// //                             overflow: TextOverflow.ellipsis,
-// //                           ),
-// //                           Column(
-// //                             crossAxisAlignment: CrossAxisAlignment.start,
-// //                             children: [
-// //                               Text(
-// //                                 "${startTime.day}/${startTime.month}/${startTime.year}",
-// //                                 style: const TextStyle(
-// //                                   color: Colors.white70,
-// //                                   fontSize: 13,
-// //                                 ),
-// //                               ),
-// //                               const SizedBox(height: 4),
-// //                               Text(
-// //                                 event["location"] ?? "",
-// //                                 style: const TextStyle(
-// //                                   color: Colors.white70,
-// //                                   fontSize: 12,
-// //                                 ),
-// //                                 maxLines: 1,
-// //                                 overflow: TextOverflow.ellipsis,
-// //                               ),
-// //                               if (event["capacity_limit"] != null)
-// //                                 Text(
-// //                                   "Cap: ${event["capacity_limit"]}",
-// //                                   style: const TextStyle(
-// //                                     color: Colors.white60,
-// //                                     fontSize: 11,
-// //                                   ),
-// //                                 ),
-// //                             ],
-// //                           ),
-// //                         ],
-// //                       ),
-// //                     ),
-// //                   );
-// //                 },
-// //               ),
-// //             ),
-// //         ],
-// //       ),
-// //     );
-// //   }
-// // }
-
-
 // Widget _buildEventsSection() {
+//   final CarouselSliderController _eventsController = CarouselSliderController();
+
 //   return Padding(
 //     padding: const EdgeInsets.symmetric(horizontal: 16),
 //     child: Column(
@@ -767,113 +719,124 @@
 //             style: TextStyle(color: Colors.grey),
 //           )
 //         else
-//           SizedBox(
-//             height: 160,
-//             child: ListView.builder(
-//               scrollDirection: Axis.horizontal,
-//               itemCount: events.length,
-//               itemBuilder: (context, index) {
-//                 final event = events[index];
-//                 final startTime = DateTime.parse(
-//                   event["start_time"],
-//                 ).toLocal();
-                
-//                 // ✅ FIX: Check if this event belongs to admin's society
-//                 final bool isOwnSociety = event["society_id"] == ApiService.societyId;
+//           Stack(
+//             alignment: Alignment.center,
+//             children: [
+//               CarouselSlider(
+//                 carouselController: _eventsController,
+//                 options: CarouselOptions(
+//                   height: 160,
+//                   autoPlay: true,                    // ✅ Auto-scroll enabled
+//                   autoPlayInterval: const Duration(seconds: 4),  // ✅ Every 4 seconds
+//                   autoPlayAnimationDuration: const Duration(milliseconds: 800),
+//                   autoPlayCurve: Curves.fastOutSlowIn,
+//                   enlargeCenterPage: false,
+//                   viewportFraction: 0.7,
+//                   pauseAutoPlayOnTouch: true,        // ✅ Pause when user touches
+//                 ),
+//                 items: events.map((event) {
+//                   final startTime = DateTime.parse(event["start_time"]).toLocal();
+                  
+//                   // ✅ SAFE NULL CHECK
+//                   final bool isOwnSociety = ApiService.societyId != null && 
+//                       event["society_id"] == ApiService.societyId;
 
-//                 return GestureDetector(
-//                   onTap: () {
-//                     Navigator.push(
-//                       context,
-//                       MaterialPageRoute(
-//                         builder: (_) => SocietyProfilePage(
-//                           societyId: event["society_id"],
-//                           isAdmin: isOwnSociety,  // ✅ Now sets true for admin's events
-//                         ),
-//                       ),
-//                     );
-//                   },
-//                   child: Container(
-//                     width: 200,
-//                     margin: const EdgeInsets.only(right: 12),
-//                     padding: const EdgeInsets.all(16),
-//                     decoration: BoxDecoration(
-//                       gradient: const LinearGradient(
-//                         colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)],
-//                         begin: Alignment.topLeft,
-//                         end: Alignment.bottomRight,
-//                       ),
-//                       borderRadius: BorderRadius.circular(16),
-//                     ),
-//                     child: Column(
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                       children: [
-//                         Text(
-//                           event["title"],
-//                           style: const TextStyle(
-//                             color: Colors.white,
-//                             fontSize: 16,
-//                             fontWeight: FontWeight.bold,
+//                   return GestureDetector(
+//                     onTap: () {
+//                       Navigator.push(
+//                         context,
+//                         MaterialPageRoute(
+//                           builder: (_) => SocietyProfilePage(
+//                             societyId: event["society_id"],
+//                             isAdmin: isOwnSociety,
 //                           ),
-//                           maxLines: 2,
-//                           overflow: TextOverflow.ellipsis,
 //                         ),
-//                         Column(
-//                           crossAxisAlignment: CrossAxisAlignment.start,
-//                           children: [
-//                             Text(
-//                               "${startTime.day}/${startTime.month}/${startTime.year}",
-//                               style: const TextStyle(
-//                                 color: Colors.white70,
-//                                 fontSize: 13,
-//                               ),
+//                       );
+//                     },
+//                     child: Container(
+//                       width: 200,
+//                       margin: const EdgeInsets.symmetric(horizontal: 6),
+//                       padding: const EdgeInsets.all(16),
+//                       decoration: BoxDecoration(
+//                         gradient: const LinearGradient(
+//                           colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)],
+//                           begin: Alignment.topLeft,
+//                           end: Alignment.bottomRight,
+//                         ),
+//                         borderRadius: BorderRadius.circular(16),
+//                       ),
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.start,
+//                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                         children: [
+//                           Text(
+//                             event["title"],
+//                             style: const TextStyle(
+//                               color: Colors.white,
+//                               fontSize: 16,
+//                               fontWeight: FontWeight.bold,
 //                             ),
-//                             const SizedBox(height: 4),
-//                             Text(
-//                               event["location"] ?? "",
-//                               style: const TextStyle(
-//                                 color: Colors.white70,
-//                                 fontSize: 12,
-//                               ),
-//                               maxLines: 1,
-//                               overflow: TextOverflow.ellipsis,
-//                             ),
-//                             if (event["capacity_limit"] != null)
+//                             maxLines: 2,
+//                             overflow: TextOverflow.ellipsis,
+//                           ),
+//                           Column(
+//                             crossAxisAlignment: CrossAxisAlignment.start,
+//                             children: [
 //                               Text(
-//                                 "Cap: ${event["capacity_limit"]}",
+//                                 "${startTime.day}/${startTime.month}/${startTime.year}",
 //                                 style: const TextStyle(
-//                                   color: Colors.white60,
-//                                   fontSize: 11,
+//                                   color: Colors.white70,
+//                                   fontSize: 13,
 //                                 ),
 //                               ),
-//                           ],
-//                         ),
-//                       ],
+//                               const SizedBox(height: 4),
+//                               Text(
+//                                 event["location"] ?? "",
+//                                 style: const TextStyle(
+//                                   color: Colors.white70,
+//                                   fontSize: 12,
+//                                 ),
+//                                 maxLines: 1,
+//                                 overflow: TextOverflow.ellipsis,
+//                               ),
+//                               if (event["capacity_limit"] != null)
+//                                 Text(
+//                                   "Cap: ${event["capacity_limit"]}",
+//                                   style: const TextStyle(
+//                                     color: Colors.white60,
+//                                     fontSize: 11,
+//                                   ),
+//                                 ),
+//                             ],
+//                           ),
+//                         ],
+//                       ),
 //                     ),
-//                   ),
-//                 );
-//               },
-//             ),
+//                   );
+//                 }).toList(),
+//               ),
+//               // Optional: Add navigation arrows
+//               Positioned(
+//                 left: 0,
+//                 child: IconButton(
+//                   icon: const Icon(Icons.arrow_back_ios, size: 20),
+//                   onPressed: () => _eventsController.previousPage(),
+//                 ),
+//               ),
+//               Positioned(
+//                 right: 0,
+//                 child: IconButton(
+//                   icon: const Icon(Icons.arrow_forward_ios, size: 20),
+//                   onPressed: () => _eventsController.nextPage(),
+//                 ),
+//               ),
+//             ],
 //           ),
 //       ],
 //     ),
 //   );
 // }
-
 // }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1065,19 +1028,20 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
   // Helper method to navigate to society page with correct isAdmin flag
   void navigateToSociety(int societyId, String societyName) {
-    // SAFE NULL CHECK: Only compare if ApiService.societyId is not null
+    // Check if this is the admin's own society
     final bool isOwnSociety = ApiService.societyId != null && societyId == ApiService.societyId;
 
-    print("🔍 Navigating to society: $societyName (ID: $societyId)");
-    print("🔍 Admin's own society ID: ${ApiService.societyId}");
-    print("🔍 Setting isAdmin: $isOwnSociety");
+    print(" Navigating to society: $societyName (ID: $societyId)");
+    print(" Admin's own society ID: ${ApiService.societyId}");
+    print(" Setting isOwnSociety: $isOwnSociety");
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => SocietyProfilePage(
           societyId: societyId,
-          isAdmin: isOwnSociety, // Only true if it's their own society AND societyId exists
+          isAdmin: true,  // Always true for admin homepage
+          isOwnSociety: isOwnSociety,  // Pass the flag to control edit button
         ),
       ),
     );
@@ -1244,7 +1208,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
                   MaterialPageRoute(
                     builder: (_) => SocietyProfilePage(
                       societyId: item["id"],
-                      isAdmin: isOwnSociety,
+                      isAdmin: true,  // Always true for admin
+                      isOwnSociety: isOwnSociety,
                     ),
                   ),
                 );
@@ -1314,7 +1279,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
                         MaterialPageRoute(
                           builder: (_) => SocietyProfilePage(
                             societyId: society["id"],
-                            isAdmin: isOwnSociety,
+                            isAdmin: true,  // Always true for admin
+                            isOwnSociety: isOwnSociety,
                           ),
                         ),
                       );
@@ -1590,7 +1556,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
                         MaterialPageRoute(
                           builder: (_) => SocietyProfilePage(
                             societyId: soc["id"],
-                            isAdmin: isOwnSociety,
+                            isAdmin: true,  // Always true for admin
+                            isOwnSociety: isOwnSociety,
                           ),
                         ),
                       );
@@ -1603,6 +1570,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
       ),
     );
   }
+
 Widget _buildEventsSection() {
   final CarouselSliderController _eventsController = CarouselSliderController();
 
@@ -1653,7 +1621,8 @@ Widget _buildEventsSection() {
                         MaterialPageRoute(
                           builder: (_) => SocietyProfilePage(
                             societyId: event["society_id"],
-                            isAdmin: isOwnSociety,
+                            isAdmin: true,  // Always true for admin
+                            isOwnSociety: isOwnSociety,
                           ),
                         ),
                       );
@@ -1742,3 +1711,22 @@ Widget _buildEventsSection() {
   );
 }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
