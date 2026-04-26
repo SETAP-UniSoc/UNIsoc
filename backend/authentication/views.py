@@ -485,6 +485,7 @@ from datetime import timedelta
 import re
 
 from .models import NotificationPreference, Society, Membership, Event
+from backend.authentication import serializer
 
 
 class UserListView(generics.ListAPIView):
@@ -763,10 +764,10 @@ class AllEventsView(APIView):
         :rtype: Response
         """
         def get(self, request):
-            events = Event.objects.all().order_by('-id')[:5]
+            events = Event.objects.select_related("society").order_by('-id')[:5]
+
             serializer = EventSerializer(events, many=True)
             return Response(serializer.data)
-
 
 class MyCreatedEventsView(APIView):
     """API view to retrieve all events created by the authenticated user.
