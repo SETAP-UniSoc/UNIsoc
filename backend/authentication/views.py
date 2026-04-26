@@ -766,7 +766,7 @@ class AllEventsView(APIView):
 
             serializer = EventSerializer(events, many=True)
             return Response(serializer.data)
-
+    
 class MyCreatedEventsView(APIView):
     """API view to retrieve all events created by the authenticated user.
 
