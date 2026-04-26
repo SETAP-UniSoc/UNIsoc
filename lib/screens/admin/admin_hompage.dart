@@ -1571,6 +1571,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
     );
   }
 
+
+
 Widget _buildEventsSection() {
   final CarouselSliderController _eventsController = CarouselSliderController();
 
@@ -1599,30 +1601,43 @@ Widget _buildEventsSection() {
                 carouselController: _eventsController,
                 options: CarouselOptions(
                   height: 160,
-                  autoPlay: true,                    // ✅ Auto-scroll enabled
-                  autoPlayInterval: const Duration(seconds: 4),  // ✅ Every 4 seconds
+                  autoPlay: true,
+                  autoPlayInterval: const Duration(seconds: 4),
                   autoPlayAnimationDuration: const Duration(milliseconds: 800),
                   autoPlayCurve: Curves.fastOutSlowIn,
                   enlargeCenterPage: false,
                   viewportFraction: 0.7,
-                  pauseAutoPlayOnTouch: true,        // ✅ Pause when user touches
+                  pauseAutoPlayOnTouch: true,
                 ),
                 items: events.map((event) {
                   final startTime = DateTime.parse(event["start_time"]).toLocal();
                   
-                  // ✅ SAFE NULL CHECK
+                  // ✅ SAFE NULL CHECK - Get society_id safely
+                  final int? societyIdFromEvent = event["society_id"] as int?;
+                  
+                  // ✅ Check if this event belongs to admin's own society
                   final bool isOwnSociety = ApiService.societyId != null && 
-                      event["society_id"] == ApiService.societyId;
+                      societyIdFromEvent != null &&
+                      societyIdFromEvent == ApiService.societyId;
 
                   return GestureDetector(
                     onTap: () {
+                      // Guard against null society_id
+                      if (societyIdFromEvent == null) {
+                        print("⚠️ Event has no society_id: ${event["title"]}");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Cannot open: missing society information")),
+                        );
+                        return;
+                      }
+                      
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => SocietyProfilePage(
-                            societyId: event["society_id"],
-                            isAdmin: true,  // Always true for admin
-                            isOwnSociety: isOwnSociety,
+                            societyId: societyIdFromEvent,
+                            isAdmin: true,  // ✅ Always true for admin homepage
+                            isOwnSociety: isOwnSociety,  // ✅ Pass the flag
                           ),
                         ),
                       );
@@ -1644,7 +1659,7 @@ Widget _buildEventsSection() {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            event["title"],
+                            event["title"] ?? "Untitled",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -1711,22 +1726,3 @@ Widget _buildEventsSection() {
   );
 }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
