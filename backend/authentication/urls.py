@@ -27,6 +27,7 @@ from .views import (
     SocietyDetailView,
     SocietyAdminDetailView,
     CheckEventAttendanceView,
+    UserProfileView,
     )
 
 
@@ -59,7 +60,7 @@ urlpatterns = [
     path('events/<int:event_id>/join/', JoinEventView.as_view(), name='join-event'),
     path('events/<int:event_id>/leave/', LeaveEventView.as_view(), name='leave-event'),
     path('events/<int:event_id>/attending/', CheckEventAttendanceView.as_view(), name='check-attending'),
-
+    path('user/profile/', UserProfileView.as_view(), name='user-profile'),
 
     # Analytics
     path("my-analytics/", AnalyticsView.as_view(), name="analytics"),
