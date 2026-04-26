@@ -1586,9 +1586,46 @@ class CheckEventAttendanceView(APIView):
             "title": event.title,
             "location": event.location,
             "start_time": event.start_time,
-
+            "is_attending": EventAttendance.objects.filter(
+                event=event,
+                user=request.user,
+                left_at__isnull=True
+            ).exists(),
             "total_registered": total_registered,
             "active_attendees": active_attendees,
             "left_attendees": left_attendees
         })
         
+class UserProfileView(APIView):
+    """
+    Retrieve and update the authenticated user's profile.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        user = request.user
+
+        data = request.data
+
+     
+        if "name" in data:
+            user.name = data["name"]
+
+        if "email" in data:
+            if User.objects.filter(email=data["email"]).exclude(id=user.id).exists():
+                return Response({"error": "Email already in use"}, status=400)
+            user.email = data["email"]
+
+        if "up_number" in data:
+            user.up_number = data["up_number"]
+
+        user.save()
+
+        return Response({
+            "message": "Profile updated successfully",
+            "user": UserSerializer(user).data
+        }, status=status.HTTP_200_OK)
