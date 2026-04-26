@@ -468,13 +468,11 @@ from rest_framework.authtoken.models import Token
 from rest_framework import generics
 from urllib3 import request
 from .models import EventAttendance, User, Event, Society
-from .serializer import UserSerializer
-from .serializer import SocietySerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
-from .serializer import UserSerializer, SocietySerializer, EventSerializer
+from .serializer import UserSerializer, EventSerializer, SocietySerializer
 from django.utils.timezone import now
 from django.db.models import Count, Q
 from rest_framework import status
@@ -768,7 +766,7 @@ class AllEventsView(APIView):
 
             serializer = EventSerializer(events, many=True)
             return Response(serializer.data)
-
+    
 class MyCreatedEventsView(APIView):
     """API view to retrieve all events created by the authenticated user.
 
