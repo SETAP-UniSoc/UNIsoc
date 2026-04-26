@@ -7,9 +7,24 @@ from .models import NotificationPreference, Society, User
 from .models import Event, NotificationPreference
 
 class UserSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+
     class Meta:
-        model = Society
-        fields = '__all__'
+        model = User
+        fields = [
+            "id",
+            "email",
+            "up_number",
+            "role",
+            "first_name",
+            "last_name",
+            "full_name",
+            "created_at"
+        ]
+        read_only_fields = ["id", "role", "created_at"]
+
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()
 
 class SocietySerializer(serializers.ModelSerializer):
     member_count = serializers.IntegerField(read_only=True)
@@ -45,7 +60,7 @@ class EventSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'status', 'attendee_count']
 
     def get_attendee_count(self, obj):
-        return obj.rsvps.count()
+        return obj.eventattendance_set.filter(left_at__isnull=True).count()
 
 class NotificationPreferenceSerializer(serializers.ModelSerializer):
     class Meta:
