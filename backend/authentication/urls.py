@@ -28,6 +28,7 @@ from .views import (
     SocietyAdminDetailView,
     CheckEventAttendanceView,
     UserProfileView,
+    MySocietiesView
     )
 
 
@@ -43,6 +44,7 @@ urlpatterns = [
     path('societies/<int:society_id>/', SocietyDetailView.as_view(), name='society-detail'),
     path('societies/<int:society_id>/admin/', SocietyAdminDetailView.as_view(), name='society-admin-detail'),
     path('societies/<int:society_id>/admin/events/', SocietyAdminDetailView.as_view(), name='society-admin-events'),
+    path("my-societies/", MySocietiesView.as_view(), name="my-societies"),
 
     path('users/', UserListView.as_view(), name='user-list-create'),
     #path('societies/', SocietyListSearchView.as_view(), name='society-list-create'),
