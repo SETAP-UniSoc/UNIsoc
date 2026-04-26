@@ -15,6 +15,14 @@ class ApiService {
     if (authToken != null) "Authorization": "Token $authToken",
   };
 
+  /// Checks if the given society ID belongs to the logged-in admin.
+/// Returns false if the admin has no society assigned (societyId is null).
+
+   static bool isAdminOfSociety(int societyIdToCheck) {
+    
+    return societyId != null && societyId == societyIdToCheck;
+  }
+
   // -------- PUBLIC ENDPOINTS --------
 
 static Future<List> getSocieties() async {
