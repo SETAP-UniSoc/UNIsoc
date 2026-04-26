@@ -763,10 +763,9 @@ class AllEventsView(APIView):
         :return: Serialized list of up to 5 events.
         :rtype: Response
         """
-        def get(self, request):
-            events = Event.objects.select_related("society").order_by('-id')[:5]
-            serializer = EventSerializer(events, many=True)
-            return Response(serializer.data)
+        events = Event.objects.select_related("society").order_by('-id')[:5]
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
     
 class MyCreatedEventsView(APIView):
     """API view to retrieve all events created by the authenticated user.
@@ -1032,11 +1031,11 @@ def send_event_reminders():
             send_mail(
                 subject="Reminder: Event in 24 Hours",
                 message=f"""
-Reminder: "{event.title}" is in 24 hours.
+                Reminder: "{event.title}" is in 24 hours.
 
-Date: {event.start_time}
-Location: {event.location}
-""",
+                Date: {event.start_time}
+                Location: {event.location}
+                """,
                 from_email=None,
                 recipient_list=[user.email],
                 fail_silently=False,
