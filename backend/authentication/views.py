@@ -464,6 +464,7 @@
 
 from rest_framework.authtoken.models import Token
 from rest_framework import generics
+from urllib3 import request
 from .models import EventAttendance, User, Event, Society
 from .serializer import UserSerializer
 from .serializer import SocietySerializer
@@ -1612,8 +1613,11 @@ class UserProfileView(APIView):
         data = request.data
 
      
-        if "name" in data:
-            user.name = data["name"]
+        if "first_name" in request.data:
+            user.first_name = request.data["first_name"]
+
+        if "last_name" in request.data:
+            user.last_name = request.data["last_name"]
 
         if "email" in data:
             if User.objects.filter(email=data["email"]).exclude(id=user.id).exists():
