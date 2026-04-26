@@ -60,7 +60,7 @@ class EventSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'status', 'attendee_count']
 
     def get_attendee_count(self, obj):
-        return obj.rsvps.count()
+        return obj.eventattendance_set.filter(left_at__isnull=True).count()
 
 class NotificationPreferenceSerializer(serializers.ModelSerializer):
     class Meta:
