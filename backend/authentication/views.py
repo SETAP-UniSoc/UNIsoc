@@ -483,7 +483,7 @@ from datetime import timedelta
 import re
 
 from .models import NotificationPreference, Society, Membership, Event
-from backend.authentication import serializer
+
 
 
 class UserListView(generics.ListAPIView):
