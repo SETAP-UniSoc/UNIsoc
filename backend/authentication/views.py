@@ -486,6 +486,7 @@ from .models import NotificationPreference, Society, Membership, Event
 
 
 
+
 class UserListView(generics.ListAPIView):
     """API view to list all users, with optional search and letter filtering.
 
