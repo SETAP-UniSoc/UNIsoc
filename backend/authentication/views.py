@@ -1633,3 +1633,28 @@ class UserProfileView(APIView):
             "message": "Profile updated successfully",
             "user": UserSerializer(user).data
         }, status=status.HTTP_200_OK)
+    
+class MySocietiesView(APIView):
+    """
+    Returns all societies the user is currently a member of.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        memberships = Membership.objects.filter(
+            user=request.user,
+            left_at__isnull=True
+        ).select_related("society")
+
+        societies = []
+        for m in memberships:
+            s = m.society
+            societies.append({
+                "id": s.id,
+                "name": s.name,
+                "category": s.category,
+                "description": s.description,
+            })
+
+        return Response(societies)
