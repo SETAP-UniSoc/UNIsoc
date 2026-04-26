@@ -1,21 +1,3 @@
-// // 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import 'dart:async';
 // import 'dart:convert';
@@ -29,11 +11,13 @@
 // class SocietyProfilePage extends StatefulWidget {
 //   final int societyId;
 //   final bool isAdmin;
+//   final bool isOwnSociety;  // ✅ ADD THIS NEW PARAMETER
 
 //   const SocietyProfilePage({
 //     super.key,
 //     required this.societyId,
 //     required this.isAdmin,
+//     this.isOwnSociety = false,  // ✅ Default to false
 //   });
 
 //   @override
@@ -49,7 +33,7 @@
 //   Timer? pollingTimer;
 //   final TextEditingController descController = TextEditingController();
   
-//   // ADD THIS: Track attending status for each event
+//   // Track attending status for each event
 //   Map<int, bool> attendingStatus = {};
 
 //   @override
@@ -103,7 +87,6 @@
 //     }
 //   }
 
-//   // UPDATED: Load events AND check attendance status
 //   Future<void> loadEvents() async {
 //     try {
 //       final response = await http.get(
@@ -120,7 +103,7 @@
 //             DateTime.parse(a["start_time"]).compareTo(DateTime.parse(b["start_time"])));
 //         setState(() => events = upcoming);
         
-//         // ADD THIS: Check attendance status for each event (regular users only)
+//         // Check attendance status for each event (regular users only)
 //         if (!widget.isAdmin) {
 //           for (var event in events) {
 //             await checkEventAttendance(event["id"]);
@@ -133,7 +116,6 @@
 //     }
 //   }
 
-//   // ADD THIS: Check if user is attending a specific event
 //   Future<void> checkEventAttendance(int eventId) async {
 //     try {
 //       final response = await http.get(
@@ -151,7 +133,6 @@
 //     }
 //   }
 
-//   // ADD THIS: Toggle attendance (join or leave event)
 //   Future<void> toggleEventAttendance(int eventId) async {
 //     final isAttending = attendingStatus[eventId] ?? false;
 //     final endpoint = isAttending
@@ -275,9 +256,9 @@
 //           societyData["name"] ?? "Society",
 //           style: const TextStyle(fontWeight: FontWeight.w600),
 //         ),
-//         actions: widget.isAdmin
+//         actions: widget.isOwnSociety  // ✅ CHANGED: from widget.isAdmin to widget.isOwnSociety
 //             ? [
-//                 // Calendar icon for managing events (stays in AppBar)
+//                 // Calendar icon for managing events (only for admin's own society)
 //                 IconButton(
 //                   icon: const Icon(Icons.calendar_month, color: Colors.white),
 //                   onPressed: () {
@@ -357,7 +338,7 @@
 
 //                   const SizedBox(height: 32),
 
-//                   // About Section WITH EDIT BUTTON NEXT TO IT (for admin)
+//                   // About Section WITH EDIT BUTTON (only for admin's OWN society)
 //                   Row(
 //                     children: [
 //                       const Text(
@@ -368,7 +349,7 @@
 //                           color: Color(0xFF1F2937),
 //                         ),
 //                       ),
-//                       if (widget.isAdmin) ...[
+//                       if (widget.isOwnSociety) ...[  // ✅ CHANGED: from widget.isAdmin to widget.isOwnSociety
 //                         const SizedBox(width: 12),
 //                         IconButton(
 //                           icon: Icon(
@@ -391,7 +372,7 @@
 //                   ),
 //                   const SizedBox(height: 12),
 
-//                   isEditing && widget.isAdmin
+//                   isEditing && widget.isOwnSociety  // ✅ CHANGED: from widget.isAdmin to widget.isOwnSociety
 //                       ? TextField(
 //                           controller: descController,
 //                           maxLines: 5,
@@ -417,7 +398,7 @@
 //                           child: Text(
 //                             societyData["description"]?.isNotEmpty == true
 //                                 ? societyData["description"]
-//                                 : widget.isAdmin
+//                                 : widget.isOwnSociety  // ✅ CHANGED
 //                                     ? "No description yet — tap edit to add one."
 //                                     : "No description yet.",
 //                             style: const TextStyle(
@@ -427,6 +408,7 @@
 
 //                   const SizedBox(height: 24),
 
+//                   // Join/Leave Society button (only for regular users, not admins)
 //                   if (!widget.isAdmin)
 //                     SizedBox(
 //                       width: double.infinity,
@@ -484,7 +466,7 @@
 //                           ),
 //                         )
 //                       : SizedBox(
-//                           height: 380, // CHANGED: Increased from 320 to fit the button
+//                           height: 380,
 //                           child: ListView.builder(
 //                             scrollDirection: Axis.horizontal,
 //                             itemCount: events.length,
@@ -616,7 +598,7 @@
                                               
 //                                               const SizedBox(height: 16),
                                               
-//                                               // ADD THIS: Attend/Leave button (only for regular users, not admin)
+//                                               // Attend/Leave button (only for regular users, not admin)
 //                                               if (!widget.isAdmin && !isPast)
 //                                                 SizedBox(
 //                                                   width: double.infinity,
@@ -712,25 +694,8 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//////////////////////
+////
 
 
 
@@ -747,13 +712,13 @@ import 'package:unisoc/screens/my_events_page.dart';
 class SocietyProfilePage extends StatefulWidget {
   final int societyId;
   final bool isAdmin;
-  final bool isOwnSociety;  // ✅ ADD THIS NEW PARAMETER
+  final bool isOwnSociety;  // Kept for compatibility but not used for edit button
 
   const SocietyProfilePage({
     super.key,
     required this.societyId,
     required this.isAdmin,
-    this.isOwnSociety = false,  // ✅ Default to false
+    this.isOwnSociety = false,  // Default to false
   });
 
   @override
@@ -985,6 +950,9 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Helper to check if this is the admin's own society
+    final bool isOwnSocietyDirect = widget.isAdmin && widget.societyId == ApiService.societyId;
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: true,
@@ -992,9 +960,9 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
           societyData["name"] ?? "Society",
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
-        actions: widget.isOwnSociety  // ✅ CHANGED: from widget.isAdmin to widget.isOwnSociety
+        // ✅ FIXED: Calendar icon only for admin's OWN society using direct comparison
+        actions: isOwnSocietyDirect
             ? [
-                // Calendar icon for managing events (only for admin's own society)
                 IconButton(
                   icon: const Icon(Icons.calendar_month, color: Colors.white),
                   onPressed: () {
@@ -1074,7 +1042,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
 
                   const SizedBox(height: 32),
 
-                  // About Section WITH EDIT BUTTON (only for admin's OWN society)
+                  // ✅ FIXED: About Section WITH EDIT BUTTON - using direct comparison
                   Row(
                     children: [
                       const Text(
@@ -1085,7 +1053,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                           color: Color(0xFF1F2937),
                         ),
                       ),
-                      if (widget.isOwnSociety) ...[  // ✅ CHANGED: from widget.isAdmin to widget.isOwnSociety
+                      if (isOwnSocietyDirect) ...[
                         const SizedBox(width: 12),
                         IconButton(
                           icon: Icon(
@@ -1108,7 +1076,8 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                   ),
                   const SizedBox(height: 12),
 
-                  isEditing && widget.isOwnSociety  // ✅ CHANGED: from widget.isAdmin to widget.isOwnSociety
+                  // ✅ FIXED: TextField condition using direct comparison
+                  isEditing && isOwnSocietyDirect
                       ? TextField(
                           controller: descController,
                           maxLines: 5,
@@ -1134,7 +1103,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                           child: Text(
                             societyData["description"]?.isNotEmpty == true
                                 ? societyData["description"]
-                                : widget.isOwnSociety  // ✅ CHANGED
+                                : isOwnSocietyDirect  // ✅ FIXED: using direct comparison
                                     ? "No description yet — tap edit to add one."
                                     : "No description yet.",
                             style: const TextStyle(
@@ -1410,3 +1379,16 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
