@@ -1,144 +1,788 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:unisoc/services/api_services.dart';
 
-class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+class UserSettingsPage extends StatefulWidget {
+  const UserSettingsPage({super.key});
 
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
+  State<UserSettingsPage> createState() => _UserSettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
-  bool notificationsEnabled = true;
-  bool emailUpdates = true;
-  final TextEditingController currentPasswordController = TextEditingController();
-  final TextEditingController newPasswordController = TextEditingController();
+class _UserSettingsPageState extends State<UserSettingsPage> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _newEmailController = TextEditingController();
+  final TextEditingController _currentPasswordController =
+      TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
+  bool _isEditingName = false;
+  bool _isLoading = false;
+  bool _notificationsEnabled = true;
+  List<Map<String, dynamic>> _notificationPrefs = [];
+
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+
+  String _userName = "";
+  String _userEmail = "";
+  String _errorMessage = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+    _loadNotificationSettings();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _newEmailController.dispose();
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadUserData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = "";
+    });
+
+    try {
+      final response = await http.get(
+        Uri.parse("${ApiService.baseUrl}/user/profile/"),
+        headers: ApiService.headers,
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        String nameValue = "User";
+        String emailValue = "";
+
+        if (data["name"] != null && data["name"].toString().isNotEmpty) {
+          nameValue = data["name"].toString();
+        } else if (data["first_name"] != null &&
+            data["first_name"].toString().isNotEmpty) {
+          nameValue = data["first_name"].toString();
+        }
+
+        if (data["email"] != null && data["email"].toString().isNotEmpty) {
+          emailValue = data["email"].toString();
+        }
+
+        setState(() {
+          _userName = nameValue;
+          _userEmail = emailValue;
+          _nameController.text = _userName;
+        });
+      } else {
+        setState(() {
+          _errorMessage = "Failed to load profile: ${response.statusCode}";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Connection error: Unable to load profile";
+      });
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadNotificationSettings() async {
+    try {
+      final response = await http.get(
+        Uri.parse("${ApiService.baseUrl}/notifications/"),
+        headers: ApiService.headers,
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _notificationPrefs = data.map((item) => {
+            "society": item["society"],
+            "notify_new_events": item["notify_new_events"] ?? true,
+          }).toList();
+        });
+        
+        if (_notificationPrefs.isNotEmpty) {
+          _notificationsEnabled = _notificationPrefs[0]["notify_new_events"];
+        }
+      }
+    } catch (e) {
+      print("Error loading notification settings: ${e.toString()}");
+    }
+  }
+
+  Future<void> _updateNotificationSettings(bool enabled) async {
+    if (_notificationPrefs.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No societies to update notifications for")),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final societyId = await _showSocietySelectionDialog();
+      if (societyId == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final response = await http.post(
+        Uri.parse("${ApiService.baseUrl}/notifications/"),
+        headers: ApiService.headers,
+        body: jsonEncode({
+          "society_id": societyId,
+          "event_notifications": enabled,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        setState(() {
+          _notificationsEnabled = enabled;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              enabled ? "Notifications enabled" : "Notifications disabled",
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        
+        _loadNotificationSettings();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Failed to update notification settings"),
+          ),
+        );
+      }
+    } catch (e) {
+      print("❌ Error updating notification: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error updating notification settings")),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<int?> _showSocietySelectionDialog() async {
+    if (_notificationPrefs.isEmpty) return null;
+    
+    return showDialog<int>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Select Society"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: _notificationPrefs.asMap().entries.map((entry) {
+            final index = entry.key;
+            final pref = entry.value;
+            return ListTile(
+              title: Text(pref["society"]),
+              onTap: () => Navigator.pop(context, index),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _updateName() async {
+    final newName = _nameController.text.trim();
+
+    if (newName.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Name cannot be empty")));
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiService.baseUrl}/user/profile/"),
+        headers: ApiService.headers,
+        body: jsonEncode({"name": newName}),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _userName = newName;
+          _isEditingName = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Name updated successfully")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Failed to update name: ${response.statusCode}"),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Error updating name")));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _updateEmail() async {
+    final newEmail = _newEmailController.text.trim();
+
+    if (newEmail.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a new email")),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiService.baseUrl}/change-email/"),
+        headers: ApiService.headers,
+        body: jsonEncode({
+          "new_email": newEmail,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _userEmail = newEmail;
+          _newEmailController.clear();
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Email updated successfully")),
+        );
+      } else {
+        String errorMessage = "Failed to update email";
+        try {
+          final error = jsonDecode(response.body);
+          if (error["error"] != null) {
+            errorMessage = error["error"].toString();
+          }
+        } catch (e) {
+          // Ignore parsing error
+        }
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Error updating email")));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _changePassword() async {
+    final currentPassword = _currentPasswordController.text;
+    final newPassword = _newPasswordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    if (currentPassword.isEmpty || newPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill in both password fields")),
+      );
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Password must be at least 8 characters")),
+      );
+      return;
+    }
+
+    if (newPassword != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("New passwords don't match")),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiService.baseUrl}/change-password/"),
+        headers: ApiService.headers,
+        body: jsonEncode({
+          "old_password": currentPassword,
+          "new_password": newPassword,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _currentPasswordController.clear();
+          _newPasswordController.clear();
+          _confirmPasswordController.clear();
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Password changed successfully")),
+        );
+      } else {
+        String errorMessage = "Failed to change password";
+        try {
+          final error = jsonDecode(response.body);
+          if (error["error"] != null) {
+            errorMessage = error["error"].toString();
+          }
+        } catch (e) {
+          // Ignore parsing error
+        }
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Error changing password")));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        automaticallyImplyLeading: true, // This gives you the back arrow!
         title: const Text(
-          'Settings',
-          style: TextStyle(color: Colors.white),
+          "My Account",
+          style: TextStyle(fontWeight: FontWeight.w600),
         ),
-        backgroundColor: const Color(0xFF4A235A),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
       ),
-      body: ListView(
-        children: [
-          // Notifications Section
-          Padding(
-            padding: const EdgeInsets.only(left: 16, top: 20, bottom: 8),
-            child: Text(
-              'Notifications',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[700],
-              ),
-            ),
-          ),
-          ListTile(
-            title: const Text('Enable Notifications'),
-            subtitle: const Text('Receive event and society notifications'),
-            trailing: Switch(
-              value: notificationsEnabled,
-              onChanged: (value) {
-                setState(() {
-                  notificationsEnabled = value;
-                });
-              },
-              activeThumbColor: const Color(0xFF4A235A),
-            ),
-          ),
-          ListTile(
-            title: const Text('Email Updates'),
-            subtitle: const Text('Receive email notifications'),
-            trailing: Switch(
-              value: emailUpdates,
-              onChanged: (value) {
-                setState(() {
-                  emailUpdates = value;
-                });
-              },
-              activeThumbColor: const Color(0xFF4A235A),
-            ),
-          ),
-          const Divider(),
-          
-          // Password Section
-          Padding(
-            padding: const EdgeInsets.only(left: 16, top: 20, bottom: 8),
-            child: Text(
-              'Password',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[700],
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: TextField(
-              controller: currentPasswordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Current Password',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 16,
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: TextField(
-              controller: newPasswordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'New Password',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 16,
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4A235A),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+      // NO BOTTOM NAVIGATION BAR - only back arrow in AppBar
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Error message display
+                  if (_errorMessage.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            color: Colors.red.shade400,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage,
+                              style: TextStyle(
+                                color: Colors.red.shade700,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  // My Details Section
+                  const Text(
+                    "My Details",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1F2937),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'Confirm Password',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 12),
+                  const Divider(),
+                  const SizedBox(height: 16),
+
+                  // Name Field
+                  const Text(
+                    "Name",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B7280),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _isEditingName
+                            ? TextField(
+                                controller: _nameController,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 14,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  _userName.isNotEmpty
+                                      ? _userName
+                                      : "No name set",
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: Icon(
+                          _isEditingName ? Icons.save : Icons.edit,
+                          color: const Color(0xFF8B5CF6),
+                        ),
+                        onPressed: () {
+                          if (_isEditingName) {
+                            _updateName();
+                          } else {
+                            setState(() => _isEditingName = true);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Email Field (Read-only)
+                  const Text(
+                    "Email",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.grey.shade50,
+                    ),
+                    child: Text(
+                      _userEmail.isNotEmpty ? _userEmail : "No email set",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Change Email Section
+                  const Text(
+                    "Change Email",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(),
+                  const SizedBox(height: 16),
+
+                  // New Email
+                  const Text(
+                    "New Email",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _newEmailController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      hintText: "Enter new email",
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _updateEmail,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF8B5CF6),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        "Update Email",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Change Password Section
+                  const Text(
+                    "Change Password",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(),
+                  const SizedBox(height: 16),
+
+                  // Current Password
+                  const Text(
+                    "Current Password",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _currentPasswordController,
+                    obscureText: _obscureCurrentPassword,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      hintText: "Enter current password",
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureCurrentPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureCurrentPassword = !_obscureCurrentPassword;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // New Password
+                  const Text(
+                    "New Password",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _newPasswordController,
+                    obscureText: _obscureNewPassword,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      hintText: "Enter new password (min. 8 characters)",
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureNewPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureNewPassword = !_obscureNewPassword;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Confirm Password
+                  const Text(
+                    "Confirm New Password",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _confirmPasswordController,
+                    obscureText: _obscureConfirmPassword,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      hintText: "Confirm new password",
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _changePassword,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF8B5CF6),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        "Change Password",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Notifications Section
+                  const Text(
+                    "Notifications",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(),
+                  const SizedBox(height: 16),
+
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Enable Notifications",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                "Receive updates about your society and events",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Switch(
+                          value: _notificationsEnabled,
+                          activeThumbColor: const Color(0xFF8B5CF6),
+                          onChanged: (value) {
+                            _updateNotificationSettings(value);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+                ],
               ),
             ),
-          ),
-          const Divider(),
-        ],
-      ),
     );
   }
 }

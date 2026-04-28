@@ -2,17 +2,30 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
+<<<<<<< HEAD
   static const String baseUrl = "http://10.0.2.2:8000/api";
+=======
+  static const String baseUrl = "http://192.168.1.125:8000/api";
+>>>>>>> main
 
   static String? authToken;
   static int? societyId; // Admin's society ID
   static String? societyName; // Admin's society name
   static String? adminName; // Admin's personal name
+  static Set<int> joinedSocieties = {};
 
   static Map<String, String> get headers => {
     "Content-Type": "application/json",
     if (authToken != null) "Authorization": "Token $authToken",
   };
+
+  /// Checks if the given society ID belongs to the logged-in admin.
+/// Returns false if the admin has no society assigned (societyId is null).
+
+   static bool isAdminOfSociety(int societyIdToCheck) {
+    
+    return societyId != null && societyId == societyIdToCheck;
+  }
 
   // -------- PUBLIC ENDPOINTS --------
 

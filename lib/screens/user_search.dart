@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class CustomerSearchPage extends StatefulWidget {
+  const CustomerSearchPage({super.key});
+
   @override
   _CustomerSearchPageState createState() => _CustomerSearchPageState();
 }

@@ -1,30 +1,35 @@
-from django.urls import path
-#include
-from .RegisterView import RegisterView
-from .LoginView import LoginView
-from .AnalyticsView import AnalyticsView
-from .JoinSoc import JoinSocietyView
-from .LeaveSoc import LeaveSocietyView
-from .SocietyDetailView import SocietyDetailView
+from django.urls import path 
 from .serializer import EventSerializer
-from .IsMemberView import IsMemberView
 from .views import (
+    AddEventView,
     AllEventsView,
-    ChangeEmailView, 
+    ChangeEmailView,
+    JoinEventView,
+    LeaveEventView, 
     SocietyEventView,
     DeleteEventView,
     MyCreatedEventsView,
     SocietyEventView, 
     SocietyListSearchView,
-    MySocietiesView,
+    SocietyMembershipCheckView, 
     UserListView,
     SocietyListSearchView,
     EventDetailView,
     UpdateEventView,
     ChangePasswordView,
     NotificationView,
-    IsAuthenticated,
-    MyEventsView)
+    MyEventsView,
+    RegisterView,
+    LoginView,
+    AnalyticsView,
+    JoinSocietyView,
+    LeaveSocietyView,
+    SocietyDetailView,
+    SocietyAdminDetailView,
+    CheckEventAttendanceView,
+    UserProfileView,
+    MySocietiesView
+    )
 
 
 urlpatterns = [
@@ -32,25 +37,32 @@ urlpatterns = [
     # Authentication
     path("login/", LoginView.as_view(), name="login"),
     path("user/register/", RegisterView.as_view(), name="register"),
+    # Society management
     path("society/<int:society_id>/join/", JoinSocietyView.as_view(), name="join-society"),
     path("society/<int:society_id>/leave/", LeaveSocietyView.as_view(), name="leave-society"),
     path('societies/', SocietyListSearchView.as_view(), name='society-list-create'),
     path('societies/<int:society_id>/', SocietyDetailView.as_view(), name='society-detail'),
-    path('users/', UserListView.as_view(), name='user-list-create'),
+    path('societies/<int:society_id>/admin/', SocietyAdminDetailView.as_view(), name='society-admin-detail'),
+    path('societies/<int:society_id>/admin/events/', SocietyAdminDetailView.as_view(), name='society-admin-events'),
     path("my-societies/", MySocietiesView.as_view(), name="my-societies"),
+
+    path('users/', UserListView.as_view(), name='user-list-create'),
     #path('societies/', SocietyListSearchView.as_view(), name='society-list-create'),
     path('societies/<int:society_id>/events/', SocietyEventView.as_view(), name='society-events'),
-
+    path('societies/<int:society_id>/check-membership/', SocietyMembershipCheckView.as_view(), name='society-membership-check'),
     # Admin event management
-    path('events/<int:id>/delete/', DeleteEventView.as_view(), name='delete-event'),
+    path('events/<int:event_id>/delete/', DeleteEventView.as_view(), name='delete-event'),
     path('events/', SocietyEventView.as_view(), name='event-list'),
     # path('events/create/', SocietyEventView.as_view(), name='create-event'),
     path('events/my/', MyEventsView.as_view(), name='my-events'),
-    path('events/<int:id>/', EventDetailView.as_view(), name='event-detail'),
-    path('events/<int:id>/update/', UpdateEventView.as_view(), name='update-event'),
+    path('events/<int:event_id>/', EventDetailView.as_view(), name='event-detail'),
+    path('events/<int:event_id>/update/', UpdateEventView.as_view(), name='update-event'),
     path('events/all/', AllEventsView.as_view(), name='all-events'),
     path('events/my/', MyCreatedEventsView.as_view(), name='my-events'),
-    path('societies/<int:society_id>/is-member/', IsMemberView.as_view(), name='is-member'),
+    path('events/<int:event_id>/join/', JoinEventView.as_view(), name='join-event'),
+    path('events/<int:event_id>/leave/', LeaveEventView.as_view(), name='leave-event'),
+    path('events/<int:event_id>/attending/', CheckEventAttendanceView.as_view(), name='check-attending'),
+    path('user/profile/', UserProfileView.as_view(), name='user-profile'),
 
     # Analytics
     path("my-analytics/", AnalyticsView.as_view(), name="analytics"),
@@ -69,7 +81,7 @@ urlpatterns = [
 
   
 
-##smth gtuivgl
+
 
 
 

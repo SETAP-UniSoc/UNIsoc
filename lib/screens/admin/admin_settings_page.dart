@@ -779,7 +779,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                         ),
                         Switch(
                           value: _notificationsEnabled,
-                          activeColor: const Color(0xFF8B5CF6),
+                          activeThumbColor: const Color(0xFF8B5CF6),
                           onChanged: (value) {
                             _updateNotificationSettings(value);
                           },
