@@ -86,10 +86,7 @@ class _HomeHeaderState extends State<HomeHeader> {
       final societies = await ApiService.getSocieties();
       // if you later add a "getHomeEvents", call it here too
       if (!mounted) return;
-      final topSocieties = [...societies]
-        ..sort(
-          (a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0),
-        );
+      final topSocieties = [...societies];
 
       setState(() {
         _societies = societies;
