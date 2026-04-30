@@ -84,6 +84,8 @@ class _HomeHeaderState extends State<HomeHeader> {
   Future<void> _loadData() async {
     try {
       final societies = await ApiService.getSocieties();
+      final events = await ApiService.getEventsForJoinedSocieties();
+
       // if you later add a "getHomeEvents", call it here too
       if (!mounted) return;
       final topSocieties = [...societies];
@@ -92,6 +94,8 @@ class _HomeHeaderState extends State<HomeHeader> {
         _societies = societies;
         _filteredSocieties = societies;
         _topSocieties = topSocieties.take(3).toList();
+        _events.clear();
+        _events.addAll(events); // Add the fetched events to the list.
         _loading = false;
         _error = null;
       });
