@@ -306,8 +306,6 @@ class _HomeHeaderState extends State<HomeHeader> {
 
                                 return _SocietyLogoCard(
                                   label: name,
-                                  subtitle:
-                                      '$memberCount member${memberCount == 1 ? '' : 's'}',
                                   color: index == 0
                                       ? Colors.deepPurple
                                       : Colors.indigo,
