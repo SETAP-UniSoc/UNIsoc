@@ -26,15 +26,6 @@ from .models import NotificationPreference, Society, Membership, Event
 
 
 class UserListView(generics.ListAPIView):
-    """API view to list all users, with optional search and letter filtering.
-
-    Supports the following query parameters:
-
-    - ``search``: Filter users whose name contains the search string (case-insensitive).
-    - ``letter``: Filter users whose name starts with the given letter (case-insensitive).
-
-    Results are ordered alphabetically by name.
-    """
 
     serializer_class = UserSerializer
 
