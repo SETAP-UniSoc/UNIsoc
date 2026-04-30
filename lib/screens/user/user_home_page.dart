@@ -433,14 +433,26 @@ class _HomeHeaderState extends State<HomeHeader> {
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 140,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: featuredEvents.length,
-                        itemBuilder: (context, index) {
-                          final event = featuredEvents[index];
-                          return _EventCard(event: event);
-                        },
-                      ),
+                      child: _events.isEmpty
+                          ? const Center(
+                              child: Text('No upcoming events available.'),
+                            )
+                          : ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _events.length,
+                              itemBuilder: (context, index) {
+                                final event = _events[index];
+                                return _EventCard(
+                                  event: Event(
+                                    title: event['title'],
+                                    date: event['start_time'],
+                                    location: event['location'],
+                                    color: Colors
+                                        .deepPurple, // Customize as needed
+                                  ),
+                                );
+                              },
+                            ),
                     ),
                   ],
                 ),
