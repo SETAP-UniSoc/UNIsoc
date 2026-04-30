@@ -72,6 +72,49 @@ class ApiService {
       );
     }
   }
+
+  static Future<List> getEventsForJoinedSocieties() async {
+    try {
+      // Fetch the societies the user has joined
+      final societiesResponse = await http.get(
+        Uri.parse("$baseUrl/my-societies/"),
+        headers: headers,
+      );
+
+      if (societiesResponse.statusCode != 200) {
+        throw Exception("Failed to fetch societies: ${societiesResponse.body}");
+      }
+
+      final societies = jsonDecode(societiesResponse.body) as List;
+
+      // Fetch events for each society
+      List events = [];
+      for (var society in societies) {
+        final societyId = society['id'];
+        final eventsResponse = await http.get(
+          Uri.parse("$baseUrl/societies/$societyId/events/"),
+          headers: headers,
+        );
+
+        if (eventsResponse.statusCode == 200) {
+          final societyEvents = jsonDecode(eventsResponse.body) as List;
+          events.addAll(societyEvents);
+        }
+      }
+
+      // Filter upcoming events
+      final now = DateTime.now();
+      final upcomingEvents = events.where((event) {
+        final eventDate = DateTime.parse(event['start_time']);
+        return eventDate.isAfter(now);
+      }).toList();
+
+      return upcomingEvents;
+    } catch (e) {
+      throw Exception("Error fetching events: $e");
+    }
+  }
+
   //add debugging
 
   static Future<Map<String, dynamic>> getEventCount(int id) async {
