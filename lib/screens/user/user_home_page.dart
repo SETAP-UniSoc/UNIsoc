@@ -406,8 +406,8 @@ class _HomeHeaderState extends State<HomeHeader> {
                           // A–Z list header with sort/filter labels
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              Text(
+                            children: [
+                              const Text(
                                 'All Societies (A-Z)',
                                 style: TextStyle(
                                   fontSize: 18,
@@ -416,20 +416,81 @@ class _HomeHeaderState extends State<HomeHeader> {
                               ),
                               Row(
                                 children: [
-                                  Text(
-                                    'Sort by',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey,
+                                  // Sort by dropdown
+                                  PopupMenuButton<String>(
+                                    child: Row(
+                                      children: [
+                                        const Text(
+                                          "Sort by",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Color(0xFF9C27B0),
+                                          ),
+                                        ),
+                                        const Icon(
+                                          Icons.arrow_drop_down,
+                                          color: Color(0xFF9C27B0),
+                                        ),
+                                      ],
                                     ),
+                                    onSelected: (value) {
+                                      setState(() {
+                                        sortBy = value;
+                                        applyFilters();
+                                      });
+                                    },
+                                    itemBuilder: (_) => const [
+                                      PopupMenuItem(
+                                        value: "A-Z",
+                                        child: Text("A-Z"),
+                                      ),
+                                      PopupMenuItem(
+                                        value: "Z-A",
+                                        child: Text("Z-A"),
+                                      ),
+                                      PopupMenuItem(
+                                        value: "Most Members",
+                                        child: Text("Most Members"),
+                                      ),
+                                      PopupMenuItem(
+                                        value: "Least Members",
+                                        child: Text("Least Members"),
+                                      ),
+                                    ],
                                   ),
-                                  SizedBox(width: 16),
-                                  Text(
-                                    'Filter by',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey,
+                                  const SizedBox(width: 16),
+
+                                  // Filter by dropdown
+                                  PopupMenuButton<String>(
+                                    child: Row(
+                                      children: [
+                                        const Text(
+                                          "Filter by",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Color(0xFF9C27B0),
+                                          ),
+                                        ),
+                                        const Icon(
+                                          Icons.arrow_drop_down,
+                                          color: Color(0xFF9C27B0),
+                                        ),
+                                      ],
                                     ),
+                                    onSelected: (value) {
+                                      setState(() {
+                                        selectedCategory = value;
+                                        applyFilters();
+                                      });
+                                    },
+                                    itemBuilder: (_) => categories
+                                        .map(
+                                          (category) => PopupMenuItem(
+                                            value: category,
+                                            child: Text(category),
+                                          ),
+                                        )
+                                        .toList(),
                                   ),
                                 ],
                               ),
