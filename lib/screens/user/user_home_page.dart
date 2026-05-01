@@ -387,7 +387,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                           // A–Z list header with sort/filter labels
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
+                            children: [
                               Text(
                                 'All Societies (A-Z)',
                                 style: TextStyle(
