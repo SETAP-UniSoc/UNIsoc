@@ -58,8 +58,6 @@ class _HomeHeaderState extends State<HomeHeader> {
   Timer? _debounce;
   bool _isSearching = false;
 
-  List societies = [];
-  List filteredSocieties = [];
   String selectedCategory = "All";
   String sortBy = "A-Z";
   bool showingCategories = true;
@@ -72,52 +70,6 @@ class _HomeHeaderState extends State<HomeHeader> {
     "Religious",
     "Extra-curricular",
   ];
-
-  final Map<String, Color> categoryColours = {
-    "Academic": const Color(0xFF5C6BC0), // Indigo
-    "Cultural": const Color(0xFF26A69A), // Teal
-    "Sports": const Color(0xFF7E57C2), // Medium Purple
-    "Religious": const Color(0xFF8D6E63), // Warm Brown
-    "Extra-curricular": const Color(0xFF42A5F5), // Light Blue
-    "All": const Color(0xFF7B1FA2), // Deep Purple
-  };
-  void applyFilters() {
-    List result = [..._societies];
-
-    // Apply filtering
-    if (selectedCategory != "All") {
-      result = result.where((s) => s["category"] == selectedCategory).toList();
-    }
-
-    // Apply sorting
-    if (sortBy == "A-Z") {
-      result.sort((a, b) => a["name"].compareTo(b["name"]));
-    } else if (sortBy == "Z-A") {
-      result.sort((a, b) => b["name"].compareTo(a["name"]));
-    } else if (sortBy == "Most Members") {
-      result.sort(
-        (a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0),
-      );
-    } else if (sortBy == "Least Members") {
-      result.sort(
-        (a, b) => (a["member_count"] ?? 0).compareTo(b["member_count"] ?? 0),
-      );
-    }
-
-    setState(() {
-      _filteredSocieties = result;
-      showingCategories = false;
-    });
-  }
-
-  void resetToCategories() {
-    setState(() {
-      selectedCategory = "All";
-      sortBy = "A-Z";
-      _filteredSocieties = [..._societies];
-      showingCategories = true;
-    });
-  }
 
   @override
   void initState() {
@@ -406,8 +358,8 @@ class _HomeHeaderState extends State<HomeHeader> {
                           // A–Z list header with sort/filter labels
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
+                            children: const [
+                              Text(
                                 'All Societies (A-Z)',
                                 style: TextStyle(
                                   fontSize: 18,
@@ -415,82 +367,95 @@ class _HomeHeaderState extends State<HomeHeader> {
                                 ),
                               ),
                               Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  // Sort by dropdown
-                                  PopupMenuButton<String>(
-                                    child: Row(
-                                      children: [
-                                        const Text(
-                                          "Sort by",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Color(0xFF9C27B0),
-                                          ),
-                                        ),
-                                        const Icon(
-                                          Icons.arrow_drop_down,
-                                          color: Color(0xFF9C27B0),
-                                        ),
-                                      ],
+                                  const Text(
+                                    'All Societies (A-Z)',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                    onSelected: (value) {
-                                      setState(() {
-                                        sortBy = value;
-                                        applyFilters();
-                                      });
-                                    },
-                                    itemBuilder: (_) => const [
-                                      PopupMenuItem(
-                                        value: "A-Z",
-                                        child: Text("A-Z"),
+                                  ),
+                                  Row(
+                                    children: [
+                                      // Sort by dropdown
+                                      PopupMenuButton<String>(
+                                        child: Row(
+                                          children: [
+                                            const Text(
+                                              "Sort by",
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: Color(0xFF9C27B0),
+                                              ),
+                                            ),
+                                            const Icon(
+                                              Icons.arrow_drop_down,
+                                              color: Color(0xFF9C27B0),
+                                            ),
+                                          ],
+                                        ),
+                                        onSelected: (value) {
+                                          setState(() {
+                                            sortBy = value;
+                                            applyFilters();
+                                          });
+                                        },
+                                        itemBuilder: (_) => const [
+                                          PopupMenuItem(
+                                            value: "A-Z",
+                                            child: Text("A-Z"),
+                                          ),
+                                          PopupMenuItem(
+                                            value: "Z-A",
+                                            child: Text("Z-A"),
+                                          ),
+                                          PopupMenuItem(
+                                            value: "Most Members",
+                                            child: Text("Most Members"),
+                                          ),
+                                          PopupMenuItem(
+                                            value: "Least Members",
+                                            child: Text("Least Members"),
+                                          ),
+                                        ],
                                       ),
-                                      PopupMenuItem(
-                                        value: "Z-A",
-                                        child: Text("Z-A"),
-                                      ),
-                                      PopupMenuItem(
-                                        value: "Most Members",
-                                        child: Text("Most Members"),
-                                      ),
-                                      PopupMenuItem(
-                                        value: "Least Members",
-                                        child: Text("Least Members"),
+                                      const SizedBox(width: 16),
+
+                                      // Filter by dropdown
+                                      PopupMenuButton<String>(
+                                        child: Row(
+                                          children: [
+                                            const Text(
+                                              "Filter by",
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: Color(0xFF9C27B0),
+                                              ),
+                                            ),
+                                            const Icon(
+                                              Icons.arrow_drop_down,
+                                              color: Color(0xFF9C27B0),
+                                            ),
+                                          ],
+                                        ),
+                                        onSelected: (value) {
+                                          setState(() {
+                                            selectedCategory = value;
+                                            applyFilters();
+                                          });
+                                        },
+                                        itemBuilder: (_) => categories
+                                            .map(
+                                              (category) => PopupMenuItem(
+                                                value: category,
+                                                child: Text(category),
+                                              ),
+                                            )
+                                            .toList(),
                                       ),
                                     ],
-                                  ),
-                                  const SizedBox(width: 16),
-
-                                  // Filter by dropdown
-                                  PopupMenuButton<String>(
-                                    child: Row(
-                                      children: [
-                                        const Text(
-                                          "Filter by",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Color(0xFF9C27B0),
-                                          ),
-                                        ),
-                                        const Icon(
-                                          Icons.arrow_drop_down,
-                                          color: Color(0xFF9C27B0),
-                                        ),
-                                      ],
-                                    ),
-                                    onSelected: (value) {
-                                      setState(() {
-                                        selectedCategory = value;
-                                        applyFilters();
-                                      });
-                                    },
-                                    itemBuilder: (_) => categories
-                                        .map(
-                                          (category) => PopupMenuItem(
-                                            value: category,
-                                            child: Text(category),
-                                          ),
-                                        )
-                                        .toList(),
                                   ),
                                 ],
                               ),
