@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:unisoc/screens/society_profile_page.dart';
 import 'package:unisoc/services/api_services.dart';
-import 'package:unisoc/screens/login_screen.user.dart';
+import 'package:unisoc/screens/user/login_screen.user.dart';
 import 'package:unisoc/screens/admin/admin_settings_page.dart';
 
 class AdminDropdownMenu extends StatelessWidget {
