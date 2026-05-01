@@ -3,7 +3,7 @@ import 'screens/settings_user_page.dart';
 import 'screens/my_account_page.dart';
 import 'screens/my_events_page.dart';
 import 'screens/user_mysoc_page.dart';
-import 'screens/login_screen.user.dart';
+import 'screens/user/login_screen.user.dart';
 import 'services/api_services.dart';
 
 // A reusable navbar for the logged-in home page
