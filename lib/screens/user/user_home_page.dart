@@ -58,6 +58,30 @@ class _HomeHeaderState extends State<HomeHeader> {
   Timer? _debounce;
   bool _isSearching = false;
 
+  List societies = [];
+  List filteredSocieties = [];
+  String selectedCategory = "All";
+  String sortBy = "A-Z";
+  bool showingCategories = true;
+
+  final List<String> categories = [
+    "All",
+    "Academic",
+    "Cultural",
+    "Sports",
+    "Religious",
+    "Extra-curricular",
+  ];
+
+  final Map<String, Color> categoryColours = {
+    "Academic": const Color(0xFF5C6BC0), // Indigo
+    "Cultural": const Color(0xFF26A69A), // Teal
+    "Sports": const Color(0xFF7E57C2), // Medium Purple
+    "Religious": const Color(0xFF8D6E63), // Warm Brown
+    "Extra-curricular": const Color(0xFF42A5F5), // Light Blue
+    "All": const Color(0xFF7B1FA2), // Deep Purple
+  };
+
   @override
   void initState() {
     super.initState();
