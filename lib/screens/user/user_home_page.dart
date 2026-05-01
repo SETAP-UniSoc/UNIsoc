@@ -81,6 +81,43 @@ class _HomeHeaderState extends State<HomeHeader> {
     "Extra-curricular": const Color(0xFF42A5F5), // Light Blue
     "All": const Color(0xFF7B1FA2), // Deep Purple
   };
+  void applyFilters() {
+    List result = [..._societies];
+
+    // Apply filtering
+    if (selectedCategory != "All") {
+      result = result.where((s) => s["category"] == selectedCategory).toList();
+    }
+
+    // Apply sorting
+    if (sortBy == "A-Z") {
+      result.sort((a, b) => a["name"].compareTo(b["name"]));
+    } else if (sortBy == "Z-A") {
+      result.sort((a, b) => b["name"].compareTo(a["name"]));
+    } else if (sortBy == "Most Members") {
+      result.sort(
+        (a, b) => (b["member_count"] ?? 0).compareTo(a["member_count"] ?? 0),
+      );
+    } else if (sortBy == "Least Members") {
+      result.sort(
+        (a, b) => (a["member_count"] ?? 0).compareTo(b["member_count"] ?? 0),
+      );
+    }
+
+    setState(() {
+      _filteredSocieties = result;
+      showingCategories = false;
+    });
+  }
+
+  void resetToCategories() {
+    setState(() {
+      selectedCategory = "All";
+      sortBy = "A-Z";
+      _filteredSocieties = [..._societies];
+      showingCategories = true;
+    });
+  }
 
   @override
   void initState() {
