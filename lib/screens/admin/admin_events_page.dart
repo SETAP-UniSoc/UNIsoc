@@ -30,14 +30,11 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   // LOAD EVENTS + GROUP BY DATE
   Future<void> loadEvents() async {
     setState(() => isLoading = true);
-    
+
     final url = "${ApiService.baseUrl}/societies/${widget.societyId}/events/";
     print("🔍 Loading events from: $url");
 
-    final res = await http.get(
-      Uri.parse(url),
-      headers: ApiService.headers,
-    );
+    final res = await http.get(Uri.parse(url), headers: ApiService.headers);
 
     print("📊 Events response status: ${res.statusCode}");
     print("📊 Events response body: ${res.body}");
@@ -71,9 +68,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         return Event(
           eventName: "${entry.value.length} events",
           dates: [date],
-          color: entry.value.length > 1
-              ? Colors.red
-              : const Color(0xFF8B5CF6),
+          color: entry.value.length > 1 ? Colors.red : const Color(0xFF8B5CF6),
         );
       }).toList();
 
@@ -122,7 +117,8 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
               return ListTile(
                 title: Text(e["title"]),
                 subtitle: Text(
-                    "${time.hour}:${time.minute} • ${e["location"] ?? ""} • ${e["capacity_limit"] != null ? "Cap: ${e["capacity_limit"]}" : "No Cap"}"),
+                  "${time.hour}:${time.minute} • ${e["location"] ?? ""} • ${e["capacity_limit"] != null ? "Cap: ${e["capacity_limit"]}" : "No Cap"}",
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _showEditDialog(e);
@@ -140,16 +136,18 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Close")),
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Close"),
+          ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               _showCreateDialog(
-                  DateTime.parse(events[0]["start_time"]).toLocal());
+                DateTime.parse(events[0]["start_time"]).toLocal(),
+              );
             },
             child: const Text("Add Another"),
-          )
+          ),
         ],
       ),
     );
@@ -160,7 +158,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     final title = TextEditingController();
     final desc = TextEditingController();
     final loc = TextEditingController();
-    final cap = TextEditingController();  
+    final cap = TextEditingController();
 
     TimeOfDay start = const TimeOfDay(hour: 9, minute: 0);
     TimeOfDay end = const TimeOfDay(hour: 10, minute: 0);
@@ -173,12 +171,24 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(controller: title, decoration: const InputDecoration(labelText: "Title")),
-              TextField(controller: desc, decoration: const InputDecoration(labelText: "Description")),
-              TextField(controller: loc, decoration: const InputDecoration(labelText: "Location")),
+              TextField(
+                controller: title,
+                decoration: const InputDecoration(labelText: "Title"),
+              ),
+              TextField(
+                controller: desc,
+                decoration: const InputDecoration(labelText: "Description"),
+              ),
+              TextField(
+                controller: loc,
+                decoration: const InputDecoration(labelText: "Location"),
+              ),
 
-              TextField( controller: cap,
-                decoration: const InputDecoration(labelText: "Capacity (optional)"),
+              TextField(
+                controller: cap,
+                decoration: const InputDecoration(
+                  labelText: "Capacity (optional)",
+                ),
                 keyboardType: TextInputType.number,
               ),
 
@@ -186,7 +196,10 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
                 title: const Text("Start Time"),
                 subtitle: Text(start.format(context)),
                 onTap: () async {
-                  final picked = await showTimePicker(context: context, initialTime: start);
+                  final picked = await showTimePicker(
+                    context: context,
+                    initialTime: start,
+                  );
                   if (picked != null) setStateDialog(() => start = picked);
                 },
               ),
@@ -194,18 +207,36 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
                 title: const Text("End Time"),
                 subtitle: Text(end.format(context)),
                 onTap: () async {
-                  final picked = await showTimePicker(context: context, initialTime: end);
+                  final picked = await showTimePicker(
+                    context: context,
+                    initialTime: end,
+                  );
                   if (picked != null) setStateDialog(() => end = picked);
                 },
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
             ElevatedButton(
               onPressed: () async {
-                final startDT = DateTime(date.year, date.month, date.day, start.hour, start.minute);
-                final endDT = DateTime(date.year, date.month, date.day, end.hour, end.minute);
+                final startDT = DateTime(
+                  date.year,
+                  date.month,
+                  date.day,
+                  start.hour,
+                  start.minute,
+                );
+                final endDT = DateTime(
+                  date.year,
+                  date.month,
+                  date.day,
+                  end.hour,
+                  end.minute,
+                );
 
                 await _createEvent(
                   title: title.text,
@@ -219,7 +250,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
                 Navigator.pop(context);
               },
               child: const Text("Create"),
-            )
+            ),
           ],
         ),
       ),
@@ -231,7 +262,9 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     final title = TextEditingController(text: event["title"]);
     final desc = TextEditingController(text: event["description"]);
     final loc = TextEditingController(text: event["location"]);
-    final cap = TextEditingController(text: event["capacity_limit"]?.toString() ?? "");
+    final cap = TextEditingController(
+      text: event["capacity_limit"]?.toString() ?? "",
+    );
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -245,7 +278,10 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
           ElevatedButton(
             onPressed: () async {
               await _updateEvent(event["id"], {
@@ -258,7 +294,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
               Navigator.pop(context);
             },
             child: const Text("Save"),
-          )
+          ),
         ],
       ),
     );
@@ -279,20 +315,20 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
       "start_time": startTime,
       "end_time": endTime,
     };
-    
+
     // Only add capacity if it's not null AND greater than 0
     if (capacity != null && capacity > 0) {
       body["capacity_limit"] = capacity;
     }
-    
+
     print("📝 Creating event with body: $body");
-    
+
     final res = await http.post(
       Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
       headers: ApiService.headers,
       body: jsonEncode(body),
     );
-    
+
     print("📊 Create event response: ${res.statusCode}");
     print("📊 Response body: ${res.body}");
 
@@ -368,3 +404,28 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     );
   }
 }
+
+
+
+
+// not all dtaes show cancel option when pressed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

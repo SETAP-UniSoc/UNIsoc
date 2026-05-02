@@ -87,3 +87,7 @@ static Future<List> getSocieties() async {
 }
 
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
