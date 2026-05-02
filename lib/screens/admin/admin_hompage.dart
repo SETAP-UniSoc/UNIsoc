@@ -269,9 +269,9 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
             try {
               final response = await http.get(
-                Uri.parse("${ApiService.baseUrl}/search?q=$query"),
+                Uri.parse("${ApiService.baseUrl}/societies/?q=$query"),
                 headers: ApiService.headers,
-              );
+                );
 
               if (response.statusCode == 200) {
                 setState(() {
@@ -312,53 +312,49 @@ class _AdminHomepageState extends State<AdminHomepage> {
   }
 
   Widget _buildSearchDropdown() {
-    if (searchResults.isEmpty) return const SizedBox();
+  if (searchResults.isEmpty) return const SizedBox();
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
-      ),
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: searchResults.length,
-        itemBuilder: (context, index) {
-          final item = searchResults[index];
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
+    ),
+    child: ListView.builder(
+      shrinkWrap: true,
+      itemCount: searchResults.length,
+      itemBuilder: (context, index) {
+        final item = searchResults[index];
 
-          return ListTile(
-            leading: const Icon(Icons.search),
-            title: Text(item["name"] ?? item["title"] ?? ""),
-            subtitle: Text(item["type"] ?? ""),
+        return ListTile(
+          leading: const Icon(Icons.search),
+          title: Text(item["name"] ?? ""),
+          subtitle: const Text("Society"),
+          onTap: () {
+            final bool isOwnSociety = ApiService.societyId != null && 
+                item["id"] == ApiService.societyId;
+                
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => SocietyProfilePage(
+                  societyId: item["id"],
+                  isAdmin: true,
+                  isOwnSociety: isOwnSociety,
+                ),
+              ),
+            );
 
-            onTap: () {
-              if (item["type"] == "society") {
-                // SAFE NULL CHECK for search results
-                final bool isOwnSociety = ApiService.societyId != null && 
-                    item["id"] == ApiService.societyId;
-                    
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => SocietyProfilePage(
-                      societyId: item["id"],
-                      isAdmin: true,  // Always true for admin
-                      isOwnSociety: isOwnSociety,
-                    ),
-                  ),
-                );
-              }
-
-              setState(() {
-                searchResults = [];
-              });
-            },
-          );
-        },
-      ),
-    );
-  }
+            setState(() {
+              searchResults = [];
+            });
+          },
+        );
+      },
+    ),
+  );
+}
 
   Widget _buildTopSocietiesCarousel() {
     final topSocieties = [...societies]
