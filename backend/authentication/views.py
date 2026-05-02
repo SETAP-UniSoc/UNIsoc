@@ -18,6 +18,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
 import re
+from rest_framework.permissions import AllowAny
 
 from .models import NotificationPreference, Society, Membership, Event
 
@@ -50,23 +51,9 @@ class UserListView(generics.ListAPIView):
 
 
 class SocietyListSearchView(APIView):
-    """API view to list and search active societies.
-
-    Requires authentication. Supports an optional ``q`` query parameter
-    to filter societies by name. Results include the active member count
-    for each society and are ordered alphabetically by name.
-    """
-
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  
 
     def get(self, request):
-        """Return a list of active societies, optionally filtered by name.
-
-        :param request: The HTTP request, optionally containing a ``q`` query param.
-        :type request: Request
-        :return: A list of society objects with id, name, category, description, and member count.
-        :rtype: Response
-        """
         query = request.query_params.get("q", "").strip()
 
         societies = Society.objects.filter(is_active=True)
@@ -84,13 +71,9 @@ class SocietyListSearchView(APIView):
         data = [{
             "id": s.id,
             "name": s.name,
-            "category": s.category,
-            "description": s.description,
-            "member_count": s.active_member_count,
         } for s in societies]
 
         return Response(data)
-
 
 class AddEventView(generics.CreateAPIView):
     """API view to create a new event for the authenticated admin's society.
