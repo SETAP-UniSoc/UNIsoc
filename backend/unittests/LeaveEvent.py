@@ -47,7 +47,7 @@ class LeaveEventViewTests(APITestCase):
 
     def test_nonexistent_event_returns_400(self):
         self.client.login(username="testuser", password="pass123")
-        response = self.client.post(self.url(9999))
+        response = self.client.post(self.url(9999))# we see you
         self.assertEqual(response.status_code, 400)
 
     # --- Leaving ---
