@@ -240,7 +240,7 @@ class _AdminHomepageState extends State<AdminHomepage> {
           ),
           const SizedBox(height: 8),
           Text(
-            "Welcome  ${ApiService.societyName ?? 'Admin'}",
+            "Welcome ${ApiService.societyName ?? 'Admin'} Society!",
             style: const TextStyle(fontSize: 18, color: Colors.white70),
           ),
         ],
