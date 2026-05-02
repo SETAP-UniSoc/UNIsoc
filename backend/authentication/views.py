@@ -1273,29 +1273,11 @@ class RegisterView(APIView):
         )
 
 class LoginView(APIView):
-    """
-    API view to authenticate a user and return an auth token.
-
-    Users can log in using either:
-    - Email
-    - University number (UP number)
-
-    Returns:
-    - Auth token and user details on success
-    - 401 Unauthorized if credentials are invalid
-    """
     def post(self, request):
-        """
-        Authenticate the user and generate a token.
-
-        :param request: HTTP request containing login credentials
-        :type request: Request
-        :return: Authentication token and user info
-        :rtype: Response
-        """
         email = request.data.get("email")
         up_number = request.data.get("up_number")
         password = request.data.get("password")
+        selected_society_id = request.data.get("society_id")  # 👈 NEW
 
         if not password:
             return Response({"error": "Password required"}, status=400)
@@ -1317,21 +1299,33 @@ class LoginView(APIView):
                 society_id = None
                 society_name = None
 
+                # admin validation: if user is admin, they must select their society and it must match the one in the database
                 if user.role == "admin":
                     try:
                         society = Society.objects.get(admin=user)
                         society_id = society.id
                         society_name = society.name
+
+                        
+                        if str(society_id) != str(selected_society_id):
+                            return Response(
+                                {"error": "Invalid society selection"},
+                                status=403
+                            )
+
                     except Society.DoesNotExist:
-                        pass
+                        return Response(
+                            {"error": "Admin has no assigned society"},
+                            status=400
+                        )
 
                 return Response({
                     "token": token.key,
                     "role": user.role,
                     "email": user.email,
                     "up_number": user.up_number,
-                    "society_id": society_id,      
-                    "society_name": society_name   
+                    "society_id": society_id,
+                    "society_name": society_name
                 })
 
         except User.DoesNotExist:
