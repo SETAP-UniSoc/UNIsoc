@@ -44,7 +44,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
       final data = jsonDecode(res.body) as List;
       print("✅ Found ${data.length} events");
 
-      // ✅ Add normalized_date to each event
+      // Add normalized_date to each event
       List processedEvents = [];
       for (var e in data) {
         final rawTime = DateTime.parse(e["start_time"]);
@@ -53,9 +53,10 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
           ...e,
           "normalized_date": utcDate,
         });
+        print("   Event: ${e["title"]} - Date: ${utcDate.year}-${utcDate.month}-${utcDate.day}");
       }
 
-      // GROUP EVENTS BY DATE
+      // Group events by date
       final Map<String, List<dynamic>> grouped = {};
 
       for (var e in processedEvents) {
@@ -68,7 +69,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         grouped[key]!.add(e);
       }
 
-      // CREATE CALENDAR EVENTS (ONE PER DAY)
+      // Create calendar events (one per day)
       List<Event> calEvents = grouped.entries.map((entry) {
         final parts = entry.key.split("-");
         final date = DateTime(
@@ -89,6 +90,8 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         calendarEvents = calEvents;
         isLoading = false;
       });
+
+      print("📦 Stored ${eventData.length} events in eventData");
     } else {
       print("❌ Failed to load events");
       setState(() => isLoading = false);
@@ -96,14 +99,25 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   }
 
   void onDateTapped(DateTime date) {
-    final tappedDate = getDateOnly(date);
+    // Compare only year, month, day
+    final tappedYear = date.year;
+    final tappedMonth = date.month;
+    final tappedDay = date.day;
+    
+    print("🔍 Tapped date: $tappedYear-$tappedMonth-$tappedDay");
 
     final eventsOnDate = eventData.where((e) {
       final eventDate = e["normalized_date"] as DateTime;
-      return eventDate == tappedDate;
+      final isMatch = eventDate.year == tappedYear && 
+                      eventDate.month == tappedMonth && 
+                      eventDate.day == tappedDay;
+      if (isMatch) {
+        print("✅ MATCH: ${e["title"]} on ${eventDate.year}-${eventDate.month}-${eventDate.day}");
+      }
+      return isMatch;
     }).toList();
 
-    print("📊 Found ${eventsOnDate.length} events on $tappedDate");
+    print("📊 Found ${eventsOnDate.length} events");
 
     if (eventsOnDate.isNotEmpty) {
       _showEvents(eventsOnDate);
@@ -382,21 +396,16 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: EventBasedCalender(
-                      events: calendarEvents,
-                      primaryColor: const Color(0xFF8B5CF6),
-                      onDateTap: onDateTapped,
-                    ),
+          : Column(
+              children: [
+                Expanded(
+                  child: EventBasedCalender(
+                    events: calendarEvents,
+                    primaryColor: const Color(0xFF8B5CF6),
+                    onDateTap: onDateTapped,
                   ),
-                );
-              },
+                ),
+              ],
             ),
       bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
     );
