@@ -138,3 +138,9 @@ class ApiService {
     );
   }
 }
+
+
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
