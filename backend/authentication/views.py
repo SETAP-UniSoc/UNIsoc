@@ -71,7 +71,7 @@ class SocietyListSearchView(APIView):
         data = [{
             "id": s.id,
             "name": s.name,
-            "active_member_count": s.active_member_count,
+            "member_count": s.member_count,
             "description": s.description,
             "category": s.category,
         } for s in societies]
