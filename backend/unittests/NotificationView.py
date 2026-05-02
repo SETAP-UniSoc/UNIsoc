@@ -13,12 +13,12 @@ class NotificationViewTests(APITestCase):
         self.admin.save()
 
         self.society = Society.objects.create(name="Test Society", admin=self.admin)
-        self.other_society = Society.objects.create(name="Other Society", admin=self.admin)
+        self.other_society = Society.objects.create(name="Other Society", admin=self.admin)#what is this please explain
 
         # user is a member of society but not other_society
         Membership.objects.create(user=self.user, society=self.society)
 
-        self.url = "/notifications/"  # adjust
+        self.url = "/notifications/"  # adjust, facts
 
     # --- Auth ---
 
@@ -66,7 +66,7 @@ class NotificationViewTests(APITestCase):
         response = self.client.post(self.url, {
             "society_id": 9999,
             "event_notifications": True
-        })
+        })      #well done
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.data["error"], "Society not found")
 

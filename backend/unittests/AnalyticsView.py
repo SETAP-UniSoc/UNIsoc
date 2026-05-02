@@ -16,7 +16,7 @@ class AnalyticsViewTestCase(APITestCase):
             username="regular", password="pass123", role="member"
         )
 
-        self.url = "/analytics/" 
+        self.url = "/analytics/"  #please check your references 
 
 # --- Auth & permission tests ---
 
@@ -37,7 +37,7 @@ class AnalyticsViewTestCase(APITestCase):
         orphan_admin = User.objects.create_user(
             username="orphan", password="pass123", role="admin"
         )
-        self.client.login(username="orphan", password="pass123")
+        self.client.login(username="orphan", password="pass123") #orphan???
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.data["error"], "Society not found")
@@ -46,7 +46,7 @@ class AnalyticsViewTestCase(APITestCase):
 
     def test_invalid_period_returns_400(self):
         self.client.login(username="admin", password="pass123")
-        response = self.client.get(self.url, {"period": "decade"})
+        response = self.client.get(self.url, {"period": "decade"})#do you know what a decade is? nvm we get it 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data["error"], "Invalid period")
 
@@ -84,7 +84,7 @@ def test_period_month_returns_30_points(self):
 
     # --- Response shape ---
 
-    def test_response_contains_required_keys(self):
+    def test_response_contains_required_keys(self): #is this an invalid test case
         self.client.login(username="admin", password="pass123")
         response = self.client.get(self.url, {"period": "week"})
         self.assertEqual(response.status_code, 200)
@@ -125,7 +125,7 @@ def test_period_month_returns_30_points(self):
         EventAttendance.objects.create(event=event1, user=user2)
 
         response = self.client.get(self.url, {"period": "week"})
-        self.assertEqual(response.data["most_popular"]["title"], "Big Event")
+        self.assertEqual(response.data["most_popular"]["title"], "Big Event") # invalid test case? 
         self.assertEqual(response.data["most_popular"]["attendee_count"], 2)
 
     def test_most_popular_is_none_when_no_events(self):

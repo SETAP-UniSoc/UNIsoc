@@ -96,7 +96,7 @@ class _SignupUserPageState extends State<SignupUserPage> {
     final upnumber = "UP${upnumberController.text.trim()}";
 
     final url =
-        Uri.parse("http://10.128.4.122:8000/api/user/register/");
+        Uri.parse("http://10.128.5.248:8000/api/user/register/");
 
     try {
       final response = await http.post(

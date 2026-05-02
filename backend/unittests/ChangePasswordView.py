@@ -45,7 +45,7 @@ def test_missing_both_fields_returns_400(self):
         self.client.login(username="testuser", password="oldpass123")
         response = self.client.post(self.url, {
             "old_password": "oldpass123",
-            "new_password": "short"
+            "new_password": "short" #??? help us understand YOU 
         })
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data["error"], "New password must be at least 8 characters")

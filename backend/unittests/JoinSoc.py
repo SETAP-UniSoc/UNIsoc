@@ -68,7 +68,7 @@ class JoinSocietyViewTests(APITestCase):
         self.assertEqual(Membership.objects.filter(society=self.society).count(), 2)
 
     def test_user_can_join_multiple_societies(self):
-        society2 = Society.objects.create(name="Second Society", admin=self.admin)
+        society2 = Society.objects.create(name="Second Society", admin=self.admin) # please explain thought process
         self.client.login(username="testuser", password="pass123")
         self.client.post(self.url(self.society.id))
         self.client.post(self.url(society2.id))
