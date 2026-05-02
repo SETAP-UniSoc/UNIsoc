@@ -19,7 +19,9 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   List eventData = [];
   bool isLoading = true;
 
-  DateTime normalize(DateTime d) => DateTime(d.year, d.month, d.day);
+  DateTime getDateOnly(DateTime dt) {
+    return DateTime(dt.year, dt.month, dt.day);
+  }
 
   @override
   void initState() {
@@ -27,7 +29,6 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     loadEvents();
   }
 
-  // LOAD EVENTS + GROUP BY DATE
   Future<void> loadEvents() async {
     setState(() => isLoading = true);
 
@@ -43,12 +44,23 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
       final data = jsonDecode(res.body) as List;
       print("✅ Found ${data.length} events");
 
-      // GROUP EVENTS BY DATE
-      Map<String, List> grouped = {};
-
+      // ✅ Add normalized_date to each event
+      List processedEvents = [];
       for (var e in data) {
-        final parsed = DateTime.parse(e["start_time"]).toLocal();
-        final key = "${parsed.year}-${parsed.month}-${parsed.day}";
+        final rawTime = DateTime.parse(e["start_time"]);
+        final utcDate = getDateOnly(rawTime);
+        processedEvents.add({
+          ...e,
+          "normalized_date": utcDate,
+        });
+      }
+
+      // GROUP EVENTS BY DATE
+      final Map<String, List<dynamic>> grouped = {};
+
+      for (var e in processedEvents) {
+        final utcDate = e["normalized_date"] as DateTime;
+        final key = "${utcDate.year}-${utcDate.month}-${utcDate.day}";
 
         if (!grouped.containsKey(key)) {
           grouped[key] = [];
@@ -73,7 +85,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
       }).toList();
 
       setState(() {
-        eventData = data;
+        eventData = processedEvents;
         calendarEvents = calEvents;
         isLoading = false;
       });
@@ -83,14 +95,15 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     }
   }
 
-  // TAP DATE
   void onDateTapped(DateTime date) {
-    final selected = normalize(date);
+    final tappedDate = getDateOnly(date);
 
     final eventsOnDate = eventData.where((e) {
-      final parsed = DateTime.parse(e["start_time"]).toLocal();
-      return normalize(parsed) == selected;
+      final eventDate = e["normalized_date"] as DateTime;
+      return eventDate == tappedDate;
     }).toList();
+
+    print("📊 Found ${eventsOnDate.length} events on $tappedDate");
 
     if (eventsOnDate.isNotEmpty) {
       _showEvents(eventsOnDate);
@@ -99,7 +112,6 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     }
   }
 
-  // SHOW EVENTS LIST
   void _showEvents(List events) {
     showDialog(
       context: context,
@@ -117,7 +129,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
               return ListTile(
                 title: Text(e["title"]),
                 subtitle: Text(
-                  "${time.hour}:${time.minute} • ${e["location"] ?? ""} • ${e["capacity_limit"] != null ? "Cap: ${e["capacity_limit"]}" : "No Cap"}",
+                  "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')} • ${e["location"] ?? ""} • ${e["capacity_limit"] != null ? "Cap: ${e["capacity_limit"]}" : "No Cap"}",
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -142,9 +154,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _showCreateDialog(
-                DateTime.parse(events[0]["start_time"]).toLocal(),
-              );
+              _showCreateDialog(DateTime.parse(events[0]["start_time"]).toLocal());
             },
             child: const Text("Add Another"),
           ),
@@ -153,7 +163,6 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     );
   }
 
-  // CREATE EVENT
   void _showCreateDialog(DateTime date) {
     final title = TextEditingController();
     final desc = TextEditingController();
@@ -183,7 +192,6 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
                 controller: loc,
                 decoration: const InputDecoration(labelText: "Location"),
               ),
-
               TextField(
                 controller: cap,
                 decoration: const InputDecoration(
@@ -191,7 +199,6 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
                 ),
                 keyboardType: TextInputType.number,
               ),
-
               ListTile(
                 title: const Text("Start Time"),
                 subtitle: Text(start.format(context)),
@@ -223,27 +230,29 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
             ),
             ElevatedButton(
               onPressed: () async {
-                final startDT = DateTime(
+                final localStartDT = DateTime(
                   date.year,
                   date.month,
                   date.day,
                   start.hour,
                   start.minute,
                 );
-                final endDT = DateTime(
+                final localEndDT = DateTime(
                   date.year,
                   date.month,
                   date.day,
                   end.hour,
                   end.minute,
                 );
+                final utcStartDT = localStartDT.toUtc();
+                final utcEndDT = localEndDT.toUtc();
 
                 await _createEvent(
                   title: title.text,
                   description: desc.text,
                   location: loc.text,
-                  startTime: startDT.toIso8601String(),
-                  endTime: endDT.toIso8601String(),
+                  startTime: utcStartDT.toIso8601String(),
+                  endTime: utcEndDT.toIso8601String(),
                   capacity: cap.text.isEmpty ? null : int.tryParse(cap.text),
                 );
 
@@ -257,14 +266,11 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     );
   }
 
-  // EDIT EVENT
   void _showEditDialog(Map event) {
     final title = TextEditingController(text: event["title"]);
     final desc = TextEditingController(text: event["description"]);
     final loc = TextEditingController(text: event["location"]);
-    final cap = TextEditingController(
-      text: event["capacity_limit"]?.toString() ?? "",
-    );
+    
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -272,9 +278,9 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: title),
-            TextField(controller: desc),
-            TextField(controller: loc),
+            TextField(controller: title, decoration: const InputDecoration(labelText: "Title")),
+            TextField(controller: desc, decoration: const InputDecoration(labelText: "Description")),
+            TextField(controller: loc, decoration: const InputDecoration(labelText: "Location")),
           ],
         ),
         actions: [
@@ -316,12 +322,9 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
       "end_time": endTime,
     };
 
-    // Only add capacity if it's not null AND greater than 0
     if (capacity != null && capacity > 0) {
       body["capacity_limit"] = capacity;
     }
-
-    print("📝 Creating event with body: $body");
 
     final res = await http.post(
       Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
@@ -329,17 +332,12 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
       body: jsonEncode(body),
     );
 
-    print("📊 Create event response: ${res.statusCode}");
-    print("📊 Response body: ${res.body}");
-
     if (res.statusCode == 201) {
-      print("✅ Event created successfully");
       loadEvents();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Event created successfully!")),
       );
     } else {
-      print("❌ Failed to create event");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Failed to create event: ${res.statusCode}")),
       );
@@ -354,10 +352,10 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     );
 
     if (res.statusCode == 200) {
-      print("✅ Event updated successfully");
       loadEvents();
-    } else {
-      print("❌ Failed to update event: ${res.statusCode}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Event updated successfully!")),
+      );
     }
   }
 
@@ -368,10 +366,10 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     );
 
     if (res.statusCode == 204) {
-      print("✅ Event deleted successfully");
       loadEvents();
-    } else {
-      print("❌ Failed to delete event: ${res.statusCode}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Event deleted successfully!")),
+      );
     }
   }
 
@@ -404,28 +402,3 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     );
   }
 }
-
-
-
-
-// not all dtaes show cancel option when pressed
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
