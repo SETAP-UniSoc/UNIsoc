@@ -31,67 +31,55 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   }
 
   Future<void> loadEvents() async {
-    setState(() => isLoading = true);
+  setState(() => isLoading = true);
 
-    final url = "${ApiService.baseUrl}/societies/${widget.societyId}/events/";
-    print("🔍 Loading events from: $url");
+  final url = "${ApiService.baseUrl}/societies/${widget.societyId}/events/";
+  final res = await http.get(Uri.parse(url), headers: ApiService.headers);
 
-    final res = await http.get(Uri.parse(url), headers: ApiService.headers);
+  if (res.statusCode == 200) {
+    final data = jsonDecode(res.body) as List;
 
-    print("📊 Events response status: ${res.statusCode}");
-    print("📊 Events response body: ${res.body}");
-
-    if (res.statusCode == 200) {
-      final data = jsonDecode(res.body) as List;
-      print("✅ Found ${data.length} events");
-
-      List processedEvents = [];
-      for (var e in data) {
-        final rawTime = DateTime.parse(e["start_time"]).toLocal();
-        final utcDate = getDateOnly(rawTime);
-        processedEvents.add({
-          ...e,
-          "normalized_date": utcDate,
-        });
-      }
-
-      final Map<String, List<dynamic>> grouped = {};
-
-      for (var e in processedEvents) {
-        final utcDate = e["normalized_date"] as DateTime;
-        final key = "${utcDate.year}-${utcDate.month}-${utcDate.day}";
-
-        if (!grouped.containsKey(key)) {
-          grouped[key] = [];
-        }
-        grouped[key]!.add(e);
-      }
-
-      List<Event> calEvents = grouped.entries.map((entry) {
-        final parts = entry.key.split("-");
-        final date = DateTime(
-          int.parse(parts[0]),
-          int.parse(parts[1]),
-          int.parse(parts[2]),
-        );
-
-        return Event(
-          eventName: "${entry.value.length} events",
-          dates: [date],
-          color: entry.value.length > 1 ? Colors.red : const Color(0xFF8B5CF6),
-        );
-      }).toList();
-
-      setState(() {
-        eventData = processedEvents;
-        calendarEvents = calEvents;
-        isLoading = false;
+    List processedEvents = [];
+    for (var e in data) {
+      final local = DateTime.parse(e["start_time"]).toLocal();
+      final localDate = DateTime(local.year, local.month, local.day);
+      processedEvents.add({
+        ...e,
+        "normalized_date": localDate,
       });
-    } else {
-      print("❌ Failed to load events");
-      setState(() => isLoading = false);
     }
+
+    final Map<String, List<dynamic>> grouped = {};
+    for (var e in processedEvents) {
+      final d = e["normalized_date"] as DateTime;
+      final key = "${d.year}-${d.month}-${d.day}";
+      if (!grouped.containsKey(key)) grouped[key] = [];
+      grouped[key]!.add(e);
+    }
+
+    List<Event> calEvents = grouped.entries.map((entry) {
+      final parts = entry.key.split("-");
+      final date = DateTime(
+        int.parse(parts[0]),
+        int.parse(parts[1]),
+        int.parse(parts[2]),
+      );
+      return Event(
+        eventName: "${entry.value.length} events",
+        dates: [date],
+        color: entry.value.length > 1 ? Colors.red : const Color(0xFF8B5CF6),
+      );
+    }).toList();
+
+    setState(() {
+      eventData = processedEvents;
+      calendarEvents = calEvents;
+      isLoading = false;
+    });
+  } else {
+    setState(() => isLoading = false);
   }
+}
 
   void onDateTapped(DateTime date) {
     final tappedYear = date.year;
