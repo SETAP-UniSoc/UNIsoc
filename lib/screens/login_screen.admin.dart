@@ -94,6 +94,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
     final body = {
       "email": email,
       "password": password,
+      "society_id": selectedSocietyId,
     };
 
     try {
