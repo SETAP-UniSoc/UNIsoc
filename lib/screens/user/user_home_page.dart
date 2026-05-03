@@ -184,18 +184,17 @@ class _HomeHeaderState extends State<HomeHeader> {
             title: Text(name.toString()),
             subtitle: Text(type),
             onTap: () {
-              if (type == 'society') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => UserSocietyPage(
-                      societyId: item['id'],
-                      societyName: item['name'] ?? '',
-                      description: item['description'] ?? '',
-                    ),
+              setState(() => _searchResults = []);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => UserSocietyPage(
+                    societyId: item['id'],
+                    societyName: item['name'] ?? '',
+                    description: item['description'] ?? '',
                   ),
-                );
-              }
+                ),
+              );
               // you can later handle events similarly
 
               setState(() {
