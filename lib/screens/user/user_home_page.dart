@@ -553,13 +553,31 @@ class _HomeHeaderState extends State<HomeHeader> {
                               itemCount: _events.length,
                               itemBuilder: (context, index) {
                                 final event = _events[index];
-                                return _EventCard(
-                                  event: Event(
-                                    title: event['title'],
-                                    date: event['start_time'],
-                                    location: event['location'],
-                                    color: Colors
-                                        .deepPurple, // Customize as needed
+                                final int? societyId =
+                                    event['society_id'] as int?;
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    if (societyId == null) return;
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => UserSocietyPage(
+                                          societyId: societyId,
+                                          societyName:
+                                              event['society_name'] ?? '',
+                                          description: '',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: _EventCard(
+                                    event: Event(
+                                      title: event['title'],
+                                      date: event['start_time'],
+                                      location: event['location'],
+                                      color: Colors.deepPurple,
+                                    ),
                                   ),
                                 );
                               },
