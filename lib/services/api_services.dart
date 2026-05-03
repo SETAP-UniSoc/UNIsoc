@@ -98,7 +98,16 @@ class ApiService {
 
         if (eventsResponse.statusCode == 200) {
           final societyEvents = jsonDecode(eventsResponse.body) as List;
-          events.addAll(societyEvents);
+          final tagged = societyEvents
+              .map(
+                (e) => {
+                  ...e,
+                  'society_id': societyId,
+                  'society_name': society['name'],
+                },
+              )
+              .toList();
+          events.addAll(tagged);
         }
       }
 
@@ -138,5 +147,3 @@ class ApiService {
     );
   }
 }
-
-
