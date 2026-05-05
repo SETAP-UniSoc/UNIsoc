@@ -33,10 +33,14 @@ class HomePage extends StatelessWidget {
 
 class HomeHeader extends StatefulWidget {
   final String studentName;
+  final Future<List<dynamic>> Function()? getSocieties;
+  final Future<List<dynamic>> Function()? getEventsForJoinedSocieties;
 
   const HomeHeader({
     super.key,
     this.studentName = 'Student', // later pass the real name
+    this.getSocieties,
+    this.getEventsForJoinedSocieties,
   });
 
   @override
@@ -125,8 +129,9 @@ class _HomeHeaderState extends State<HomeHeader> {
 
   Future<void> _loadData() async {
     try {
-      final societies = await ApiService.getSocieties();
-      final events = await ApiService.getEventsForJoinedSocieties();
+      final societies = await (widget.getSocieties ?? ApiService.getSocieties)();
+      final events =
+          await (widget.getEventsForJoinedSocieties ?? ApiService.getEventsForJoinedSocieties)();
 
       // if you later add a "getHomeEvents", call it here too
       if (!mounted) return;

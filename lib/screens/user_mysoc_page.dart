@@ -3,7 +3,8 @@ import '../services/api_services.dart';
 import 'user/user_society_page.dart'; // Correct import for UserSocietyPage
 
 class MySocietyPage extends StatefulWidget {
-  const MySocietyPage({super.key, required Future<List> Function() mySocietiesFetcher});
+  final Future<List> Function()? mySocietiesFetcher;
+  const MySocietyPage({super.key, this.mySocietiesFetcher});
 
   @override
   State<MySocietyPage> createState() => _MySocietyPageState();
@@ -15,7 +16,7 @@ class _MySocietyPageState extends State<MySocietyPage> {
   @override
   void initState() {
     super.initState();
-    _futureMySocieties = ApiService.getMySocieties();
+    _futureMySocieties = (widget.mySocietiesFetcher ?? ApiService.getMySocieties)();
   }
 
   @override
