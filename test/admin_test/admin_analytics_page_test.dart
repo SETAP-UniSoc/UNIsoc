@@ -5,9 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:unisoc/screens/admin/admin_analytics_page.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helper: builds the standard analytics JSON body
-// ─────────────────────────────────────────────────────────────────────────────
 List<int> _analyticsBody({
   List<String> labels = const [],
   List<int> totals = const [],
@@ -22,15 +19,11 @@ List<int> _analyticsBody({
   }));
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Tests
-// ─────────────────────────────────────────────────────────────────────────────
 void main() {
   tearDown(() {
     HttpOverrides.global = null;
   });
 
-  // ── PASSES — do not change ─────────────────────────────────────────────────
 
   testWidgets('shows empty state when no event attendance data',
       (WidgetTester tester) async {
@@ -94,7 +87,6 @@ void main() {
     }
   });
 
-  // ── PREVIOUSLY FAILING — fixed by proper mock interception ────────────────
 
   testWidgets('renders loading indicator and then analytics when data loads',
       (WidgetTester tester) async {
@@ -111,15 +103,12 @@ void main() {
     try {
       await tester.pumpWidget(const MaterialApp(home: AdminAnalyticsPage()));
 
-      // Before settle: loading indicator must be visible
       expect(find.byType(CircularProgressIndicator), findsWidgets);
 
       await tester.pumpAndSettle();
 
-      // After settle: spinner gone, data shown
       expect(find.byType(CircularProgressIndicator), findsNothing);
       expect(find.text('My Analytics'), findsOneWidget);
-      // live_count replaces the last value so both show as '30'
       expect(find.text('30'), findsWidgets);
     } finally {
       HttpOverrides.global = previous;
@@ -241,9 +230,6 @@ void main() {
   });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Mock infrastructure
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// Static-body override — returns the same [body] and [statusCode] for every request.
 class _MockAnalyticsHttpOverrides extends HttpOverrides {
@@ -266,7 +252,6 @@ class _MockAnalyticsHttpOverridesWithCallback extends HttpOverrides {
       _MockHttpClient.callback(callback);
 }
 
-// ── HttpClient ────────────────────────────────────────────────────────────────
 
 class _MockHttpClient implements HttpClient {
   final List<int> Function(Uri uri) _resolve;

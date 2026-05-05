@@ -4,7 +4,9 @@ import 'dart:convert';
 import 'package:unisoc/services/api_services.dart';
 
 class AdminSettingsPage extends StatefulWidget {
-  const AdminSettingsPage({super.key});
+  final http.Client? httpClient;
+
+  const AdminSettingsPage({super.key, this.httpClient});
 
   @override
   State<AdminSettingsPage> createState() => _AdminSettingsPageState();
@@ -57,7 +59,8 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
     });
 
     try {
-      final response = await http.get(
+      final client = widget.httpClient ?? http.Client();
+      final response = await client.get(
         Uri.parse("${ApiService.baseUrl}/user/profile/"),
         headers: ApiService.headers,
       );
@@ -100,7 +103,8 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
 
   Future<void> _loadNotificationSettings() async {
     try {
-      final response = await http.get(
+      final client = widget.httpClient ?? http.Client();
+      final response = await client.get(
         Uri.parse("${ApiService.baseUrl}/notifications/"),
         headers: ApiService.headers,
       );
@@ -125,7 +129,8 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await http.post(
+      final client = widget.httpClient ?? http.Client();
+      final response = await client.post(
         Uri.parse("${ApiService.baseUrl}/notifications/"),
         headers: ApiService.headers,
         body: jsonEncode({
@@ -182,7 +187,8 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await http.post(
+      final client = widget.httpClient ?? http.Client();
+      final response = await client.post(
         Uri.parse("${ApiService.baseUrl}/user/profile/"),
         headers: ApiService.headers,
         body: jsonEncode({"name": newName}),
@@ -237,7 +243,8 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await http.post(
+      final client = widget.httpClient ?? http.Client();
+      final response = await client.post(
         Uri.parse("${ApiService.baseUrl}/change-email/"),
         headers: ApiService.headers,
         body: jsonEncode({
@@ -315,7 +322,8 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await http.post(
+      final client = widget.httpClient ?? http.Client();
+      final response = await client.post(
         Uri.parse("${ApiService.baseUrl}/change-password/"),
         headers: ApiService.headers,
         body: jsonEncode({
