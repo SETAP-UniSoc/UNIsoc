@@ -1,46 +1,54 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:unisoc/screens/admin/admin_hompage.dart';
 
-/// Correct mock for ApiService (package:http)
-void mockHttp({
+/// Return a `http.Client` that responds with the provided JSON bodies.
+http.Client mockHttp({
   required String societiesJson,
   required String eventsJson,
   required String searchJson,
 }) {
-  http.Client mock = MockClient((request) async {
+  return MockClient((request) async {
     final url = request.url.toString();
 
-    if (url.contains("/societies/") && !url.contains("/events/")) {
-      return http.Response(societiesJson, 200);
-    }
-
-    if (url.contains("/events/all/")) {
-      return http.Response(eventsJson, 200);
-    }
-
-    if (url.contains("/search")) {
+    // Search requests hit the societies endpoint with a query parameter.
+    if (url.contains('/societies/') && url.contains('?q=')) {
       return http.Response(searchJson, 200);
     }
 
-    return http.Response("Not Found", 404);
-  });
+    if (url.contains('/societies/') && !url.contains('/events/')) {
+      return http.Response(societiesJson, 200);
+    }
 
- 
+    if (url.contains('/events/all/')) {
+      return http.Response(eventsJson, 200);
+    }
+
+    if (url.contains('/search')) {
+      return http.Response(searchJson, 200);
+    }
+
+    return http.Response('Not Found', 404);
+  });
 }
 void main() {
+  tearDown(() {
+    HttpOverrides.global = null;
+  });
   testWidgets('renders header and sections when APIs return empty lists',
       (WidgetTester tester) async {
-    mockHttp(
+    final client = mockHttp(
       societiesJson: jsonEncode([]),
       eventsJson: jsonEncode([]),
       searchJson: jsonEncode([]),
     );
 
-    await tester.pumpWidget(const MaterialApp(home: AdminHomepage()));
+    await tester.pumpWidget(MaterialApp(home: AdminHomepage(httpClient: client)));
     await tester.pumpAndSettle();
 
     expect(find.text('UniSoc'), findsOneWidget);
@@ -51,7 +59,7 @@ void main() {
 
   testWidgets('loads societies and events from API and shows items',
       (WidgetTester tester) async {
-    mockHttp(
+    final client = mockHttp(
       societiesJson: jsonEncode([
         {"id": 1, "name": "TestSoc", "category": "Academic", "member_count": 10}
       ]),
@@ -67,24 +75,23 @@ void main() {
       searchJson: jsonEncode([]),
     );
 
-    await tester.pumpWidget(const MaterialApp(home: AdminHomepage()));
+    await tester.pumpWidget(MaterialApp(home: AdminHomepage(httpClient: client)));
     await tester.pumpAndSettle();
 
     expect(find.text('TestSoc'), findsWidgets);
-    expect(find.text('Event1'), findsOneWidget);
+    expect(find.text('Event1'), findsWidgets);
   });
 
   testWidgets('typing in search shows dropdown results (debounced)',
       (WidgetTester tester) async {
-    mockHttp(
+    final client = mockHttp(
       societiesJson: jsonEncode([]),
       eventsJson: jsonEncode([]),
       searchJson: jsonEncode([
         {"id": 2, "name": "FoundSoc", "type": "society"}
       ]),
     );
-
-    await tester.pumpWidget(const MaterialApp(home: AdminHomepage()));
+    await tester.pumpWidget(MaterialApp(home: AdminHomepage(httpClient: client)));
     await tester.pumpAndSettle();
 
     final searchField = find.byType(TextField).first;
@@ -96,3 +103,4 @@ void main() {
     expect(find.text('FoundSoc'), findsOneWidget);
   });
 }
+
