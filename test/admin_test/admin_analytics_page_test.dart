@@ -97,7 +97,7 @@ void main() {
     }
   });
 
-  testWidgets('shows empty state when no event attendance data', (WidgetTester tester) async {
+  testWidgets('shows empty state when no event attendance data', (WidgetTester tester) async { //pass
     final previous = HttpOverrides.current;
     HttpOverrides.global = _MockAnalyticsHttpOverrides(
       analyticsBody: utf8.encode(jsonEncode({
@@ -201,7 +201,7 @@ void main() {
     }
   });
 
-  testWidgets('shows empty membership chart when no data', (WidgetTester tester) async {
+  testWidgets('shows empty membership chart when no data', (WidgetTester tester) async { //pass
     final previous = HttpOverrides.current;
     HttpOverrides.global = _MockAnalyticsHttpOverrides(
       analyticsBody: utf8.encode(jsonEncode({
@@ -226,7 +226,7 @@ void main() {
     }
   });
 
-  testWidgets('exports PDF button is present', (WidgetTester tester) async {
+  testWidgets('exports PDF button is present', (WidgetTester tester) async { //pass
     final previous = HttpOverrides.current;
     HttpOverrides.global = _MockAnalyticsHttpOverrides(
       analyticsBody: utf8.encode(jsonEncode({
@@ -253,7 +253,7 @@ void main() {
 }
 
 /// HttpOverrides mock for analytics with static response body
-class _MockAnalyticsHttpOverrides extends HttpOverrides {
+class _MockAnalyticsHttpOverrides extends HttpOverrides { 
   final List<int> analyticsBody;
   final int statusCode;
 

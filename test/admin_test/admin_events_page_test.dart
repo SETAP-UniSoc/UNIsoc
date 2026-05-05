@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:unisoc/screens/admin/admin_events_page.dart';
-
+//all fail
 void main() {
   tearDown(() {
     HttpOverrides.global = null;

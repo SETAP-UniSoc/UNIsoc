@@ -88,7 +88,7 @@ void main() {
   group('MySocietyPage UI Tests', () {
     tearDown(() => HttpOverrides.global = null);
 
-    testWidgets('shows loading indicator while fetching data', (tester) async {
+    testWidgets('shows loading indicator while fetching data', (tester) async { //pass
       await tester.pumpWidget(const MaterialApp(home: MySocietyPage()));
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
