@@ -97,47 +97,47 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     }
   }
 
- Future<void> _loadNotificationSettings() async {
-  try {
-    final response = await http.get(
-      Uri.parse("${ApiService.baseUrl}/notifications/"),
-      headers: ApiService.headers,
-    );
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      
-      // ✅ Fetch societies to get the IDs
-      final societiesResponse = await http.get(
-        Uri.parse("${ApiService.baseUrl}/societies/"),
+  Future<void> _loadNotificationSettings() async {
+    try {
+      final response = await http.get(
+        Uri.parse("${ApiService.baseUrl}/notifications/"),
         headers: ApiService.headers,
       );
-      
-      // Create a map of society name to society ID
-      Map<String, int> societyNameToId = {};
-      if (societiesResponse.statusCode == 200) {
-        final List<dynamic> societies = jsonDecode(societiesResponse.body);
-        for (var society in societies) {
-          societyNameToId[society["name"]] = society["id"];
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        
+        // Fetch societies to get the IDs
+        final societiesResponse = await http.get(
+          Uri.parse("${ApiService.baseUrl}/societies/"),
+          headers: ApiService.headers,
+        );
+        
+        // Create a map of society name to society ID
+        Map<String, int> societyNameToId = {};
+        if (societiesResponse.statusCode == 200) {
+          final List<dynamic> societies = jsonDecode(societiesResponse.body);
+          for (var society in societies) {
+            societyNameToId[society["name"]] = society["id"];
+          }
+        }
+        
+        setState(() {
+          _notificationPrefs = data.map((item) => {
+            "society": item["society"],
+            "society_id": societyNameToId[item["society"]] ?? -1,
+            "notify_new_events": item["notify_new_events"] ?? true,
+          }).toList();
+        });
+        
+        if (_notificationPrefs.isNotEmpty) {
+          _notificationsEnabled = _notificationPrefs[0]["notify_new_events"];
         }
       }
-      
-      setState(() {
-        _notificationPrefs = data.map((item) => {
-          "society": item["society"],
-          "society_id": societyNameToId[item["society"]] ?? -1,
-          "notify_new_events": item["notify_new_events"] ?? true,
-        }).toList();
-      });
-      
-      if (_notificationPrefs.isNotEmpty) {
-        _notificationsEnabled = _notificationPrefs[0]["notify_new_events"];
-      }
+    } catch (e) {
+      print("Error loading notification settings: ${e.toString()}");
     }
-  } catch (e) {
-    print("Error loading notification settings: ${e.toString()}");
   }
-}
 
   Future<void> _updateNotificationSettings(bool enabled) async {
     if (_notificationPrefs.isEmpty) {
@@ -197,25 +197,73 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     }
   }
 
+  // NEW METHOD - For individual society toggles
+  Future<void> _updateSingleNotification(int societyId, bool enabled, String societyName) async {
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiService.baseUrl}/notifications/"),
+        headers: ApiService.headers,
+        body: jsonEncode({
+          "society_id": societyId,
+          "event_notifications": enabled,
+        }),
+      );
+
+      print("📡 Update response: ${response.statusCode}");
+      print("📡 Response body: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Update the local list
+        setState(() {
+          for (var i = 0; i < _notificationPrefs.length; i++) {
+            if (_notificationPrefs[i]["society_id"] == societyId) {
+              _notificationPrefs[i]["notify_new_events"] = enabled;
+            }
+          }
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("$societyName: ${enabled ? "Enabled" : "Disabled"}"),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to update notification settings")),
+        );
+      }
+    } catch (e) {
+      print("❌ Error updating notification: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error updating notification settings")),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
   Future<int?> _showSocietySelectionDialog() async {
-  if (_notificationPrefs.isEmpty) return null;
-  
-  return showDialog<int>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text("Select Society"),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: _notificationPrefs.map((pref) {
-          return ListTile(
-            title: Text(pref["society"]),
-            onTap: () => Navigator.pop(context, pref["society_id"]),
-          );
-        }).toList(),
+    if (_notificationPrefs.isEmpty) return null;
+    
+    return showDialog<int>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Select Society"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: _notificationPrefs.map((pref) {
+            return ListTile(
+              title: Text(pref["society"]),
+              onTap: () => Navigator.pop(context, pref["society_id"]),
+            );
+          }).toList(),
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Future<void> _updateName() async {
     final newName = _nameController.text.trim();
@@ -390,7 +438,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        automaticallyImplyLeading: true, // This gives you the back arrow!
+        automaticallyImplyLeading: true,
         title: const Text(
           "My Account",
           style: TextStyle(fontWeight: FontWeight.w600),
@@ -399,7 +447,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-      // NO BOTTOM NAVIGATION BAR - only back arrow in AppBar
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -407,7 +454,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Error message display
                   if (_errorMessage.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -438,7 +484,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
                       ),
                     ),
 
-                  // My Details Section
                   const Text(
                     "My Details",
                     style: TextStyle(
@@ -451,7 +496,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
                   const Divider(),
                   const SizedBox(height: 16),
 
-                  // Name Field
                   const Text(
                     "Name",
                     style: TextStyle(
@@ -515,7 +559,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
 
                   const SizedBox(height: 16),
 
-                  // Email Field (Read-only)
                   const Text(
                     "Email",
                     style: TextStyle(
@@ -543,7 +586,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
 
                   const SizedBox(height: 24),
 
-                  // Change Email Section
                   const Text(
                     "Change Email",
                     style: TextStyle(
@@ -556,7 +598,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
                   const Divider(),
                   const SizedBox(height: 16),
 
-                  // New Email
                   const Text(
                     "New Email",
                     style: TextStyle(
@@ -599,7 +640,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
 
                   const SizedBox(height: 32),
 
-                  // Change Password Section
                   const Text(
                     "Change Password",
                     style: TextStyle(
@@ -612,7 +652,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
                   const Divider(),
                   const SizedBox(height: 16),
 
-                  // Current Password
                   const Text(
                     "Current Password",
                     style: TextStyle(
@@ -648,7 +687,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
 
                   const SizedBox(height: 16),
 
-                  // New Password
                   const Text(
                     "New Password",
                     style: TextStyle(
@@ -684,7 +722,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
 
                   const SizedBox(height: 16),
 
-                  // Confirm Password
                   const Text(
                     "Confirm New Password",
                     style: TextStyle(
@@ -740,7 +777,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
 
                   const SizedBox(height: 32),
 
-                  // Notifications Section
                   const Text(
                     "Notifications",
                     style: TextStyle(
@@ -753,46 +789,58 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
                   const Divider(),
                   const SizedBox(height: 16),
 
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Enable Notifications",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                "Receive updates about your society and events",
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF6B7280),
-                                ),
-                              ),
-                            ],
-                          ),
+                  if (_notificationPrefs.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text(
+                        "No societies joined yet",
+                        style: TextStyle(color: Color(0xFF6B7280)),
+                      ),
+                    )
+                  else
+                    ..._notificationPrefs.map((pref) {
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4F6),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        Switch(
-                          value: _notificationsEnabled,
-                          activeThumbColor: const Color(0xFF8B5CF6),
-                          onChanged: (value) {
-                            _updateNotificationSettings(value);
-                          },
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    pref["society"],
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    "Receive updates about events",
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Color(0xFF6B7280),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Switch(
+                              value: pref["notify_new_events"] ?? true,
+                              activeThumbColor: const Color(0xFF8B5CF6),
+                              onChanged: (value) {
+                                _updateSingleNotification(pref["society_id"], value, pref["society"]);
+                              },
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
+                      );
+                    }).toList(),
 
                   const SizedBox(height: 40),
                 ],
