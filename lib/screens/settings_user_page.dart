@@ -97,30 +97,47 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     }
   }
 
-  Future<void> _loadNotificationSettings() async {
-    try {
-      final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/notifications/"),
+ Future<void> _loadNotificationSettings() async {
+  try {
+    final response = await http.get(
+      Uri.parse("${ApiService.baseUrl}/notifications/"),
+      headers: ApiService.headers,
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      
+      // ✅ Fetch societies to get the IDs
+      final societiesResponse = await http.get(
+        Uri.parse("${ApiService.baseUrl}/societies/"),
         headers: ApiService.headers,
       );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        setState(() {
-          _notificationPrefs = data.map((item) => {
-            "society": item["society"],
-            "notify_new_events": item["notify_new_events"] ?? true,
-          }).toList();
-        });
-        
-        if (_notificationPrefs.isNotEmpty) {
-          _notificationsEnabled = _notificationPrefs[0]["notify_new_events"];
+      
+      // Create a map of society name to society ID
+      Map<String, int> societyNameToId = {};
+      if (societiesResponse.statusCode == 200) {
+        final List<dynamic> societies = jsonDecode(societiesResponse.body);
+        for (var society in societies) {
+          societyNameToId[society["name"]] = society["id"];
         }
       }
-    } catch (e) {
-      print("Error loading notification settings: ${e.toString()}");
+      
+      setState(() {
+        _notificationPrefs = data.map((item) => {
+          "society": item["society"],
+          "society_id": societyNameToId[item["society"]] ?? -1,
+          "notify_new_events": item["notify_new_events"] ?? true,
+        }).toList();
+      });
+      
+      if (_notificationPrefs.isNotEmpty) {
+        _notificationsEnabled = _notificationPrefs[0]["notify_new_events"];
+      }
     }
+  } catch (e) {
+    print("Error loading notification settings: ${e.toString()}");
   }
+}
 
   Future<void> _updateNotificationSettings(bool enabled) async {
     if (_notificationPrefs.isEmpty) {
@@ -181,26 +198,24 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
   }
 
   Future<int?> _showSocietySelectionDialog() async {
-    if (_notificationPrefs.isEmpty) return null;
-    
-    return showDialog<int>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Select Society"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: _notificationPrefs.asMap().entries.map((entry) {
-            final index = entry.key;
-            final pref = entry.value;
-            return ListTile(
-              title: Text(pref["society"]),
-              onTap: () => Navigator.pop(context, index),
-            );
-          }).toList(),
-        ),
+  if (_notificationPrefs.isEmpty) return null;
+  
+  return showDialog<int>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text("Select Society"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: _notificationPrefs.map((pref) {
+          return ListTile(
+            title: Text(pref["society"]),
+            onTap: () => Navigator.pop(context, pref["society_id"]),
+          );
+        }).toList(),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Future<void> _updateName() async {
     final newName = _nameController.text.trim();
