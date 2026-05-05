@@ -106,7 +106,7 @@ testWidgets('invalid credentials shows error message', (WidgetTester tester) asy
     expect(find.byType(TextButton), findsOneWidget);
   });
 
-  testWidgets('UP number field allows only 7 digits', (
+  testWidgets('UP number field allows only 7 digits', ( //pass
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(buildTestableWidget());
