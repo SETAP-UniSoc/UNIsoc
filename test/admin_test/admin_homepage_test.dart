@@ -7,7 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:unisoc/screens/admin/admin_hompage.dart';
 
-/// Return a `http.Client` that responds with the provided JSON bodies.
 http.Client mockHttp({
   required String societiesJson,
   required String eventsJson,
@@ -16,7 +15,6 @@ http.Client mockHttp({
   return MockClient((request) async {
     final url = request.url.toString();
 
-    // Search requests hit the societies endpoint with a query parameter.
     if (url.contains('/societies/') && url.contains('?q=')) {
       return http.Response(searchJson, 200);
     }

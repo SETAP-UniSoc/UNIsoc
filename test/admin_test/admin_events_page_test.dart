@@ -5,9 +5,6 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:unisoc/screens/admin/admin_events_page.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────────────────────
 
 List<int> _eventsBody(List<Map<String, dynamic>> events) =>
     utf8.encode(jsonEncode(events));
@@ -31,12 +28,7 @@ Map<String, dynamic> _event({
       "capacity_limit": capacity,
     };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Tests
-// ─────────────────────────────────────────────────────────────────────────────
-
 void main() {
-  // ── 1. Loading indicator → calendar ───────────────────────────────────────
   testWidgets(
       'renders loading indicator initially, then calendar when empty events load',
       (WidgetTester tester) async {
@@ -44,8 +36,6 @@ void main() {
 
     await tester.pumpWidget(
         MaterialApp(home: AdminEventsPage(societyId: 1, httpClient: client)));
-
-    // Spinner visible before async loadEvents() completes
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
     await tester.pumpAndSettle();
@@ -54,7 +44,7 @@ void main() {
     expect(find.text('Events Calendar'), findsOneWidget);
   });
 
-  // ── 2. Two events on same date grouped as "2 events" ─────────────────────
+
   testWidgets('loads events and groups them by date correctly',
       (WidgetTester tester) async {
     final client = _mockEventsClient(
@@ -97,7 +87,7 @@ void main() {
     expect(names, contains('2 events'));
   });
 
-  // ── 4. Tapping a date that has events shows the events dialog ─────────────
+
   testWidgets('tapping date with events shows events dialog',
       (WidgetTester tester) async {
     final client = _mockEventsClient(
@@ -118,8 +108,7 @@ void main() {
         MaterialApp(home: AdminEventsPage(societyId: 1, httpClient: client)));
     await tester.pumpAndSettle();
 
-    // Call onDateTapped directly on the state (avoids needing to tap the
-    // calendar widget which is a third-party package)
+
     final state = tester.state(find.byType(AdminEventsPage)) as dynamic;
     state.onDateTapped(DateTime(2025, 1, 15));
     await tester.pumpAndSettle();
@@ -128,7 +117,7 @@ void main() {
     expect(find.text('Test Event'), findsOneWidget);
   });
 
-  // ── 5. Tapping a date with no events shows create dialog ──────────────────
+
   testWidgets('tapping date without events shows create dialog',
       (WidgetTester tester) async {
     final client = _mockEventsClient(body: _eventsBody([]), statusCode: 200);
@@ -145,10 +134,7 @@ void main() {
     expect(find.byType(TextField), findsWidgets);
   });
 
-  // ── 6. getDateOnly() strips time component ────────────────────────────────
-  // NOTE: the production method is getDateOnly(), NOT normalize().
-  // normalize() does not exist in AdminEventsPage — this test was rewritten
-  // to call the correct method name from the source code.
+
   testWidgets('getDateOnly() correctly strips time from DateTime',
       (WidgetTester tester) async {
     final client = _mockEventsClient(body: _eventsBody([]), statusCode: 200);
@@ -159,11 +145,11 @@ void main() {
 
     final state = tester.state(find.byType(AdminEventsPage)) as dynamic;
 
-    // getDateOnly() converts to local first, then strips time
+   
     final dt = DateTime(2025, 1, 15, 14, 30, 45);
     final result = state.getDateOnly(dt) as DateTime;
 
-    // Should equal the date-only version of the local representation
+
     final expected = DateTime(dt.toLocal().year, dt.toLocal().month, dt.toLocal().day);
     expect(result, equals(expected));
     expect(result.hour, equals(0));
