@@ -10,7 +10,7 @@ void main() {
     HttpOverrides.global = null;
   });
 
-  testWidgets('renders header and sections when APIs return empty lists', (WidgetTester tester) async {
+  testWidgets('renders header and sections when APIs return empty lists', (WidgetTester tester) async { //pass
     final previous = HttpOverrides.current;
     HttpOverrides.global = _MockHttpOverrides(
       societiesBody: utf8.encode('[]'),
