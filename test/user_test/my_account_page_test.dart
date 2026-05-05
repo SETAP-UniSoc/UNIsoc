@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:unisoc/screens/settings_user_page.dart';
 import 'package:unisoc/screens/user/my_account_page.dart';
 import 'package:unisoc/user_profile_state.dart';
 
@@ -64,17 +65,16 @@ testWidgets('invalid email format shows error on save', (WidgetTester tester) as
     expect(find.text('Jane'), findsOneWidget);
   });
 
-testWidgets('change password button navigates to settings page',
-    (WidgetTester tester) async {
-  await tester.pumpWidget(MaterialApp(
-    home: const MyAccountPage(),
-    routes: {'/settings': (context) => const Scaffold(body: Text('UserSettingsPage'))},
-  ));
+testWidgets('change password button navigates to settings page', (tester) async {
+  await tester.pumpWidget(
+    const MaterialApp(
+      home: MyAccountPage(),
+    ),
+  );
 
   await tester.tap(find.text('Change Password'));
   await tester.pumpAndSettle();
-
-  expect(find.text('UserSettingsPage'), findsOneWidget);
+  expect(find.byType(UserSettingsPage), findsOneWidget);
 });
 
   testWidgets('current password field is obscured', (WidgetTester tester) async { // pass

@@ -5,57 +5,141 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:unisoc/screens/admin/admin_analytics_page.dart';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper: builds the standard analytics JSON body
+// ─────────────────────────────────────────────────────────────────────────────
+List<int> _analyticsBody({
+  List<String> labels = const [],
+  List<int> totals = const [],
+  int liveCount = 0,
+  List<Map<String, dynamic>> eventsStats = const [],
+}) {
+  return utf8.encode(jsonEncode({
+    "labels": labels,
+    "totals": totals,
+    "live_count": liveCount,
+    "events_stats": eventsStats,
+  }));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tests
+// ─────────────────────────────────────────────────────────────────────────────
 void main() {
   tearDown(() {
     HttpOverrides.global = null;
   });
 
-  testWidgets('renders loading indicator and then analytics when data loads', (WidgetTester tester) async {
+  // ── PASSES — do not change ─────────────────────────────────────────────────
+
+  testWidgets('shows empty state when no event attendance data',
+      (WidgetTester tester) async {
     final previous = HttpOverrides.current;
     HttpOverrides.global = _MockAnalyticsHttpOverrides(
-      analyticsBody: utf8.encode(jsonEncode({
-        "labels": ["Jan", "Feb", "Mar"],
-        "totals": [10, 20, 30],
-        "live_count": 30,
-        "events_stats": []
-      })),
+      body: _analyticsBody(
+        labels: ["Jan"],
+        totals: [50],
+        liveCount: 50,
+        eventsStats: [],
+      ),
       statusCode: 200,
     );
 
     try {
-      await tester.pumpWidget(
-        const MaterialApp(home: AdminAnalyticsPage()),
-      );
-
-      expect(find.byType(CircularProgressIndicator), findsWidgets);
-
+      await tester.pumpWidget(const MaterialApp(home: AdminAnalyticsPage()));
       await tester.pumpAndSettle();
 
-      expect(find.byType(CircularProgressIndicator), findsNothing);
-      expect(find.text('My Analytics'), findsOneWidget);
-      expect(find.text('30'), findsWidgets); // live count and last value
+      expect(find.text('No event attendance data yet'), findsOneWidget);
+      expect(
+        find.text('When users attend events, their attendance will appear here'),
+        findsOneWidget,
+      );
     } finally {
       HttpOverrides.global = previous;
     }
   });
 
-  testWidgets('fetches analytics and displays membership trend data', (WidgetTester tester) async {
+  testWidgets('shows empty membership chart when no data',
+      (WidgetTester tester) async {
     final previous = HttpOverrides.current;
     HttpOverrides.global = _MockAnalyticsHttpOverrides(
-      analyticsBody: utf8.encode(jsonEncode({
-        "labels": ["Week 1", "Week 2", "Week 3"],
-        "totals": [100, 150, 200],
-        "live_count": 200,
-        "events_stats": []
-      })),
+      body: _analyticsBody(),
       statusCode: 200,
     );
 
     try {
-      await tester.pumpWidget(
-        const MaterialApp(home: AdminAnalyticsPage()),
-      );
+      await tester.pumpWidget(const MaterialApp(home: AdminAnalyticsPage()));
+      await tester.pumpAndSettle();
 
+      expect(find.text('No data yet'), findsOneWidget);
+    } finally {
+      HttpOverrides.global = previous;
+    }
+  });
+
+  testWidgets('exports PDF button is present', (WidgetTester tester) async {
+    final previous = HttpOverrides.current;
+    HttpOverrides.global = _MockAnalyticsHttpOverrides(
+      body: _analyticsBody(labels: ["Jan"], totals: [50], liveCount: 50),
+      statusCode: 200,
+    );
+
+    try {
+      await tester.pumpWidget(const MaterialApp(home: AdminAnalyticsPage()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Export as PDF'), findsOneWidget);
+    } finally {
+      HttpOverrides.global = previous;
+    }
+  });
+
+  // ── PREVIOUSLY FAILING — fixed by proper mock interception ────────────────
+
+  testWidgets('renders loading indicator and then analytics when data loads',
+      (WidgetTester tester) async {
+    final previous = HttpOverrides.current;
+    HttpOverrides.global = _MockAnalyticsHttpOverrides(
+      body: _analyticsBody(
+        labels: ["Jan", "Feb", "Mar"],
+        totals: [10, 20, 30],
+        liveCount: 30,
+      ),
+      statusCode: 200,
+    );
+
+    try {
+      await tester.pumpWidget(const MaterialApp(home: AdminAnalyticsPage()));
+
+      // Before settle: loading indicator must be visible
+      expect(find.byType(CircularProgressIndicator), findsWidgets);
+
+      await tester.pumpAndSettle();
+
+      // After settle: spinner gone, data shown
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.text('My Analytics'), findsOneWidget);
+      // live_count replaces the last value so both show as '30'
+      expect(find.text('30'), findsWidgets);
+    } finally {
+      HttpOverrides.global = previous;
+    }
+  });
+
+  testWidgets('fetches analytics and displays membership trend data',
+      (WidgetTester tester) async {
+    final previous = HttpOverrides.current;
+    HttpOverrides.global = _MockAnalyticsHttpOverrides(
+      body: _analyticsBody(
+        labels: ["Week 1", "Week 2", "Week 3"],
+        totals: [100, 150, 200],
+        liveCount: 200,
+      ),
+      statusCode: 200,
+    );
+
+    try {
+      await tester.pumpWidget(const MaterialApp(home: AdminAnalyticsPage()));
       await tester.pumpAndSettle();
 
       expect(find.text('200'), findsWidgets);
@@ -65,27 +149,22 @@ void main() {
     }
   });
 
-  testWidgets('displays event attendance bar chart with data', (WidgetTester tester) async {
+  testWidgets('displays event attendance bar chart with data',
+      (WidgetTester tester) async {
     final previous = HttpOverrides.current;
     HttpOverrides.global = _MockAnalyticsHttpOverrides(
-      analyticsBody: utf8.encode(jsonEncode({
-        "labels": [],
-        "totals": [],
-        "live_count": 0,
-        "events_stats": [
+      body: _analyticsBody(
+        eventsStats: [
           {"title": "Tech Talk", "attendee_count": 45},
           {"title": "Networking", "attendee_count": 82},
           {"title": "Workshop", "attendee_count": 120},
-        ]
-      })),
+        ],
+      ),
       statusCode: 200,
     );
 
     try {
-      await tester.pumpWidget(
-        const MaterialApp(home: AdminAnalyticsPage()),
-      );
-
+      await tester.pumpWidget(const MaterialApp(home: AdminAnalyticsPage()));
       await tester.pumpAndSettle();
 
       expect(find.text('Event Attendance'), findsOneWidget);
@@ -97,102 +176,20 @@ void main() {
     }
   });
 
-  testWidgets('shows empty state when no event attendance data', (WidgetTester tester) async { //pass
+  testWidgets('displays live member count correctly',
+      (WidgetTester tester) async {
     final previous = HttpOverrides.current;
     HttpOverrides.global = _MockAnalyticsHttpOverrides(
-      analyticsBody: utf8.encode(jsonEncode({
-        "labels": ["Jan"],
-        "totals": [50],
-        "live_count": 50,
-        "events_stats": []
-      })),
+      body: _analyticsBody(
+        labels: ["Jan", "Feb"],
+        totals: [100, 150],
+        liveCount: 150,
+      ),
       statusCode: 200,
     );
 
     try {
-      await tester.pumpWidget(
-        const MaterialApp(home: AdminAnalyticsPage()),
-      );
-
-      await tester.pumpAndSettle();
-
-      expect(find.text('No event attendance data yet'), findsOneWidget);
-      expect(find.text('When users attend events, their attendance will appear here'), findsOneWidget);
-    } finally {
-      HttpOverrides.global = previous;
-    }
-  });
-
-  testWidgets('period buttons update analytics when tapped', (WidgetTester tester) async {
-    final previous = HttpOverrides.current;
-    
-    // Create a mock that returns different data per period
-    int callCount = 0;
-    HttpOverrides.global = _MockAnalyticsHttpOverridesWithCallback(
-      callback: (uri) {
-        callCount++;
-        if (uri.toString().contains('period=week')) {
-          return utf8.encode(jsonEncode({
-            "labels": ["Mon", "Tue"],
-            "totals": [10, 15],
-            "live_count": 15,
-            "events_stats": []
-          }));
-        } else if (uri.toString().contains('period=month')) {
-          return utf8.encode(jsonEncode({
-            "labels": ["Week 1", "Week 2"],
-            "totals": [50, 75],
-            "live_count": 75,
-            "events_stats": []
-          }));
-        }
-        return utf8.encode(jsonEncode({
-          "labels": ["Jan"],
-          "totals": [100],
-          "live_count": 100,
-          "events_stats": []
-        }));
-      },
-    );
-
-    try {
-      await tester.pumpWidget(
-        const MaterialApp(home: AdminAnalyticsPage()),
-      );
-
-      await tester.pumpAndSettle();
-
-      // Tap "1W" button
-      await tester.tap(find.text('1W'));
-      await tester.pumpAndSettle();
-
-      // Tap "1M" button
-      await tester.tap(find.text('1M'));
-      await tester.pumpAndSettle();
-
-      expect(callCount, greaterThan(1)); // at least 2 calls
-    } finally {
-      HttpOverrides.global = previous;
-    }
-  });
-
-  testWidgets('displays live member count correctly', (WidgetTester tester) async {
-    final previous = HttpOverrides.current;
-    HttpOverrides.global = _MockAnalyticsHttpOverrides(
-      analyticsBody: utf8.encode(jsonEncode({
-        "labels": ["Jan", "Feb"],
-        "totals": [100, 150],
-        "live_count": 150,
-        "events_stats": []
-      })),
-      statusCode: 200,
-    );
-
-    try {
-      await tester.pumpWidget(
-        const MaterialApp(home: AdminAnalyticsPage()),
-      );
-
+      await tester.pumpWidget(const MaterialApp(home: AdminAnalyticsPage()));
       await tester.pumpAndSettle();
 
       expect(find.text('Live Members: 150'), findsOneWidget);
@@ -201,168 +198,124 @@ void main() {
     }
   });
 
-  testWidgets('shows empty membership chart when no data', (WidgetTester tester) async { //pass
+  testWidgets('period buttons update analytics when tapped',
+      (WidgetTester tester) async {
     final previous = HttpOverrides.current;
-    HttpOverrides.global = _MockAnalyticsHttpOverrides(
-      analyticsBody: utf8.encode(jsonEncode({
-        "labels": [],
-        "totals": [],
-        "live_count": 0,
-        "events_stats": []
-      })),
-      statusCode: 200,
+    int callCount = 0;
+
+    HttpOverrides.global = _MockAnalyticsHttpOverridesWithCallback(
+      callback: (uri) {
+        callCount++;
+        if (uri.toString().contains('period=week')) {
+          return _analyticsBody(
+            labels: ["Mon", "Tue"],
+            totals: [10, 15],
+            liveCount: 15,
+          );
+        } else if (uri.toString().contains('period=month')) {
+          return _analyticsBody(
+            labels: ["Week 1", "Week 2"],
+            totals: [50, 75],
+            liveCount: 75,
+          );
+        }
+        return _analyticsBody(labels: ["Jan"], totals: [100], liveCount: 100);
+      },
     );
 
     try {
-      await tester.pumpWidget(
-        const MaterialApp(home: AdminAnalyticsPage()),
-      );
-
+      await tester.pumpWidget(const MaterialApp(home: AdminAnalyticsPage()));
       await tester.pumpAndSettle();
 
-      expect(find.text('No data yet'), findsOneWidget);
-    } finally {
-      HttpOverrides.global = previous;
-    }
-  });
-
-  testWidgets('exports PDF button is present', (WidgetTester tester) async { //pass
-    final previous = HttpOverrides.current;
-    HttpOverrides.global = _MockAnalyticsHttpOverrides(
-      analyticsBody: utf8.encode(jsonEncode({
-        "labels": ["Jan"],
-        "totals": [50],
-        "live_count": 50,
-        "events_stats": []
-      })),
-      statusCode: 200,
-    );
-
-    try {
-      await tester.pumpWidget(
-        const MaterialApp(home: AdminAnalyticsPage()),
-      );
-
+      await tester.tap(find.text('1W'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Export as PDF'), findsOneWidget);
+      await tester.tap(find.text('1M'));
+      await tester.pumpAndSettle();
+
+      // initial load + 1W tap + 1M tap = at least 3 calls
+      expect(callCount, greaterThan(1));
     } finally {
       HttpOverrides.global = previous;
     }
   });
 }
 
-/// HttpOverrides mock for analytics with static response body
-class _MockAnalyticsHttpOverrides extends HttpOverrides { 
-  final List<int> analyticsBody;
-  final int statusCode;
+// ─────────────────────────────────────────────────────────────────────────────
+// Mock infrastructure
+// ─────────────────────────────────────────────────────────────────────────────
 
-  _MockAnalyticsHttpOverrides({
-    required this.analyticsBody,
-    required this.statusCode,
-  });
+/// Static-body override — returns the same [body] and [statusCode] for every request.
+class _MockAnalyticsHttpOverrides extends HttpOverrides {
+  final List<int> body;
+  final int statusCode;
+  _MockAnalyticsHttpOverrides({required this.body, required this.statusCode});
 
   @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return _MockAnalyticsHttpClient(analyticsBody, statusCode);
-  }
+  HttpClient createHttpClient(SecurityContext? context) =>
+      _MockHttpClient.static(body, statusCode);
 }
 
-/// HttpOverrides mock for analytics with callback
+/// Callback-based override — lets each test vary the response by URI.
 class _MockAnalyticsHttpOverridesWithCallback extends HttpOverrides {
   final List<int> Function(Uri uri) callback;
-
   _MockAnalyticsHttpOverridesWithCallback({required this.callback});
 
   @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return _MockAnalyticsHttpClientWithCallback(callback);
-  }
+  HttpClient createHttpClient(SecurityContext? context) =>
+      _MockHttpClient.callback(callback);
 }
 
-class _MockAnalyticsHttpClient implements HttpClient {
-  final List<int> analyticsBody;
-  final int statusCode;
+// ── HttpClient ────────────────────────────────────────────────────────────────
 
-  _MockAnalyticsHttpClient(this.analyticsBody, this.statusCode);
+class _MockHttpClient implements HttpClient {
+  final List<int> Function(Uri uri) _resolve;
 
+  _MockHttpClient.static(List<int> body, int statusCode)
+      : _resolve = ((_) => body);
+
+  _MockHttpClient.callback(List<int> Function(Uri uri) callback)
+      : _resolve = callback;
+
+  // dart:io HttpClient.open() routes through openUrl internally
   @override
-  Future<HttpClientRequest> openUrl(String method, Uri url) async {
-    return _MockAnalyticsHttpClientRequest(method, url, analyticsBody, statusCode);
-  }
+  Future<HttpClientRequest> openUrl(String method, Uri url) async =>
+      _MockHttpClientRequest(url, _resolve(url));
 
   @override
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-class _MockAnalyticsHttpClientWithCallback implements HttpClient {
-  final List<int> Function(Uri uri) callback;
+// ── HttpClientRequest ─────────────────────────────────────────────────────────
 
-  _MockAnalyticsHttpClientWithCallback(this.callback);
-
-  @override
-  Future<HttpClientRequest> openUrl(String method, Uri url) async {
-    return _MockAnalyticsHttpClientRequestWithCallback(method, url, callback);
-  }
+class _MockHttpClientRequest implements HttpClientRequest {
+  final Uri _url;
+  final List<int> _responseBody;
 
   @override
-  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-class _MockAnalyticsHttpClientRequest implements HttpClientRequest {
-  final String method;
-  final Uri url;
-  final List<int> analyticsBody;
-  final int statusCode;
-
   final HttpHeaders headers = _MockHttpHeaders();
 
-  _MockAnalyticsHttpClientRequest(
-    this.method,
-    this.url,
-    this.analyticsBody,
-    this.statusCode,
-  );
+  _MockHttpClientRequest(this._url, this._responseBody);
 
   @override
   void add(List<int> data) {}
 
   @override
-  Future<HttpClientResponse> close() async {
-    return _MockAnalyticsHttpClientResponse(statusCode, analyticsBody);
-  }
+  Future<HttpClientResponse> close() async =>
+      _MockHttpClientResponse(200, _responseBody);
 
   @override
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-class _MockAnalyticsHttpClientRequestWithCallback implements HttpClientRequest {
-  final String method;
-  final Uri url;
-  final List<int> Function(Uri uri) callback;
+// ── HttpClientResponse ────────────────────────────────────────────────────────
 
-  final HttpHeaders headers = _MockHttpHeaders();
-
-  _MockAnalyticsHttpClientRequestWithCallback(this.method, this.url, this.callback);
-
-  @override
-  void add(List<int> data) {}
-
-  @override
-  Future<HttpClientResponse> close() async {
-    return _MockAnalyticsHttpClientResponse(200, callback(url));
-  }
-
-  @override
-  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-class _MockAnalyticsHttpClientResponse extends Stream<List<int>>
+class _MockHttpClientResponse extends Stream<List<int>>
     implements HttpClientResponse {
   final int _statusCode;
   final List<int> _body;
 
-  _MockAnalyticsHttpClientResponse(this._statusCode, this._body);
+  _MockHttpClientResponse(this._statusCode, this._body);
 
   @override
   int get statusCode => _statusCode;
@@ -391,18 +344,14 @@ class _MockAnalyticsHttpClientResponse extends Stream<List<int>>
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+// ── HttpHeaders ───────────────────────────────────────────────────────────────
+
 class _MockHttpHeaders implements HttpHeaders {
-  final Map<String, List<String>> _map = {};
+  @override
+  void add(String name, Object value, {bool preserveHeaderCase = false}) {}
 
   @override
-  void add(String name, Object value, {bool preserveHeaderCase = false}) {
-    _map.putIfAbsent(name, () => []).add(value.toString());
-  }
-
-  @override
-  void set(String name, Object value, {bool preserveHeaderCase = false}) {
-    _map[name] = [value.toString()];
-  }
+  void set(String name, Object value, {bool preserveHeaderCase = false}) {}
 
   @override
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

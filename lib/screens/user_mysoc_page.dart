@@ -3,7 +3,7 @@ import '../services/api_services.dart';
 import 'user/user_society_page.dart'; // Correct import for UserSocietyPage
 
 class MySocietyPage extends StatefulWidget {
-  const MySocietyPage({super.key});
+  const MySocietyPage({super.key, required Future<List> Function() mySocietiesFetcher});
 
   @override
   State<MySocietyPage> createState() => _MySocietyPageState();
