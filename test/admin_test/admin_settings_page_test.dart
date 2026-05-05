@@ -129,24 +129,6 @@ class _MockHttpClientRequest implements HttpClientRequest {
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-class _MockHttpClientResponse extends Stream<List<int>> implements HttpClientResponse {
-  final int _statusCode;
-  final List<int> _body;
-  _MockHttpClientResponse(this._statusCode, this._body);
-  @override int get statusCode => _statusCode;
-  @override
-  StreamSubscription<List<int>> listen(void Function(List<int>)? onData,
-      {Function? onError, void Function()? onDone, bool? cancelOnError}) {
-    final controller = StreamController<List<int>>();
-    Timer.run(() {
-      controller.add(_body);
-      controller.close();
-    });
-    return controller.stream.listen(onData, onError: onError, onDone: onDone, cancelOnError: cancelOnError);
-  }
-  @override noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
 class _MockResponse implements HttpClientResponse {
   final int statusCode;
   final List<int> body;
