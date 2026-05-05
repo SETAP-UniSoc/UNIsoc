@@ -37,7 +37,8 @@ class EventListCreateViewTests(APITestCase):
     def test_get_events_returns_200(self):
         self.client.login(username="admin", password="pass123")
         response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, 200) def test_get_events_excludes_cancelled(self):
+        self.assertEqual(response.status_code, 200) 
+    def test_get_events_excludes_cancelled(self):
         self.client.login(username="admin", password="pass123")
         self.event.status = "cancelled"
         self.event.save()
@@ -51,7 +52,8 @@ class EventListCreateViewTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         event = response.data[0]
         for key in ["id", "title", "description", "location", "start_time", "end_time", "capacity_limit", "status", "attendee_count"]:
-            self.assertIn(key, event)def test_attendee_count_only_counts_attending(self):
+            self.assertIn(key, event)
+    def test_attendee_count_only_counts_attending(self):
         self.client.login(username="admin", password="pass123")
         user1 = User.objects.create_user(username="u1", password="pass")
         user2 = User.objects.create_user(username="u2", password="pass")
@@ -69,7 +71,9 @@ class EventListCreateViewTests(APITestCase):
     def test_non_admin_cannot_create_event(self):
         self.client.login(username="regular", password="pass123")
         response = self.client.post(self.list_url, {"title": "New Event"})
-        self.assertEqual(response.status_code, 403)def test_admin_can_create_event(self):
+        self.assertEqual(response.status_code, 403)
+
+    def test_admin_can_create_event(self):
         self.client.login(username="admin", password="pass123")
         response = self.client.post(self.list_url, {
             "title": "New Event",
@@ -113,7 +117,8 @@ class EventDetailViewTests(APITestCase):
         self.client.login(username="regular", password="pass123")
         response = self.client.delete(self.detail_url)
         self.assertEqual(response.status_code, 403)
- def test_admin_can_cancel_event(self):
+
+    def test_admin_can_cancel_event(self):
         self.client.login(username="admin", password="pass123")
         response = self.client.delete(self.detail_url)
         self.assertEqual(response.status_code, 200)
@@ -160,7 +165,8 @@ class EventEditViewTests(APITestCase):
         response = self.client.patch(self.edit_url, {"title": "Updated Title"}, format="json")
         self.assertEqual(response.status_code, 200)
         self.event.refresh_from_db()
-        self.assertEqual(self.event.title, "Updated Title")def test_partial_edit_preserves_other_fields(self):
+        self.assertEqual(self.event.title, "Updated Title")
+    def test_partial_edit_preserves_other_fields(self):
         self.client.login(username="admin", password="pass123")
         self.client.patch(self.edit_url, {"title": "New Title"}, format="json")
         self.event.refresh_from_db()

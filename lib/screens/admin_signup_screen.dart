@@ -7,7 +7,9 @@ import 'package:flutter/material.dart';
 
 
 class AdminSignupScreen extends StatefulWidget {
-  const AdminSignupScreen({super.key});
+  final http.Client? httpClient;
+
+  const AdminSignupScreen({super.key, this.httpClient});
 
   @override
   State<AdminSignupScreen> createState() => _AdminSignupScreenState();
@@ -28,7 +30,9 @@ class _AdminSignupScreenState extends State<AdminSignupScreen> {
 
     final url = Uri.parse("http://10.128.4.102:8000/api/admin/signup");
 
-    final response = await http.post(
+    final client = widget.httpClient ?? http.Client();
+
+    final response = await client.post(
       url,
       headers: {"Content-Type": "application/json", "Accept": "application/json"},
       body: jsonEncode({"name": username, "email": email, "password": password}),

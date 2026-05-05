@@ -13,7 +13,8 @@ import 'admin_dropdown_menu.dart';
 
 //admin hompage with a carousel of top societies, a section to browse societies by category and a section for upcoming events. Also includes a search bar that searches both events and societies and shows results in a dropdown as the user types. Admin can also filter and sort societies in the browse section. This is the default page when admin logs in
 class AdminHomepage extends StatefulWidget {
-  const AdminHomepage({super.key});
+  final http.Client? httpClient;
+  const AdminHomepage({super.key, this.httpClient});
 
   @override
   State<AdminHomepage> createState() => _AdminHomepageState();
@@ -84,7 +85,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
   Future<void> loadSocieties() async {
     try {
-      final response = await http.get(
+      final client = widget.httpClient ?? http.Client();
+      final response = await client.get(
         Uri.parse("${ApiService.baseUrl}/societies/"),
         headers: ApiService.headers,
       );
@@ -106,7 +108,8 @@ class _AdminHomepageState extends State<AdminHomepage> {
 
   Future<void> loadEvents() async {
     try {
-      final response = await http.get(
+      final client = widget.httpClient ?? http.Client();
+      final response = await client.get(
         Uri.parse("${ApiService.baseUrl}/events/all/"),
         headers: ApiService.headers,
       );
@@ -268,10 +271,11 @@ class _AdminHomepageState extends State<AdminHomepage> {
             setState(() => isSearching = true);
 
             try {
-              final response = await http.get(
+              final client = widget.httpClient ?? http.Client();
+              final response = await client.get(
                 Uri.parse("${ApiService.baseUrl}/societies/?q=$query"),
                 headers: ApiService.headers,
-                );
+              );
 
               if (response.statusCode == 200) {
                 setState(() {
