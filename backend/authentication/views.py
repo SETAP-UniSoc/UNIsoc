@@ -1436,19 +1436,9 @@ class JoinSocietyView(APIView):
 
         return Response({"message": "Rejoined successfully"}, status=200)
             
+from .tasks import send_join_event_email   # 👈 ADD THIS
+
 class JoinEventView(APIView):
-    """
-    API view to allow a user to join an event.
-
-    Behaviour:
-    - Prevents joining past events
-    - Creates attendance record if not existing
-    - Re-activates attendance if previously left
-
-    Returns updated attendee count.
-
-    Requires authentication.
-    """
 
     permission_classes = [IsAuthenticated]
 
@@ -1459,12 +1449,8 @@ class JoinEventView(APIView):
         except Event.DoesNotExist:
             return Response({"error": "Event not found"}, status=404)
 
-        # prevent joining past events
         if event.start_time < timezone.now():
-            return Response(
-                {"error": "Event has already passed"},
-                status=400
-            )
+            return Response({"error": "Event has already passed"}, status=400)
 
         attendance, created = EventAttendance.objects.get_or_create(
             user=request.user,
@@ -1479,6 +1465,16 @@ class JoinEventView(APIView):
                 attendance.left_at = None
                 attendance.joined_at = timezone.now()
                 attendance.save()
+
+        # ✅ SEND EMAIL (ASYNC WITH CELERY)
+        send_join_event_email.delay(
+            user_email=request.user.email,
+            event_title=event.title,
+            society_name=event.society.name,
+            start_time=str(event.start_time),
+            location=event.location,
+            description=event.description
+        )
 
         attendee_count = EventAttendance.objects.filter(
             event=event,
