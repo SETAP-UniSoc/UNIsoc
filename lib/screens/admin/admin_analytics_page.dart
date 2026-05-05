@@ -358,7 +358,8 @@ import 'package:unisoc/services/api_services.dart';
 import 'package:unisoc/screens/admin/admin_bottom_nav.dart';
 
 class AdminAnalyticsPage extends StatefulWidget {
-  const AdminAnalyticsPage({super.key});
+  final http.Client? httpClient;
+  const AdminAnalyticsPage({super.key, this.httpClient});
 
   @override
   State<AdminAnalyticsPage> createState() => _AdminAnalyticsPageState();
@@ -402,11 +403,12 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   Future<void> fetchAnalytics(String period) async {
   setState(() => isLoading = true);
 
-  try {
-    final response = await http.get(
-      Uri.parse("${ApiService.baseUrl}/my-analytics/?period=$period"),
-      headers: ApiService.headers,
-    );
+    try {
+      final client = widget.httpClient ?? http.Client();
+      final response = await client.get(
+        Uri.parse("${ApiService.baseUrl}/my-analytics/?period=$period"),
+        headers: ApiService.headers,
+      );
 
     print("📡 Status: ${response.statusCode}");
 

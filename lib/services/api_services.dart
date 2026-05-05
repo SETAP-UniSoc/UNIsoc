@@ -3,12 +3,16 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   static const String baseUrl = "http://10.128.4.160:8000/api";
+  static ApiService instance = ApiService();
 
   static String? authToken;
   static int? societyId; // Admin's society ID
   static String? societyName; // Admin's society name
   static String? adminName; // Admin's personal name
   static Set<int> joinedSocieties = {};
+
+
+
 
   static Map<String, String> get headers => {
     "Content-Type": "application/json",
