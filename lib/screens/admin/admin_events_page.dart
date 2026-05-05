@@ -7,8 +7,9 @@ import 'package:unisoc/screens/admin/admin_bottom_nav.dart';
 
 class AdminEventsPage extends StatefulWidget {
   final int societyId;
+  final http.Client? httpClient;
 
-  const AdminEventsPage({super.key, required this.societyId});
+  const AdminEventsPage({super.key, required this.societyId, this.httpClient});
 
   @override
   State<AdminEventsPage> createState() => _AdminEventsPageState();
@@ -34,7 +35,8 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   setState(() => isLoading = true);
 
   final url = "${ApiService.baseUrl}/societies/${widget.societyId}/events/";
-  final res = await http.get(Uri.parse(url), headers: ApiService.headers);
+  final client = widget.httpClient ?? http.Client();
+  final res = await client.get(Uri.parse(url), headers: ApiService.headers);
 
   if (res.statusCode == 200) {
     final data = jsonDecode(res.body) as List;
@@ -314,7 +316,8 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
       body["capacity_limit"] = capacity;
     }
 
-    final res = await http.post(
+    final client = widget.httpClient ?? http.Client();
+    final res = await client.post(
       Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
       headers: ApiService.headers,
       body: jsonEncode(body),
@@ -333,7 +336,8 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   }
 
   Future<void> _updateEvent(int id, Map data) async {
-    final res = await http.put(
+    final client = widget.httpClient ?? http.Client();
+    final res = await client.put(
       Uri.parse("${ApiService.baseUrl}/events/$id/update/"),
       headers: ApiService.headers,
       body: jsonEncode(data),
@@ -348,7 +352,8 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
   }
 
   Future<void> _deleteEvent(int id) async {
-    final res = await http.delete(
+    final client = widget.httpClient ?? http.Client();
+    final res = await client.delete(
       Uri.parse("${ApiService.baseUrl}/events/$id/delete/"),
       headers: ApiService.headers,
     );
