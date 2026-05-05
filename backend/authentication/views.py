@@ -482,7 +482,7 @@ from django.utils import timezone
 from datetime import timedelta
 import re
 from rest_framework.permissions import AllowAny
-from .tasks import send_rsvp_email
+from .tasks import send_join_event_email
 from .models import NotificationPreference, Society, Membership, Event
 
 
