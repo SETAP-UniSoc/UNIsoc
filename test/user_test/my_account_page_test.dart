@@ -37,7 +37,7 @@ testWidgets('invalid email format shows error on save', (WidgetTester tester) as
     UserProfileState.firstName.value = 'John';
   });
 
-  testWidgets('renders my account page fields', (WidgetTester tester) async {
+  testWidgets('renders my account page fields', (WidgetTester tester) async { // pass
     await tester.pumpWidget(buildTestableWidget());
 
     expect(find.text('My Account'), findsOneWidget);
@@ -51,7 +51,7 @@ testWidgets('invalid email format shows error on save', (WidgetTester tester) as
     expect(find.byType(ElevatedButton), findsOneWidget);
   });
 
-  testWidgets('first name field is initialized from user profile state',
+  testWidgets('first name field is initialized from user profile state', // pass
       (WidgetTester tester) async {
     await tester.pumpWidget(buildTestableWidget());
 
@@ -77,7 +77,7 @@ testWidgets('change password button navigates to settings page',
   expect(find.text('UserSettingsPage'), findsOneWidget);
 });
 
-  testWidgets('current password field is obscured', (WidgetTester tester) async {
+  testWidgets('current password field is obscured', (WidgetTester tester) async { // pass
     await tester.pumpWidget(buildTestableWidget());
 
     final fields = tester.widgetList<TextField>(find.byType(TextField)).toList();

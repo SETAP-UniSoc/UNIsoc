@@ -24,7 +24,7 @@ class AnalyticsViewTestCase(APITestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 401)
    
-   def test_non_admin_returns_403(self):
+    def test_non_admin_returns_403(self):
         self.client.login(username="regular", password="pass123")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 403)
@@ -65,7 +65,7 @@ class AnalyticsViewTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data["labels"]), 7)
 
-def test_period_month_returns_30_points(self):
+    def test_period_month_returns_30_points(self):
         self.client.login(username="admin", password="pass123")
         response = self.client.get(self.url, {"period": "month"})
         self.assertEqual(response.status_code, 200)
@@ -76,7 +76,7 @@ def test_period_month_returns_30_points(self):
         response = self.client.get(self.url, {"period": "6months"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data["labels"]), 26)
-        def test_period_year_returns_12_points(self):
+    def test_period_year_returns_12_points(self):
         self.client.login(username="admin", password="pass123")
         response = self.client.get(self.url, {"period": "year"})
         self.assertEqual(response.status_code, 200)

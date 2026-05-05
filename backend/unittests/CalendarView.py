@@ -24,7 +24,7 @@ class EventListCreateViewTests(APITestCase):
             end_time=timezone.now() + timezone.timedelta(days=1, hours=2),
             created_by=self.admin
         )
- self.list_url = f"/societies/{self.society.id}/events/"  # adjust
+        self.list_url = f"/societies/{self.society.id}/events/"  # adjust
         self.detail_url = f"/events/{self.event.id}/"            # adjust
         self.edit_url = f"/events/{self.event.id}/edit/"         # adjust
 
