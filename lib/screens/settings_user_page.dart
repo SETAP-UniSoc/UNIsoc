@@ -98,30 +98,39 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
   }
 
   Future<void> _loadNotificationSettings() async {
-    try {
-      final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/notifications/"),
-        headers: ApiService.headers,
-      );
+  try {
+    // First, get notification preferences from backend
+    final response = await http.get(
+      Uri.parse("${ApiService.baseUrl}/notifications/"),
+      headers: ApiService.headers,
+    );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        
-        // Fetch societies to get the IDs
-        final societiesResponse = await http.get(
-          Uri.parse("${ApiService.baseUrl}/societies/"),
-          headers: ApiService.headers,
-        );
-        
-        // Create a map of society name to society ID
-        Map<String, int> societyNameToId = {};
-        if (societiesResponse.statusCode == 200) {
-          final List<dynamic> societies = jsonDecode(societiesResponse.body);
-          for (var society in societies) {
-            societyNameToId[society["name"]] = society["id"];
-          }
-        }
-        
+    // Get user's joined societies
+    final societiesResponse = await http.get(
+      Uri.parse("${ApiService.baseUrl}/my-societies/"),
+      headers: ApiService.headers,
+    );
+
+    Map<String, int> societyNameToId = {};
+    List<Map<String, dynamic>> joinedSocieties = [];
+
+    if (societiesResponse.statusCode == 200) {
+      final List<dynamic> societies = jsonDecode(societiesResponse.body);
+      for (var society in societies) {
+        societyNameToId[society["name"]] = society["id"];
+        joinedSocieties.add({
+          "society": society["name"],
+          "society_id": society["id"],
+          "notify_new_events": true, // default value
+        });
+      }
+    }
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      
+      if (data.isNotEmpty) {
+        // Use notification preferences from backend
         setState(() {
           _notificationPrefs = data.map((item) => {
             "society": item["society"],
@@ -129,15 +138,46 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
             "notify_new_events": item["notify_new_events"] ?? true,
           }).toList();
         });
-        
-        if (_notificationPrefs.isNotEmpty) {
-          _notificationsEnabled = _notificationPrefs[0]["notify_new_events"];
-        }
+      } else {
+        // No notification preferences exist, use joined societies with default true
+        setState(() {
+          _notificationPrefs = joinedSocieties;
+        });
       }
-    } catch (e) {
-      print("Error loading notification settings: ${e.toString()}");
+    } else {
+      // If notifications endpoint fails, still show joined societies
+      setState(() {
+        _notificationPrefs = joinedSocieties;
+      });
+    }
+    
+    if (_notificationPrefs.isNotEmpty) {
+      _notificationsEnabled = _notificationPrefs[0]["notify_new_events"];
+    }
+  } catch (e) {
+    print("Error loading notification settings: ${e.toString()}");
+    
+    // On error, still try to load joined societies
+    try {
+      final societiesResponse = await http.get(
+        Uri.parse("${ApiService.baseUrl}/my-societies/"),
+        headers: ApiService.headers,
+      );
+      if (societiesResponse.statusCode == 200) {
+        final List<dynamic> societies = jsonDecode(societiesResponse.body);
+        setState(() {
+          _notificationPrefs = societies.map((society) => ({
+            "society": society["name"],
+            "society_id": society["id"],
+            "notify_new_events": true,
+          })).toList();
+        });
+      }
+    } catch (e2) {
+      print("Error loading joined societies: $e2");
     }
   }
+}
 
   Future<void> _updateNotificationSettings(bool enabled) async {
     if (_notificationPrefs.isEmpty) {
