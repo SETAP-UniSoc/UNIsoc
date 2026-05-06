@@ -150,4 +150,36 @@ class ApiService {
       headers: headers,
     );
   }
+
+  // -------- PASSWORD RESET --------
+
+static Future<http.Response> checkUser(String email, String role) async {
+  return http.post(
+    Uri.parse("$baseUrl/check-user/"),
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({"email": email, "role": role}),
+  );
+}
+
+static Future<http.Response> verifyUpNumber(String userId, String upNumber) async {
+  return http.post(
+    Uri.parse("$baseUrl/verify-up-number/"),
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({
+      "user_id": userId,
+      "up_number": upNumber,
+    }),
+  );
+}
+
+static Future<http.Response> resetPassword(String userId, String newPassword) async {
+  return http.post(
+    Uri.parse("$baseUrl/reset-password/"),
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({
+      "user_id": userId,
+      "new_password": newPassword,
+    }),
+  );
+}
 }

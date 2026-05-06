@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:unisoc/services/api_services.dart';
 
@@ -49,8 +48,8 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                     const SizedBox(height: 20),
                     SegmentedButton<String>(
                       segments: const [
-                        ButtonSegment(value: "user", label: Text("👤 User")),
-                        ButtonSegment(value: "admin", label: Text("👑 Admin")),
+                        ButtonSegment(value: "user", label: Text(" User")),
+                        ButtonSegment(value: "admin", label: Text(" Admin")),
                       ],
                       selected: {selectedRole!},
                       onSelectionChanged: (Set<String> newSelection) {
@@ -146,7 +145,7 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                   ],
                 ),
 
-              // Step 2: UP Number (only for users)
+              // Step 2: UP Number (only for users) - WITH UPDATED PREFIX
               if (isVerified && selectedRole == "user")
                 Column(
                   children: [
@@ -163,8 +162,10 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                       controller: upNumberController,
                       decoration: const InputDecoration(
                         labelText: "UP Number",
+                        hintText: "1234567",
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.numbers),
+                        prefixText: "UP",
                       ),
                       keyboardType: TextInputType.number,
                     ),
@@ -256,11 +257,7 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
     setState(() => isLoading = true);
 
     try {
-      final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}/check-user/"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "role": "user"}),
-      );
+      final response = await ApiService.checkUser(email, "user");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -301,11 +298,7 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
     setState(() => isLoading = true);
 
     try {
-      final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}/check-user/"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "role": "admin"}),
-      );
+      final response = await ApiService.checkUser(email, "admin");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -334,26 +327,24 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
 
   // Verify UP number (for regular users)
   Future<void> verifyUpNumber() async {
-    final upNumber = upNumberController.text.trim();
-    
+    // Combine "UP" prefix with the entered number
+    String upNumber = upNumberController.text.trim();
     if (upNumber.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please enter your UP number")),
       );
       return;
     }
+    
+    // Add UP prefix if not already present
+    if (!upNumber.toLowerCase().startsWith("up")) {
+      upNumber = "UP$upNumber";
+    }
 
     setState(() => isLoading = true);
 
     try {
-      final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}/verify-up-number/"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "user_id": userId,
-          "up_number": upNumber,
-        }),
-      );
+      final response = await ApiService.verifyUpNumber(userId!, upNumber);
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -403,14 +394,7 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
     setState(() => isLoading = true);
 
     try {
-      final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}/reset-password/"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "user_id": userId,
-          "new_password": newPassword,
-        }),
-      );
+      final response = await ApiService.resetPassword(userId!, newPassword);
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
