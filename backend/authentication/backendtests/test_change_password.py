@@ -53,3 +53,64 @@ class ChangePasswordTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, 401)
+
+    def test_change_password_missing_old_password(self):
+
+        response = self.client.post(
+            self.url,
+            {
+                "new_password": "NewPassword123!"
+            },
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+
+    def test_change_password_missing_new_password(self):
+
+        response = self.client.post(
+            self.url,
+            {
+                "old_password": "OldPassword123!"
+            },
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+
+    def test_old_password_no_longer_works_after_change(self):
+
+        self.client.post(
+            self.url,
+            {
+                "old_password": "OldPassword123!",
+                "new_password": "NewPassword123!"
+            },
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.user.refresh_from_db()
+
+        self.assertFalse(
+            self.user.check_password("OldPassword123!")
+        )
+
+
+    def test_new_password_is_saved_correctly(self):
+
+        self.client.post(
+            self.url,
+            {
+                "old_password": "OldPassword123!",
+                "new_password": "SecurePass456!"
+            },
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.user.refresh_from_db()
+
+        self.assertTrue(
+            self.user.check_password("SecurePass456!")
+        )
