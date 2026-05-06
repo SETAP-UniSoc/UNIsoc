@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
-from authentication.models import NotificationPreference
+from authentication.models import NotificationPreference, Society
 
 User = get_user_model()
 
@@ -17,12 +17,15 @@ class NotificationPreferenceTests(APITestCase):
 
         self.token = Token.objects.create(user=self.user)
 
+        self.society = Society.objects.create(name="Test Society")
+
         self.url = reverse("notifications")
 
     def test_update_notification_preferences(self):
         response = self.client.post(
             self.url,
             {
+                "society": self.society.id,
                 "notify_new_events": False,
                 "notify_cancellations": True,
                 "notify_event_created": False,
@@ -30,6 +33,8 @@ class NotificationPreferenceTests(APITestCase):
             },
             HTTP_AUTHORIZATION=f"Token {self.token.key}"
         )
+
+        print("URL USED:", self.url)  # 🔥 debug once
 
         self.assertEqual(response.status_code, 200)
 
@@ -46,7 +51,7 @@ class NotificationPreferenceTests(APITestCase):
     def test_get_notification_preferences(self):
         NotificationPreference.objects.create(
             user=self.user,
-            society_id=1,  # ⚠️ required FK in your model
+            society=self.society,
             notify_new_events=True,
             notify_cancellations=True,
             notify_event_created=True,
@@ -59,3 +64,4 @@ class NotificationPreferenceTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, 200)
+        
