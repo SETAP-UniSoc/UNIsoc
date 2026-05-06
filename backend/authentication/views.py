@@ -31,13 +31,8 @@ class UserListView(generics.ListAPIView):
     serializer_class = UserSerializer
 
     def get_queryset(self):
-        """Return a filtered and ordered queryset of all users.
 
-        :return: Queryset of User objects filtered by search/letter params.
-        :rtype: QuerySet
-        """
         queryset = User.objects.all().order_by('name')
-
         search = self.request.query_params.get('search')
         letter = self.request.query_params.get('letter')
 
@@ -79,24 +74,12 @@ class SocietyListSearchView(APIView):
         return Response(data)
 
 class AddEventView(generics.CreateAPIView):
-    """API view to create a new event for the authenticated admin's society.
-
-    Requires authentication. Only users with the ``admin`` role can create events.
-    The event is automatically linked to the society managed by the authenticated admin.
-
-    :raises PermissionDenied: If the authenticated user is not an admin.
-    """
-
+    
     serializer_class = EventSerializer
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        """Save the new event, associating it with the admin's society.
-
-        :param serializer: The validated event serializer instance.
-        :type serializer: EventSerializer
-        :raises PermissionDenied: If the user does not have the admin role.
-        """
+        
         if self.request.user.role != "admin":
             raise PermissionDenied("Admins only")
 
@@ -109,45 +92,22 @@ class AddEventView(generics.CreateAPIView):
 
 
 class DeleteEventView(generics.DestroyAPIView):
-    """API view to delete an event created by the authenticated user.
-
-    Requires authentication. Users can only delete events they created themselves.
-    """
 
     permission_classes = [IsAuthenticated]
     serializer_class = EventSerializer
     lookup_field = 'id'
 
     def get_queryset(self):
-        """Return only events created by the authenticated user.
-
-        :return: Queryset of Event objects created by the current user.
-        :rtype: QuerySet
-        """
+        
         return Event.objects.filter(created_by=self.request.user)
 
 
 class SocietyEventView(APIView):
-    """API view to retrieve or create events for a specific society.
-
-    Requires authentication.
-
-    - ``GET``: Returns all events belonging to the given society.
-    - ``POST``: Allows an admin of the society to create a new event.
-    """
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request, society_id):
-        """Return all events for the specified society.
-
-        :param request: The HTTP request.
-        :type request: Request
-        :param society_id: The ID of the society to fetch events for.
-        :type society_id: int
-        :return: Serialized list of events, or 404 if society not found.
-        :rtype: Response
-        """
+        
         try:
             society = Society.objects.get(id=society_id)
         except Society.DoesNotExist:
@@ -158,17 +118,7 @@ class SocietyEventView(APIView):
         return Response(serializer.data)
 
     def post(self, request, society_id):
-        """Create a new event for the specified society.
-
-        Only the admin of the society can create events.
-
-        :param request: The HTTP request containing event data.
-        :type request: Request
-        :param society_id: The ID of the society to add the event to.
-        :type society_id: int
-        :return: Serialized event data on success, or an error response.
-        :rtype: Response
-        """
+        
         if request.user.role != "admin":
             return Response({"error": "Admins only"}, status=403)
 
@@ -198,10 +148,6 @@ class SocietyEventView(APIView):
 
 
 class EventDetailView(generics.RetrieveAPIView):
-    """API view to retrieve details of a single event by ID.
-
-    Requires authentication. Looks up the event using the ``id`` field.
-    """
 
     permission_classes = [IsAuthenticated]
     queryset = Event.objects.all()
@@ -210,11 +156,6 @@ class EventDetailView(generics.RetrieveAPIView):
 
 
 class UpdateEventView(generics.UpdateAPIView):
-    """API view to update an event created by the authenticated user.
-
-    Requires authentication. Users can only update events they created themselves.
-    Looks up the event using the ``id`` field.
-    """
 
     permission_classes = [IsAuthenticated]
     queryset = Event.objects.all()
@@ -222,33 +163,16 @@ class UpdateEventView(generics.UpdateAPIView):
     lookup_field = 'id'
 
     def get_queryset(self):
-        """Return only events created by the authenticated user.
-
-        :return: Queryset of Event objects created by the current user.
-        :rtype: QuerySet
-        """
+        
         return Event.objects.filter(created_by=self.request.user)
 
 
 class MyEventsView(APIView):
-    """API view to retrieve events relevant to the authenticated user.
-
-    Requires authentication.
-
-    - For **admins**: Returns all events belonging to their managed society.
-    - For **regular users**: Returns all events from societies they are members of.
-    """
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        """Return events relevant to the authenticated user.
-
-        :param request: The HTTP request.
-        :type request: Request
-        :return: Serialized list of events.
-        :rtype: Response
-        """
+        
         if request.user.role == "admin":
             society = Society.objects.get(admin=request.user)
             events = Event.objects.filter(society=society)
@@ -262,63 +186,32 @@ class MyEventsView(APIView):
 
 
 class AllEventsView(APIView):
-    """API view to retrieve the 5 most recently added events.
-
-    Requires authentication. Returns events ordered by descending ID.
-    """
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        """Return the 5 most recent events.
-
-        :param request: The HTTP request.
-        :type request: Request
-        :return: Serialized list of up to 5 events.
-        :rtype: Response
-        """
+        
         events = Event.objects.select_related("society").order_by('-id')[:5]
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data)
     
 class MyCreatedEventsView(APIView):
-    """API view to retrieve all events created by the authenticated user.
-
-    Requires authentication. Results are ordered by most recently created first.
-    """
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        """Return all events created by the authenticated user.
-
-        :param request: The HTTP request.
-        :type request: Request
-        :return: Serialized list of events created by the user.
-        :rtype: Response
-        """
+        
         events = Event.objects.filter(created_by=request.user).order_by('-created_at')
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data)
 
 
 class ChangePasswordView(APIView):
-    """API view to allow an authenticated user to change their password.
-
-    Requires authentication. The user must provide their current password
-    to verify their identity before setting a new one.
-    """
 
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        """Change the authenticated user's password.
-
-        :param request: The HTTP request containing ``old_password`` and ``new_password``.
-        :type request: Request
-        :return: Success message, or 400 if the old password is incorrect.
-        :rtype: Response
-        """
+        
         user = request.user
         old_password = request.data.get("old_password")
         new_password = request.data.get("new_password")
@@ -332,21 +225,11 @@ class ChangePasswordView(APIView):
 
 
 class ChangeEmailView(APIView):
-    """API view to allow an authenticated user to change their email address.
-
-    Requires authentication. The new email must not already be in use by another account.
-    """
 
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        """Change the authenticated user's email address.
-
-        :param request: The HTTP request containing ``new_email``.
-        :type request: Request
-        :return: Success message, or 400 if the email is missing or already in use.
-        :rtype: Response
-        """
+        
         user = request.user
         new_email = request.data.get("new_email")
 
@@ -362,36 +245,17 @@ class ChangeEmailView(APIView):
 
 
 class User_ProfileView(APIView):
-    """API view to retrieve or update the authenticated user's profile.
-
-    Requires authentication.
-
-    - ``GET``: Returns the current user's profile data.
-    - ``POST``: Updates the current user's display name.
-    """
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        """Return the authenticated user's profile.
-
-        :param request: The HTTP request.
-        :type request: Request
-        :return: Serialized user profile data.
-        :rtype: Response
-        """
+        
         user = request.user
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
     def post(self, request):
-        """Update the authenticated user's display name.
-
-        :param request: The HTTP request containing ``name``.
-        :type request: Request
-        :return: Success message, or 400 if the name is missing.
-        :rtype: Response
-        """
+        
         user = request.user
         new_name = request.data.get("name")
 
@@ -404,24 +268,11 @@ class User_ProfileView(APIView):
 
 
 class NotificationView(APIView):
-    """API view to retrieve or update the authenticated user's notification preferences.
-
-    Requires authentication.
-
-    - ``GET``: Returns the user's notification preferences for each society they belong to.
-    - ``POST``: Updates the notification preference for a specific society.
-    """
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        """Return the authenticated user's notification preferences.
-
-        :param request: The HTTP request.
-        :type request: Request
-        :return: List of societies and their notification settings for the user.
-        :rtype: Response
-        """
+        
         user = request.user
         preferences = NotificationPreference.objects.filter(user=user)
 
@@ -435,13 +286,7 @@ class NotificationView(APIView):
         return Response(data)
 
     def post(self, request):
-        """Update the authenticated user's notification preference for a society.
-
-        :param request: The HTTP request containing ``society_id`` and ``event_notifications``.
-        :type request: Request
-        :return: Updated preference data, or an error if the society is not found or user is not a member.
-        :rtype: Response
-        """
+        
         user = request.user
         society_id = request.data.get("society_id")
 
@@ -471,16 +316,7 @@ class NotificationView(APIView):
 
 
 def send_event_confirmation(admin_user, event):
-    """Send a new event notification email to all opted-in society members.
-
-    Finds all members of the event's society who have enabled new event
-    notifications and sends them an email with the event details.
-
-    :param admin_user: The admin user who created the event.
-    :type admin_user: User
-    :param event: The newly created event to notify members about.
-    :type event: Event
-    """
+    
     prefs = NotificationPreference.objects.filter(
         society=event.society,
         notify_new_events=True
@@ -515,12 +351,7 @@ def send_event_confirmation(admin_user, event):
 
 
 def send_event_reminders():
-    """Send 24-hour reminder emails to admin members of upcoming events.
-
-    Queries all events starting within the next 24 hours and sends reminder
-    emails to admin members of each event's society who have opted in to
-    24-hour reminders via their notification preferences.
-    """
+    
     now = timezone.now()
     upcoming = now + timedelta(hours=24)
 
@@ -556,16 +387,7 @@ def send_event_reminders():
             )
 
 class SocietyAdminDetailView(APIView):
-    """
-    API view to retrieve detailed information about a society,
-    including its events.
 
-    Returns:
-    - Society details
-    - List of associated events
-
-    Does not require admin privileges.
-    """
     permission_classes = [IsAuthenticated]
 
     # GET society details — used by both admin and user society page
@@ -607,9 +429,6 @@ class SocietyAdminDetailView(APIView):
 
 
 class SocietyMembershipCheckView(APIView):
-    """
-    Check if the authenticated user is an active member of a society.
-    """
 
     permission_classes = [IsAuthenticated]
 
@@ -627,9 +446,7 @@ class SocietyMembershipCheckView(APIView):
         }, status=status.HTTP_200_OK)
     
 class SocietyDetailView(APIView):
-    """
-    Retrieve a society along with its events.
-    """
+   
     def get(self, request, society_id):
         try:
             society = Society.objects.get(id=society_id)
@@ -657,29 +474,8 @@ class SocietyDetailView(APIView):
         })   
 
 class RegisterView(APIView):
-    '''
-    API view to handle user registration.
-    Accepts user details including first name, last name, email,
-    university number (UP number), and password.
-
-    Validates:
-    - All required fields are provided
-    - Passwords match
-    - Password strength (length, uppercase, number, special character)
-
-    Returns:
-    - 201 Created on success
-    - 400 Bad Request on validation failure
-    '''
-    def post(self, request):
-        """
-        Handle user registration.
-
-        :param request: HTTP request containing user registration data
-        :type request: Request
-        :return: Success or error response
-        :rtype: Response
-        """     
+    
+    def post(self, request):   
        
         first_name = request.data.get("first_name")
         last_name = request.data.get("last_name")
@@ -806,14 +602,7 @@ class LoginView(APIView):
         return Response({"error": "Invalid credentials"}, status=401)
     
 class LeaveSocietyView(APIView):
-    """
-    API view to allow a user to leave a society.
-
-    Sets the `left_at` timestamp on the membership record
-    instead of deleting it.
-
-    Requires authentication.
-    """
+    
     permission_classes = [IsAuthenticated]
 
     def post(self, request, society_id):
@@ -849,13 +638,7 @@ class LeaveSocietyView(APIView):
         )
     
 class LeaveEventView(APIView):
-    """
-    API view to allow a user to leave an event.
-
-    Marks attendance as inactive by setting `left_at`.
-
-    Requires authentication.
-    """
+    
     permission_classes = [IsAuthenticated]
 
     def post(self, request, event_id):
@@ -878,16 +661,7 @@ class LeaveEventView(APIView):
         return Response({"message": "Left event successfully"})
     
 class JoinSocietyView(APIView):
-    """
-    API view to allow a user to join a society.
-
-    Behaviour:
-    - Creates a new membership if none exists
-    - Returns 'Already joined' if user is already active
-    - Re-activates membership if previously left
-
-    Requires authentication.
-    """
+   
     permission_classes = [IsAuthenticated]
 
     def post(self, request, society_id):
@@ -952,7 +726,7 @@ class JoinEventView(APIView):
                 attendance.joined_at = timezone.now()
                 attendance.save()
 
-        # ✅ SEND EMAIL (ASYNC WITH CELERY)
+        # SEND EMAIL (ASYNC WITH CELERY)
         send_join_event_email.delay(
             user_email=request.user.email,
             event_title=event.title,
@@ -973,22 +747,7 @@ class JoinEventView(APIView):
         })
     
 class AnalyticsView(APIView):
-    """
-    API view to provide analytics for a society admin.
-
-    Includes:
-    - Membership growth over time
-    - Total active members
-    - Total events
-    - Event attendance statistics
-    - Most popular event
-
-    Query Parameters:
-    - period: 'week', 'month', '6months', 'year'
-
-    Requires:
-    - Authenticated admin user
-    """
+    
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -1079,12 +838,6 @@ class AnalyticsView(APIView):
         })
 
 class CheckEventAttendanceView(APIView):
-    """
-    Returns attendance stats for a specific event:
-    - total registered attendees
-    - active attendees (not left)
-    - event details
-    """
 
     permission_classes = [IsAuthenticated]
 
@@ -1122,9 +875,7 @@ class CheckEventAttendanceView(APIView):
         })
         
 class UserProfileView(APIView):
-    """
-    Retrieve and update the authenticated user's profile.
-    """
+    
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -1133,10 +884,8 @@ class UserProfileView(APIView):
 
     def patch(self, request):
         user = request.user
-
         data = request.data
 
-     
         if "first_name" in request.data:
             user.first_name = request.data["first_name"]
 
@@ -1159,9 +908,6 @@ class UserProfileView(APIView):
         }, status=status.HTTP_200_OK)
     
 class MySocietiesView(APIView):
-    """
-    Returns all societies the user is currently a member of.
-    """
 
     permission_classes = [IsAuthenticated]
 
