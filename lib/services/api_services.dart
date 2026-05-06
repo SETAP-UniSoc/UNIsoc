@@ -28,11 +28,13 @@ class ApiService {
 
   // -------- PUBLIC ENDPOINTS --------
 
-  static Future<List> getSocieties() async {
-    final response = await http.get(
-      Uri.parse("$baseUrl/societies/"),
-      headers: headers,
-    );
+  static Future<List> getSocieties({http.Client? client}) async {
+  client ??= http.Client();
+
+  final response = await client.get(
+    Uri.parse("$baseUrl/societies/"),
+    headers: headers,
+  );
 
     print("STATUS: ${response.statusCode}");
     print("BODY: ${response.body}");
@@ -77,56 +79,57 @@ class ApiService {
     }
   }
 
-  static Future<List> getEventsForJoinedSocieties() async {
-    try {
-      // Fetch the societies the user has joined
-      final societiesResponse = await http.get(
-        Uri.parse("$baseUrl/my-societies/"),
+  static Future<List> getEventsForJoinedSocieties({http.Client? client}) async {
+  client ??= http.Client();
+
+  try {
+    final societiesResponse = await client.get(
+      Uri.parse("$baseUrl/my-societies/"),
+      headers: headers,
+    );
+
+    if (societiesResponse.statusCode != 200) {
+      throw Exception("Failed to fetch societies: ${societiesResponse.body}");
+    }
+
+    final societies = jsonDecode(societiesResponse.body) as List;
+
+    List events = [];
+
+    for (var society in societies) {
+      final societyId = society['id'];
+
+      final eventsResponse = await client.get(
+        Uri.parse("$baseUrl/societies/$societyId/events/"),
         headers: headers,
       );
 
-      if (societiesResponse.statusCode != 200) {
-        throw Exception("Failed to fetch societies: ${societiesResponse.body}");
+      if (eventsResponse.statusCode == 200) {
+        final societyEvents = jsonDecode(eventsResponse.body) as List;
+
+        final tagged = societyEvents.map((e) => {
+              ...e,
+              'society_id': societyId,
+              'society_name': society['name'],
+            }).toList();
+
+        events.addAll(tagged);
       }
-
-      final societies = jsonDecode(societiesResponse.body) as List;
-
-      // Fetch events for each society
-      List events = [];
-      for (var society in societies) {
-        final societyId = society['id'];
-        final eventsResponse = await http.get(
-          Uri.parse("$baseUrl/societies/$societyId/events/"),
-          headers: headers,
-        );
-
-        if (eventsResponse.statusCode == 200) {
-          final societyEvents = jsonDecode(eventsResponse.body) as List;
-          final tagged = societyEvents
-              .map(
-                (e) => {
-                  ...e,
-                  'society_id': societyId,
-                  'society_name': society['name'],
-                },
-              )
-              .toList();
-          events.addAll(tagged);
-        }
-      }
-
-      // Filter upcoming events
-      final now = DateTime.now();
-      final upcomingEvents = events.where((event) {
-        final eventDate = DateTime.parse(event['start_time']);
-        return eventDate.isAfter(now);
-      }).toList();
-
-      return upcomingEvents;
-    } catch (e) {
-      throw Exception("Error fetching events: $e");
     }
+
+    final now = DateTime.now();
+
+    final upcomingEvents = events.where((event) {
+      final eventDate = DateTime.parse(event['start_time']);
+      return eventDate.isAfter(now);
+    }).toList();
+
+    return upcomingEvents;
+
+  } catch (e) {
+    throw Exception("Error fetching events: $e");
   }
+}
 
   //add debugging
 
