@@ -2,10 +2,11 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
+from django.utils import timezone
+from datetime import timedelta
 from authentication.models import Society, Event
 
 User = get_user_model()
-
 
 class CalendarViewTests(APITestCase):
 
@@ -21,12 +22,15 @@ class CalendarViewTests(APITestCase):
         )
 
         self.event = Event.objects.create(
-            name="Test Event",
-            society=self.society
+            title="Test Event",  # ✅ FIXED
+            society=self.society,
+            start_time=timezone.now(),  # ✅ REQUIRED
+            end_time=timezone.now() + timedelta(hours=2),  # ✅ REQUIRED
+            created_by=self.user  # ✅ good practice
         )
 
     def test_get_calendar_events_success(self):
-        url = reverse("calendar")  # adjust if needed
+        url = reverse("calendar")
 
         response = self.client.get(
             url,
@@ -52,3 +56,4 @@ class CalendarViewTests(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(len(response.data) > 0)
+
