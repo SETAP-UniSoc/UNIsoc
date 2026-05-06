@@ -15,14 +15,14 @@ class MyEventsViewTests(APITestCase):
         self.user = User.objects.create_user(
             email="test@uni.ac.uk",
             password="Password123!"
-        )
+        )   
         self.token = Token.objects.create(user=self.user)
 
         self.society = Society.objects.create(
             name="Test Society"
         )
 
-        # ✅ IMPORTANT: user must be a member to see events
+        # user must be a member to see events
         self.membership = Membership.objects.create(
             user=self.user,
             society=self.society
@@ -63,4 +63,87 @@ class MyEventsViewTests(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(len(response.data) > 0)
+
+    def test_my_events_returns_correct_event_title(self):
+
+        url = reverse("my-events")
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[0]["title"], "Test Event")
+
+
+    def test_user_with_no_societies_gets_empty_list(self):
+
+        user = User.objects.create_user(
+            email="nomember@uni.ac.uk",
+            password="Password123!"
+        )
+
+        token = Token.objects.create(user=user)
+
+        url = reverse("my-events")
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Token {token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 0)
+
+
+    def test_admin_gets_society_events(self):
+
+        admin_user = User.objects.create_user(
+            email="admin@uni.ac.uk",
+            password="Password123!",
+            role="admin"
+        )
+
+        admin_token = Token.objects.create(user=admin_user)
+
+        admin_society = Society.objects.create(
+            name="Admin Society",
+            admin=admin_user
+        )
+
+        Event.objects.create(
+            title="Admin Event",
+            society=admin_society,
+            start_time=timezone.now(),
+            end_time=timezone.now() + timedelta(hours=2),
+            created_by=admin_user
+        )
+
+        url = reverse("my-events")
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Token {admin_token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["title"], "Admin Event")
+
+
+    def test_left_society_user_no_longer_sees_events(self):
+
+        self.membership.left_at = timezone.now()
+        self.membership.save()
+
+        url = reverse("my-events")
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 0)
 
