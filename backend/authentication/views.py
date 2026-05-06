@@ -1182,3 +1182,57 @@ class MySocietiesView(APIView):
             })
 
         return Response(societies)
+    
+class CheckUserView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get("email")
+        role = request.data.get("role")
+       
+        try:
+            user = User.objects.get(email=email)
+            # Verify the role matches
+            if user.role != role:
+                return Response({"error": f"No {role} account found with this email"}, status=404)
+           
+            return Response({
+                "user_id": user.id,
+                "role": user.role,
+            }, status=200)
+        except User.DoesNotExist:
+            return Response({"error": "Email not found"}, status=404)
+
+class VerifyUpNumberView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        user_id = request.data.get("user_id")
+        up_number = request.data.get("up_number")
+        try:
+            user = User.objects.get(id=user_id)
+            # Normalize UP number
+            input_up = up_number.lower()
+            if not input_up.startswith("up"):
+                input_up = f"up{input_up}"
+           
+            if user.up_number == input_up:
+                return Response({"message": "Verified"}, status=200)
+            return Response({"error": "Invalid UP number"}, status=400)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)
+
+class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        user_id = request.data.get("user_id")
+        new_password = request.data.get("new_password")
+       
+        try:
+            user = User.objects.get(id=user_id)
+            user.set_password(new_password)
+            user.save()
+            return Response({"message": "Password reset successfully"}, status=200)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)

@@ -28,7 +28,10 @@ from .views import (
     SocietyAdminDetailView,
     CheckEventAttendanceView,
     UserProfileView,
-    MySocietiesView
+    MySocietiesView,
+    CheckUserView,
+    VerifyUpNumberView,
+    ResetPasswordView,
     )
 
 
@@ -76,6 +79,11 @@ urlpatterns = [
     path('change-email/', ChangeEmailView.as_view(), name='change-email'),
     
     path('notifications/', NotificationView.as_view(), name='notifications'),
+
+    # Password reset endpoints
+    path('check-user/', CheckUserView.as_view(), name='check-user'),
+    path('verify-up-number/', VerifyUpNumberView.as_view(), name='verify-up-number'),
+    path('reset-password/', ResetPasswordView.as_view(), name='reset-password'),
     ]
 
 
