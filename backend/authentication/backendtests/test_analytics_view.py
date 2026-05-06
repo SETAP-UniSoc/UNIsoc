@@ -13,7 +13,7 @@ class AnalyticsViewTests(APITestCase):
 
 
     def setUp(self):
-        # ✅ Create ADMIN user
+        # Create ADMIN user
         self.user = User.objects.create_user(
             email="test@uni.ac.uk",
             password="Password123!",
@@ -21,20 +21,20 @@ class AnalyticsViewTests(APITestCase):
         )
         self.token = Token.objects.create(user=self.user)
 
-        # ✅ Society MUST have this admin
+        # Society MUST have this admin
         self.society = Society.objects.create(
             name="Test Society",
             admin=self.user
         )
 
-        # ✅ Membership (optional but realistic)
+        # Membership (optional but realistic)
         Membership.objects.create(
             user=self.user,
             society=self.society,
             role="admin"
         )
 
-        # ✅ Valid event
+        # Valid event
         self.event = Event.objects.create(
             title="Test Event",
             society=self.society,
@@ -43,7 +43,7 @@ class AnalyticsViewTests(APITestCase):
             created_by=self.user
         )
 
-        # ✅ Attendance (used in analytics)
+        # Attendance (used in analytics)
         EventAttendance.objects.create(
             user=self.user,
             event=self.event
