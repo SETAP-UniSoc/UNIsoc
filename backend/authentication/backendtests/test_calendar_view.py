@@ -4,11 +4,12 @@ from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from django.utils import timezone
 from datetime import timedelta
-from authentication.models import Society, Event
+
+from authentication.models import Society, Event, Membership
 
 User = get_user_model()
 
-class CalendarViewTests(APITestCase):
+class MyEventsViewTests(APITestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -21,16 +22,22 @@ class CalendarViewTests(APITestCase):
             name="Test Society"
         )
 
-        self.event = Event.objects.create(
-            title="Test Event",  # ✅ FIXED
-            society=self.society,
-            start_time=timezone.now(),  # ✅ REQUIRED
-            end_time=timezone.now() + timedelta(hours=2),  # ✅ REQUIRED
-            created_by=self.user  # ✅ good practice
+        # ✅ IMPORTANT: user must be a member to see events
+        self.membership = Membership.objects.create(
+            user=self.user,
+            society=self.society
         )
 
-    def test_get_calendar_events_success(self):
-        url = reverse("calendar")
+        self.event = Event.objects.create(
+            title="Test Event",
+            society=self.society,
+            start_time=timezone.now(),
+            end_time=timezone.now() + timedelta(hours=2),
+            created_by=self.user
+        )
+
+    def test_get_my_events_success(self):
+        url = reverse("my-events")
 
         response = self.client.get(
             url,
@@ -39,15 +46,15 @@ class CalendarViewTests(APITestCase):
 
         self.assertEqual(response.status_code, 200)
 
-    def test_get_calendar_events_without_auth_fails(self):
-        url = reverse("calendar")
+    def test_get_my_events_without_auth_fails(self):
+        url = reverse("my-events")
 
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 401)
 
-    def test_calendar_response_contains_events(self):
-        url = reverse("calendar")
+    def test_my_events_response_contains_events(self):
+        url = reverse("my-events")
 
         response = self.client.get(
             url,
