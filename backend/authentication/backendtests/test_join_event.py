@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
-from authentication.models import Event, Society
+from authentication.models import Event, Society, Membership
 from django.utils import timezone
 from datetime import timedelta
 
@@ -20,6 +20,13 @@ class JoinEventTests(APITestCase):
         self.token = Token.objects.create(user=self.user)
 
         self.society = Society.objects.create(name="Test Society")
+
+        # 🔥 IMPORTANT: user must be a member
+        Membership.objects.create(
+            user=self.user,
+            society=self.society,
+            role="member"
+        )
 
         self.event = Event.objects.create(
             society=self.society,
