@@ -36,15 +36,12 @@ class LeaveSocietyTests(APITestCase):
             HTTP_AUTHORIZATION=f"Token {self.token.key}"
         )
 
-        # allow both common DRF behaviours
         self.assertIn(response.status_code, [200, 204])
 
-        self.assertFalse(
-            Membership.objects.filter(
-                user=self.user,
-                society=self.society
-            ).exists()
-        )
+        # 🔥 FIX: check soft delete, not hard delete
+        self.membership.refresh_from_db()
+
+        self.assertIsNotNone(self.membership.left_at)
 
     def test_leave_without_auth_fails(self):
         response = self.client.post(self.url)
