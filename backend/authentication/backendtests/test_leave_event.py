@@ -30,6 +30,7 @@ class LeaveEventTests(APITestCase):
             status="upcoming"
         )
 
+        # 🔥 IMPORTANT: ensure RSVP exists in correct state
         self.rsvp = EventRSVP.objects.create(
             user=self.user,
             event=self.event,
@@ -39,25 +40,27 @@ class LeaveEventTests(APITestCase):
         self.url = reverse("leave-event", args=[self.event.id])
 
     def test_leave_event_success(self):
+        # sanity check before request
+        self.assertTrue(
+            EventRSVP.objects.filter(user=self.user, event=self.event).exists()
+        )
+
         response = self.client.post(
             self.url,
             {},
             HTTP_AUTHORIZATION=f"Token {self.token.key}"
         )
 
-        # leave endpoints are often 200 or 204 → accept both
+        print(response.data)  # 🔥 remove after debugging
+
         self.assertIn(response.status_code, [200, 204])
 
         self.assertFalse(
-            EventRSVP.objects.filter(
-                user=self.user,
-                event=self.event
-            ).exists()
+            EventRSVP.objects.filter(user=self.user, event=self.event).exists()
         )
 
     def test_leave_event_without_auth(self):
         response = self.client.post(self.url)
-
         self.assertEqual(response.status_code, 401)
 
     def test_leave_event_not_joined(self):
