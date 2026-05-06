@@ -1,10 +1,6 @@
-"""
-Database models for the UNIsoc application.
-""" 
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinValueValidator
 from django.contrib.auth.base_user import BaseUserManager
 from django.conf import settings
 
@@ -160,10 +156,9 @@ class Event(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
 
-    capacity_limit = models.IntegerField(
+    capacity_limit = models.PositiveIntegerField(
         null=True,
-        blank=True,
-        validators=[MinValueValidator(1)]
+        blank=True
     )
 
     created_by = models.ForeignKey(
