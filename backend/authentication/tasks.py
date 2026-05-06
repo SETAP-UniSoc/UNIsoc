@@ -1,13 +1,4 @@
-try:
-    from celery import shared_task  # type: ignore
-except Exception:
-    # Fallback no-op decorator when Celery isn't available (e.g. during linting or dev)
-    def shared_task(func=None, **_kwargs):
-        if func is None:
-            def decorator(f):
-                return f
-            return decorator
-        return func
+from celery import shared_task
 from django.core.mail import send_mail
 
 @shared_task
