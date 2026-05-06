@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:unisoc/screens/user/user_home_page.dart';
-import 'package:unisoc/screens/society_profile_page.dart';
 
 void main() {
   group('User Homepage Widget Tests', () {
@@ -15,22 +14,32 @@ void main() {
         ),
       );
       
-      await tester.pumpAndSettle();
+      // Wait for initial render
+      await tester.pump();
+      
+      // Wait for API calls (2 seconds)
+      await tester.pump(const Duration(seconds: 2));
       
       // Check if the app bar title exists
       expect(find.text('UniSoc'), findsOneWidget);
     });
 
-    // Test that loading indicator appears
-    testWidgets('Shows loading indicator initially', (WidgetTester tester) async {
+    // Test that loading indicator appears then disappears
+    testWidgets('Shows loading indicator then data loads', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: HomePage(),
         ),
       );
       
-      // Check for CircularProgressIndicator
+      // Check loading indicator appears
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      
+      // Wait for API calls
+      await tester.pump(const Duration(seconds: 3));
+      
+      // Loading indicator should be gone
+      expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
     // Test that search bar exists
@@ -41,9 +50,8 @@ void main() {
         ),
       );
       
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
       
-      // Check for search TextField (looks for hint text)
       expect(find.byType(TextField), findsOneWidget);
     });
 
@@ -55,7 +63,7 @@ void main() {
         ),
       );
       
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
       
       await tester.enterText(find.byType(TextField), 'Football');
       await tester.pump();
@@ -71,7 +79,7 @@ void main() {
         ),
       );
       
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
       
       expect(find.text('Browse Societies'), findsOneWidget);
     });
@@ -84,7 +92,7 @@ void main() {
         ),
       );
       
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
       
       expect(find.text('Sort by'), findsOneWidget);
     });
@@ -97,7 +105,7 @@ void main() {
         ),
       );
       
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
       
       expect(find.text('Filter by'), findsOneWidget);
     });
@@ -110,7 +118,7 @@ void main() {
         ),
       );
       
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
       
       expect(find.text('Upcoming Events'), findsOneWidget);
     });
@@ -123,7 +131,7 @@ void main() {
         ),
       );
       
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
       
       expect(find.text('Top Societies'), findsOneWidget);
     });
