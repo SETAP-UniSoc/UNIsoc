@@ -10,56 +10,52 @@ User = get_user_model()
 class LeaveSocietyTests(APITestCase):
 
     def setUp(self):
-        # create user
         self.user = User.objects.create_user(
             email="test@uni.ac.uk",
             password="Password123!"
         )
 
-        # create token
         self.token = Token.objects.create(user=self.user)
 
-        # create society
         self.society = Society.objects.create(
             name="Test Society"
         )
 
-        # make user a member first
         self.membership = Membership.objects.create(
             user=self.user,
-            society=self.society
+            society=self.society,
+            role="member"
         )
 
-    def test_leave_society_success(self):
-        url = reverse("leave_soc")  # adjust if needed
+        self.url = reverse("leave-society", args=[self.society.id])
 
+    def test_leave_society_success(self):
         response = self.client.post(
-            url,
-            {"society_id": self.society.id},
+            self.url,
+            {},
             HTTP_AUTHORIZATION=f"Token {self.token.key}"
         )
 
-        self.assertEqual(response.status_code, 200)
+        # allow both common DRF behaviours
+        self.assertIn(response.status_code, [200, 204])
 
-    def test_leave_without_auth_fails(self):
-        url = reverse("leave_soc")
-
-        response = self.client.post(
-            url,
-            {"society_id": self.society.id}
+        self.assertFalse(
+            Membership.objects.filter(
+                user=self.user,
+                society=self.society
+            ).exists()
         )
 
+    def test_leave_without_auth_fails(self):
+        response = self.client.post(self.url)
         self.assertEqual(response.status_code, 401)
 
     def test_leave_when_not_member(self):
-        # remove membership
         self.membership.delete()
 
-        url = reverse("leave_soc")
-
         response = self.client.post(
-            url,
-            {"society_id": self.society.id},
+            self.url,
+            {},
             HTTP_AUTHORIZATION=f"Token {self.token.key}"
         )
 
