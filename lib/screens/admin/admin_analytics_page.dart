@@ -1,7 +1,3 @@
-
-
-
-
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -34,11 +30,10 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      //added temporatily to delay the initial fetch until after the first frame so that the circular progress indicator shows up while loading instead of a blank screen. Can remove this once we have the event attendance data to show on the second graph, as then the initial fetch will be fast enough that the loading indicator isn't needed
       fetchAnalytics(selectedPeriod);
     });
     
-    startLiveUpdates(); // was temporarily commnted out live updates until we have the event attendance data to show on the second graph. No point refreshing the member count every 5 seconds if the event attendance graph just shows "No data yet"
+    startLiveUpdates();
   }
 
   @override
@@ -48,58 +43,57 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   }
 
   void startLiveUpdates() {
-    // live member count refreshes every 5 seconds
     liveTimer = Timer.periodic(const Duration(seconds: 50), (_) {
       fetchAnalytics(selectedPeriod);
     });
   }
 
-  // single endpoint for all analytics — uses logged in admin's token automatically
   Future<void> fetchAnalytics(String period) async {
-  setState(() => isLoading = true);
+    setState(() => isLoading = true);
 
     try {
+<<<<<<< HEAD
       final client = widget.httpClient ?? http.Client();
       final response = await client.get(
+=======
+      final response = await http.get(
+>>>>>>> Maya-up2266552
         Uri.parse("${ApiService.baseUrl}/my-analytics/?period=$period"),
         headers: ApiService.headers,
       );
 
-    print("📡 Status: ${response.statusCode}");
+      print("📡 Status: ${response.statusCode}");
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      
-      setState(() {
-        labels = List<String>.from(data["labels"] ?? []);
-        values = List<dynamic>.from(data["totals"] ?? [])
-            .map((e) => (e as num).toDouble())
-            .toList();
-        liveCount = data["live_count"] ?? 0;
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        
+        setState(() {
+          labels = List<String>.from(data["labels"] ?? []);
+          values = List<dynamic>.from(data["totals"] ?? [])
+              .map((e) => (e as num).toDouble())
+              .toList();
+          liveCount = data["live_count"] ?? 0;
 
-        // FIX: Explicitly convert to List<double> and List<String>
-        final eventsStats = data["events_stats"] ?? [];
-        
-        // Create new lists with correct types
-        eventValues = eventsStats.map<double>((e) => (e["attendee_count"] as num).toDouble()).toList();
-        eventNames = eventsStats.map<String>((e) => e["title"].toString()).toList();
-        
-        print("✅ eventValues (${eventValues.length}): $eventValues");
-        print("✅ eventNames (${eventNames.length}): $eventNames");
-        
-        if (values.isNotEmpty) {
-          values[values.length - 1] = liveCount.toDouble();
-        }
-      });
+          final eventsStats = data["events_stats"] ?? [];
+          
+          eventValues = eventsStats.map<double>((e) => (e["attendee_count"] as num).toDouble()).toList();
+          eventNames = eventsStats.map<String>((e) => e["title"].toString()).toList();
+          
+          print("✅ eventValues (${eventValues.length}): $eventValues");
+          print("✅ eventNames (${eventNames.length}): $eventNames");
+          
+          if (values.isNotEmpty) {
+            values[values.length - 1] = liveCount.toDouble();
+          }
+        });
+      }
+    } catch (e) {
+      print("❌ Analytics error: $e");
+    } finally {
+      setState(() => isLoading = false);
     }
-  } catch (e) {
-    print("❌ Analytics error: $e");
-  } finally {
-    setState(() => isLoading = false);
   }
-}
 
-  // export analytics as PDF
   Future<void> exportPdf() async {
     final pdf = pw.Document();
 
@@ -153,7 +147,6 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
           children: [
             const SizedBox(height: 20),
 
-            // period selector
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -166,7 +159,6 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
 
             const SizedBox(height: 30),
 
-            // current member count
             Text(
               values.isNotEmpty
                   ? values.last.toStringAsFixed(0)
@@ -177,7 +169,6 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
               ),
             ),
 
-            // membership trend graph
             SizedBox(
               height: 250,
               child: isLoading
@@ -187,7 +178,6 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
 
             const SizedBox(height: 20),
 
-            // live member count
             Text(
               "Live Members: $liveCount",
               style: const TextStyle(
@@ -203,7 +193,6 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
 
             const SizedBox(height: 40),
 
-            // event attendance graph - BAR CHART
             const Text(
               "Event Attendance",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -219,7 +208,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
               height: 300,
               child: isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : _buildEventBarChart(eventValues, eventNames),
+                  : _buildEventList(eventValues, eventNames),
             ),
 
             const SizedBox(height: 50),
@@ -235,9 +224,8 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
       return const Center(child: Text("No data yet"));
     }
 
-    // Calculate max Y value
     double maxY = data.reduce((a, b) => a > b ? a : b);
-    if (maxY == 0) maxY = 1; // Prevent division by zero
+    if (maxY == 0) maxY = 1;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -316,7 +304,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
     );
   }
 
-  Widget _buildEventBarChart(List<double> data, List<String> names) {
+  Widget _buildEventList(List<double> data, List<String> names) {
     if (data.isEmpty || names.isEmpty) {
       return const Center(
         child: Column(
@@ -333,68 +321,59 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
       );
     }
 
-    double maxY = data.reduce((a, b) => a > b ? a : b);
-    if (maxY == 0) maxY = 1;
-    maxY = maxY * 1.2;
+    final maxValue = data.reduce((a, b) => a > b ? a : b);
+    final maxBarHeight = 150.0;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: BarChart(
-        BarChartData(
-          alignment: BarChartAlignment.spaceAround,
-          maxY: maxY,
-          titlesData: FlTitlesData(
-            show: true,
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 60,
-                getTitlesWidget: (value, meta) {
-                  if (value.toInt() >= 0 && value.toInt() < names.length) {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Transform.rotate(
-                        angle: -0.4,
-                        child: Text(
-                          names[value.toInt()],
-                          style: const TextStyle(fontSize: 10),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    );
-                  }
-                  return const Text('');
-                },
-              ),
-            ),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 40,
-                getTitlesWidget: (value, meta) => 
-                    Text(value.toInt().toString(), style: const TextStyle(fontSize: 10)),
-              ),
-            ),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          ),
-          gridData: const FlGridData(show: false),
-          borderData: FlBorderData(show: false),
-          barGroups: List.generate(
-            data.length,
-            (index) => BarChartGroupData(
-              x: index,
-              barRods: [
-                BarChartRodData(
-                  toY: data[index],
-                  color: const Color(0xFF8B5CF6),
-                  width: 40,
-                  borderRadius: BorderRadius.circular(6),
+    return SizedBox(
+      height: 250,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: names.length,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemBuilder: (context, index) {
+          final attendeeCount = data[index].toInt();
+          final barHeight = maxValue > 0 
+              ? (attendeeCount / maxValue) * maxBarHeight 
+              : 10.0;
+          
+          return Container(
+            width: 100,
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  "$attendeeCount",
+                  style: const TextStyle(
+                    fontSize: 14, 
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF8B5CF6),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  height: barHeight.clamp(10.0, maxBarHeight),
+                  width: 50,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF8B5CF6),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  names[index],
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
               ],
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -427,51 +406,3 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
