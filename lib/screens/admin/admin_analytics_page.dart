@@ -52,12 +52,7 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
     setState(() => isLoading = true);
 
     try {
-<<<<<<< HEAD
-      final client = widget.httpClient ?? http.Client();
-      final response = await client.get(
-=======
       final response = await http.get(
->>>>>>> Maya-up2266552
         Uri.parse("${ApiService.baseUrl}/my-analytics/?period=$period"),
         headers: ApiService.headers,
       );
