@@ -18,8 +18,6 @@ class SearchSocietyTests(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.data
-
-        # handle both list and paginated responses
         if isinstance(data, dict) and "results" in data:
             data = data["results"]
 
@@ -36,8 +34,14 @@ class SearchSocietyTests(APITestCase):
 
         self.assertEqual(len(data), 0)
 
-    def test_search_empty_query(self):
+    def test_search_empty_query_returns_all(self):
         response = self.client.get(self.url)
 
-        # most DRF search endpoints return 200 with empty or all results
-        self.assertIn(response.status_code, [200, 400])
+        self.assertEqual(response.status_code, 200)
+
+        data = response.data
+        if isinstance(data, dict) and "results" in data:
+            data = data["results"]
+
+        # 🔥 IMPORTANT: backend returns all societies
+        self.assertEqual(len(data), 3)
