@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:unisoc/services/api_services.dart';
 
@@ -18,7 +17,7 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
   
   bool isLoading = false;
   bool isVerified = false;
-  String? selectedRole = "user"; // "admin" or "user"
+  String? selectedRole = "user";
   String? userId;
 
   @override
@@ -37,7 +36,6 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Step 0: Role Selection
               if (!isVerified)
                 Column(
                   children: [
@@ -49,8 +47,8 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                     const SizedBox(height: 20),
                     SegmentedButton<String>(
                       segments: const [
-                        ButtonSegment(value: "user", label: Text("👤 User")),
-                        ButtonSegment(value: "admin", label: Text("👑 Admin")),
+                        ButtonSegment(value: "user", label: Text(" User")),
+                        ButtonSegment(value: "admin", label: Text(" Admin")),
                       ],
                       selected: {selectedRole!},
                       onSelectionChanged: (Set<String> newSelection) {
@@ -65,7 +63,6 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                   ],
                 ),
 
-              // Step 1: Email (only for users, admins skip to password)
               if (!isVerified && selectedRole == "user")
                 Column(
                   children: [
@@ -89,6 +86,7 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                       onPressed: isLoading ? null : verifyUser,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF8B5CF6),
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
                       child: isLoading
@@ -102,7 +100,6 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                   ],
                 ),
 
-              // Step 1 for Admin: Direct to password reset
               if (!isVerified && selectedRole == "admin")
                 Column(
                   children: [
@@ -113,8 +110,7 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                     ),
                     const SizedBox(height: 20),
                     const Text(
-                      "As an admin, you can reset your password directly.\n"
-                      "Make sure you have access to your registered email.",
+                      "Enter your registered email to reset password",
                       style: TextStyle(fontSize: 14, color: Colors.grey),
                       textAlign: TextAlign.center,
                     ),
@@ -133,6 +129,7 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                       onPressed: isLoading ? null : verifyAdmin,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF8B5CF6),
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
                       child: isLoading
@@ -141,12 +138,11 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                               width: 20,
                               child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             )
-                          : const Text("Continue to Password Reset"),
+                          : const Text("Verify Admin"),
                     ),
                   ],
                 ),
 
-              // Step 2: UP Number (only for users)
               if (isVerified && selectedRole == "user")
                 Column(
                   children: [
@@ -163,8 +159,10 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                       controller: upNumberController,
                       decoration: const InputDecoration(
                         labelText: "UP Number",
+                        hintText: "1234567",
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.numbers),
+                        prefixText: "UP",
                       ),
                       keyboardType: TextInputType.number,
                     ),
@@ -173,6 +171,7 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                       onPressed: isLoading ? null : verifyUpNumber,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF8B5CF6),
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
                       child: isLoading
@@ -186,7 +185,6 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                   ],
                 ),
 
-              // Step 3: New Password (for both admin and user)
               if (isVerified)
                 Column(
                   children: [
@@ -222,7 +220,8 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
                     ElevatedButton(
                       onPressed: isLoading ? null : resetPassword,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: const Color(0xFF8B5CF6),  // Lighter purple button
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
                       child: isLoading
@@ -242,7 +241,6 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
     );
   }
 
-  // Verify user email (for regular users)
   Future<void> verifyUser() async {
     final email = emailController.text.trim();
     
@@ -256,17 +254,16 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
     setState(() => isLoading = true);
 
     try {
-      final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}/check-user/"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "role": "user"}),
-      );
+      final response = await ApiService.checkUser(email, "user");
+      print("📡 Verify user response: ${response.statusCode}");
+      print("📡 Body: ${response.body}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        print("✅ User ID: ${data['user_id']}");
         setState(() {
           isVerified = true;
-          userId = data["user_id"];
+          userId = data['user_id']?.toString();
         });
         
         ScaffoldMessenger.of(context).showSnackBar(
@@ -287,7 +284,6 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
     }
   }
 
-  // Verify admin (skip UP number)
   Future<void> verifyAdmin() async {
     final email = emailController.text.trim();
     
@@ -301,17 +297,16 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
     setState(() => isLoading = true);
 
     try {
-      final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}/check-user/"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "role": "admin"}),
-      );
+      final response = await ApiService.checkUser(email, "admin");
+      print("📡 Verify admin response: ${response.statusCode}");
+      print("📡 Body: ${response.body}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        print("✅ Admin ID: ${data['user_id']}");
         setState(() {
           isVerified = true;
-          userId = data["user_id"];
+          userId = data['user_id']?.toString();
         });
         
         ScaffoldMessenger.of(context).showSnackBar(
@@ -332,28 +327,37 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
     }
   }
 
-  // Verify UP number (for regular users)
   Future<void> verifyUpNumber() async {
-    final upNumber = upNumberController.text.trim();
+    if (userId == null || userId!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Session expired. Please start over.")),
+      );
+      setState(() {
+        isVerified = false;
+        userId = null;
+      });
+      return;
+    }
     
+    String upNumber = upNumberController.text.trim();
     if (upNumber.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please enter your UP number")),
       );
       return;
     }
+    
+    // Add UP prefix if not already present
+    if (!upNumber.toLowerCase().startsWith("up")) {
+      upNumber = "UP$upNumber";
+    }
 
     setState(() => isLoading = true);
 
     try {
-      final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}/verify-up-number/"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "user_id": userId,
-          "up_number": upNumber,
-        }),
-      );
+      final response = await ApiService.verifyUpNumber(userId!, upNumber);
+      print("📡 Verify UP response: ${response.statusCode}");
+      print("📡 Body: ${response.body}");
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -374,8 +378,18 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
     }
   }
 
-  // Reset password (for both admin and user)
   Future<void> resetPassword() async {
+    if (userId == null || userId!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Session expired. Please start over.")),
+      );
+      setState(() {
+        isVerified = false;
+        userId = null;
+      });
+      return;
+    }
+    
     final newPassword = newPasswordController.text;
     final confirmPassword = confirmPasswordController.text;
 
@@ -403,14 +417,9 @@ class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
     setState(() => isLoading = true);
 
     try {
-      final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}/reset-password/"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "user_id": userId,
-          "new_password": newPassword,
-        }),
-      );
+      final response = await ApiService.resetPassword(userId!, newPassword);
+      print("📡 Reset password response: ${response.statusCode}");
+      print("📡 Body: ${response.body}");
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
