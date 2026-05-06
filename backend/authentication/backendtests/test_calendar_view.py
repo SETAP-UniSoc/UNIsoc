@@ -147,3 +147,99 @@ class MyEventsViewTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
 
+    def test_multiple_events_are_returned(self):
+
+        Event.objects.create(
+            title="Second Event",
+            society=self.society,
+            start_time=timezone.now(),
+            end_time=timezone.now() + timedelta(hours=1),
+            created_by=self.user
+        )
+
+        url = reverse("my-events")
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 2)
+
+
+    def test_events_from_other_societies_not_returned(self):
+
+        other_society = Society.objects.create(
+            name="Other Society"
+        )
+
+        Event.objects.create(
+            title="Hidden Event",
+            society=other_society,
+            start_time=timezone.now(),
+            end_time=timezone.now() + timedelta(hours=1),
+            created_by=self.user
+        )
+
+        url = reverse("my-events")
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        titles = [event["title"] for event in response.data]
+
+        self.assertNotIn("Hidden Event", titles)
+
+
+    def test_response_contains_event_fields(self):
+
+        url = reverse("my-events")
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        event = response.data[0]
+
+        self.assertIn("title", event)
+        self.assertIn("start_time", event)
+        self.assertIn("end_time", event)
+
+
+    def test_user_only_sees_joined_society_events(self):
+
+        joined_society = Society.objects.create(
+            name="Joined Society"
+        )
+
+        Membership.objects.create(
+            user=self.user,
+            society=joined_society
+        )
+
+        Event.objects.create(
+            title="Joined Society Event",
+            society=joined_society,
+            start_time=timezone.now(),
+            end_time=timezone.now() + timedelta(hours=1),
+            created_by=self.user
+        )
+
+        url = reverse("my-events")
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        titles = [event["title"] for event in response.data]
+
+        self.assertIn("Joined Society Event", titles)
