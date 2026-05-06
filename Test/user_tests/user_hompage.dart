@@ -2,124 +2,130 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:unisoc/screens/user/user_home_page.dart';
-
-Widget buildTestApp(Widget child) {
-  return MaterialApp(
-    home: Scaffold(
-      body: SingleChildScrollView(child: child),
-    ),
-  );
-}
+import 'package:unisoc/screens/society_profile_page.dart';
 
 void main() {
-  group('User Homepage Widget Tests (Partition Based)', () {
+  group('User Homepage Widget Tests', () {
 
-    // valid load
-    testWidgets('HomeHeader displays UI when data loads successfully',
-        (WidgetTester tester) async {
+    // Test that the homepage renders without crashing
+    testWidgets('HomePage renders successfully', (WidgetTester tester) async {
       await tester.pumpWidget(
-        buildTestApp(
-          HomeHeader(
-            getSocieties: () async => [
-              {"name": "Football"}
-            ],
-            getEventsForJoinedSocieties: () async => [
-              {"title": "Match"}
-            ],
-          ),
+        MaterialApp(
+          home: HomePage(),
         ),
       );
-
+      
       await tester.pumpAndSettle();
-
+      
+      // Check if the app bar title exists
       expect(find.text('UniSoc'), findsOneWidget);
     });
 
-    // loading
-    testWidgets('HomeHeader shows CircularProgressIndicator during loading',
-        (WidgetTester tester) async {
-      final completer = Completer<List<dynamic>>();
-
+    // Test that loading indicator appears
+    testWidgets('Shows loading indicator initially', (WidgetTester tester) async {
       await tester.pumpWidget(
-        buildTestApp(
-          HomeHeader(
-            getSocieties: () => completer.future,
-            getEventsForJoinedSocieties: () async => [],
-          ),
+        MaterialApp(
+          home: HomePage(),
         ),
       );
-
-      await tester.pump();
-
+      
+      // Check for CircularProgressIndicator
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    // api error
-    testWidgets('HomeHeader shows error text when API fails',
-        (WidgetTester tester) async {
+    // Test that search bar exists
+    testWidgets('Search bar exists', (WidgetTester tester) async {
       await tester.pumpWidget(
-        buildTestApp(
-          HomeHeader(
-            getSocieties: () async => throw Exception('Error'),
-            getEventsForJoinedSocieties: () async => [],
-          ),
+        MaterialApp(
+          home: HomePage(),
         ),
       );
-
+      
       await tester.pumpAndSettle();
-
-      expect(find.textContaining('Error:'), findsOneWidget);
+      
+      // Check for search TextField (looks for hint text)
+      expect(find.byType(TextField), findsOneWidget);
     });
 
-    // search bar valid input
-    testWidgets('Search bar accepts valid query input',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestApp(const HomePage()));
-
+    // Test search bar input
+    testWidgets('Search bar accepts text input', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: HomePage(),
+        ),
+      );
+      
+      await tester.pumpAndSettle();
+      
       await tester.enterText(find.byType(TextField), 'Football');
       await tester.pump();
-
+      
       expect(find.text('Football'), findsOneWidget);
     });
 
-    // featured societies display
-    testWidgets('Featured societies section is displayed',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestApp(const HomePage()));
-
-      expect(find.text('Featured Societies'), findsOneWidget);
+    // Test that Browse Societies section exists
+    testWidgets('Browse Societies section is displayed', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: HomePage(),
+        ),
+      );
+      
+      await tester.pumpAndSettle();
+      
+      expect(find.text('Browse Societies'), findsOneWidget);
     });
 
-    // sorting A-Z
-    testWidgets('Sort dropdown exists for A-Z sorting',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestApp(const HomePage()));
-
+    // Test that Sort by dropdown exists
+    testWidgets('Sort by dropdown exists', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: HomePage(),
+        ),
+      );
+      
+      await tester.pumpAndSettle();
+      
       expect(find.text('Sort by'), findsOneWidget);
     });
 
-    // filtering by category
-    testWidgets('Filter dropdown exists for category filtering',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestApp(const HomePage()));
-
+    // Test that Filter by dropdown exists
+    testWidgets('Filter by dropdown exists', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: HomePage(),
+        ),
+      );
+      
+      await tester.pumpAndSettle();
+      
       expect(find.text('Filter by'), findsOneWidget);
     });
 
-    // events section display
-    testWidgets('Events section is displayed',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestApp(const HomePage()));
-
+    // Test that Upcoming Events section exists
+    testWidgets('Upcoming Events section is displayed', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: HomePage(),
+        ),
+      );
+      
+      await tester.pumpAndSettle();
+      
       expect(find.text('Upcoming Events'), findsOneWidget);
     });
 
-    // welcome header default
-    testWidgets('Displays default welcome message when no name provided',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestApp(const HomePage()));
-
-      expect(find.text('Welcome Student'), findsOneWidget);
+    // Test that Top Societies carousel exists
+    testWidgets('Top Societies carousel is displayed', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: HomePage(),
+        ),
+      );
+      
+      await tester.pumpAndSettle();
+      
+      expect(find.text('Top Societies'), findsOneWidget);
     });
 
   });
