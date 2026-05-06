@@ -7,6 +7,7 @@ User = get_user_model()
 
 
 class ChangePasswordTests(APITestCase):
+    
     def setUp(self):
         self.user = User.objects.create_user(
             email="test@uni.ac.uk",
