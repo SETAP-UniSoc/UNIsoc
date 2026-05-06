@@ -43,5 +43,5 @@ class SearchSocietyTests(APITestCase):
         if isinstance(data, dict) and "results" in data:
             data = data["results"]
 
-        # 🔥 IMPORTANT: backend returns all societies
+        # 🔥 matches your backend behavior
         self.assertEqual(len(data), 3)
