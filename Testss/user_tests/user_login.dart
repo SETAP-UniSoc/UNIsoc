@@ -9,7 +9,7 @@ void main() {
     testWidgets('Empty fields shows error', (WidgetTester tester) async {
       await tester.pumpWidget(const MaterialApp(home: LoginScreenUser()));
 
-      await tester.tap(find.text('Login'));
+      await tester.tap(find.text('Login').last);
       await tester.pump();
 
       expect(find.text('Please enter all fields'), findsOneWidget);
@@ -24,7 +24,7 @@ void main() {
       await tester.enterText(find.byType(TextField).at(1), 'password');
 
       // simulate error message manually (since no mock backend)
-      await tester.tap(find.text('Login'));
+      await tester.tap(find.text('Login').last);
       await tester.pump();
 
       // This would normally come from backend
@@ -40,7 +40,7 @@ void main() {
       await tester.enterText(find.byType(TextField).at(0), '1234567');
       await tester.enterText(find.byType(TextField).at(1), 'wrongpass');
 
-      await tester.tap(find.text('Login'));
+      await tester.tap(find.text('Login').last);
       await tester.pump();
 
       expect(find.text('Login'), findsOneWidget);
