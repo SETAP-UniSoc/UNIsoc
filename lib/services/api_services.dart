@@ -179,4 +179,19 @@ static Future<http.Response> resetPassword(String userId, String newPassword, {h
     }),
   );
 }
+
+// -------- AUTHENTICATION --------
+
+static Future<http.Response> login(String upNumber, String password, {http.Client? client}) async {
+  client ??= http.Client();
+  return client.post(
+    Uri.parse("$baseUrl/login/"),
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({
+      "up_number": upNumber,
+      "password": password,
+    }),
+  );
+}
+
 }
