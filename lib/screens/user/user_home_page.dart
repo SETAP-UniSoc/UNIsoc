@@ -8,7 +8,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final Future<List<dynamic>> Function()? getSocieties;
+  final Future<List<dynamic>> Function()? getEventsForJoinedSocieties;
+  const HomePage({super.key,
+   this.getSocieties,
+    this.getEventsForJoinedSocieties,});
 
   @override
   Widget build(BuildContext context) {
@@ -16,9 +20,12 @@ class HomePage extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
-            children: const [
+            children:  [
               // Header with navbar + "UniSoc" + "Welcome Student"
-              HomeHeader(),
+              HomeHeader(
+                getSocieties: getSocieties, 
+                getEventsForJoinedSocieties: getEventsForJoinedSocieties,
+              ),
 
               // Main content placeholder (will be replaced by A–Z list section)
               // For now we can leave it or remove it:
