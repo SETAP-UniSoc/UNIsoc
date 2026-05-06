@@ -85,10 +85,11 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("User Login")),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: SingleChildScrollView(
+  child: Padding(
+    padding: const EdgeInsets.all(20),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
               "Login",
@@ -183,7 +184,9 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
           ],
         ),
       ),
+      )
     );
+    
   }
 }
 
