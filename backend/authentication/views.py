@@ -19,7 +19,7 @@ from django.utils import timezone
 from datetime import timedelta
 import re
 from rest_framework.permissions import AllowAny
-
+from .tasks import send_join_event_email
 from .models import NotificationPreference, Society, Membership, Event
 
 
@@ -922,19 +922,9 @@ class JoinSocietyView(APIView):
 
         return Response({"message": "Rejoined successfully"}, status=200)
             
+from .tasks import send_join_event_email   # 👈 ADD THIS
+
 class JoinEventView(APIView):
-    """
-    API view to allow a user to join an event.
-
-    Behaviour:
-    - Prevents joining past events
-    - Creates attendance record if not existing
-    - Re-activates attendance if previously left
-
-    Returns updated attendee count.
-
-    Requires authentication.
-    """
 
     permission_classes = [IsAuthenticated]
 
@@ -945,12 +935,8 @@ class JoinEventView(APIView):
         except Event.DoesNotExist:
             return Response({"error": "Event not found"}, status=404)
 
-        # prevent joining past events
         if event.start_time < timezone.now():
-            return Response(
-                {"error": "Event has already passed"},
-                status=400
-            )
+            return Response({"error": "Event has already passed"}, status=400)
 
         attendance, created = EventAttendance.objects.get_or_create(
             user=request.user,
@@ -965,6 +951,16 @@ class JoinEventView(APIView):
                 attendance.left_at = None
                 attendance.joined_at = timezone.now()
                 attendance.save()
+
+        # ✅ SEND EMAIL (ASYNC WITH CELERY)
+        send_join_event_email.delay(
+            user_email=request.user.email,
+            event_title=event.title,
+            society_name=event.society.name,
+            start_time=str(event.start_time),
+            location=event.location,
+            description=event.description
+        )
 
         attendee_count = EventAttendance.objects.filter(
             event=event,
@@ -1186,3 +1182,57 @@ class MySocietiesView(APIView):
             })
 
         return Response(societies)
+    
+class CheckUserView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get("email")
+        role = request.data.get("role")
+       
+        try:
+            user = User.objects.get(email=email)
+            # Verify the role matches
+            if user.role != role:
+                return Response({"error": f"No {role} account found with this email"}, status=404)
+           
+            return Response({
+                "user_id": user.id,
+                "role": user.role,
+            }, status=200)
+        except User.DoesNotExist:
+            return Response({"error": "Email not found"}, status=404)
+
+class VerifyUpNumberView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        user_id = request.data.get("user_id")
+        up_number = request.data.get("up_number")
+        try:
+            user = User.objects.get(id=user_id)
+            # Normalize UP number
+            input_up = up_number.lower()
+            if not input_up.startswith("up"):
+                input_up = f"up{input_up}"
+           
+            if user.up_number == input_up:
+                return Response({"message": "Verified"}, status=200)
+            return Response({"error": "Invalid UP number"}, status=400)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)
+
+class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        user_id = request.data.get("user_id")
+        new_password = request.data.get("new_password")
+       
+        try:
+            user = User.objects.get(id=user_id)
+            user.set_password(new_password)
+            user.save()
+            return Response({"message": "Password reset successfully"}, status=200)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)

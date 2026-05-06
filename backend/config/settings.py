@@ -28,7 +28,7 @@ INSTALLED_APPS = [
     'authentication.apps.AuthenticationConfig',
 ]
 
-CELERY_BROKER_URL = 'redis://127.0.0.1:6380/0'
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
 
 # =========================================================
 # MIDDLEWARE (FIXED ORDER)
@@ -145,12 +145,12 @@ REST_FRAMEWORK = {
 # =========================================================
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-# ⚠️ CHANGE THESE
-EMAIL_HOST_USER = 'your_email@gmail.com'
-EMAIL_HOST_PASSWORD = 'your_app_password'
+EMAIL_HOST_USER = 'maya.merley.martey@gmail.com'
+EMAIL_HOST_PASSWORD = 'Mayam123?'
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
