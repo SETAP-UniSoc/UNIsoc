@@ -46,20 +46,22 @@ class ApiService {
     }
   }
 
-  static Future<List> getMySocieties() async {
-    final response = await http.get(
-      Uri.parse("$baseUrl/my-societies/"),
-      headers: headers,
-    );
+  static Future<List> getMySocieties({http.Client? client}) async {
+  client ??= http.Client();
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body) as List;
-    }
+  final response = await client.get(
+    Uri.parse("$baseUrl/my-societies/"),
+    headers: headers,
+  );
 
-    throw Exception(
-      "Failed to load my societies: ${response.statusCode} ${response.body}",
-    );
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body) as List;
   }
+
+  throw Exception(
+    "Failed to load my societies: ${response.statusCode} ${response.body}",
+  );
+}
 
   static Future<List> getSocietyEvents(int id) async {
     final response = await http.get(
