@@ -63,23 +63,24 @@ class ApiService {
   );
 }
 
-  static Future<List> getSocietyEvents(int id) async {
-    final response = await http.get(
-      Uri.parse("$baseUrl/societies/$id/events/"),
-      headers: headers,
+  static Future<List> getSocietyEvents(int id, {http.Client? client}) async {
+  client ??= http.Client();
+  final response = await client.get(
+    Uri.parse("$baseUrl/societies/$id/events/"),
+    headers: headers,
+  );
+
+  print("STATUS: ${response.statusCode}");
+  print("BODY: ${response.body}");
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body) as List;
+  } else {
+    throw Exception(
+      "Failed to load events: ${response.statusCode} ${response.body}",
     );
-
-    print("STATUS: ${response.statusCode}"); // helpful for debugging
-    print("BODY: ${response.body}");
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body) as List;
-    } else {
-      throw Exception(
-        "Failed to load events: ${response.statusCode} ${response.body}",
-      );
-    }
   }
+}
 
   static Future<List> getEventsForJoinedSocieties({http.Client? client}) async {
   client ??= http.Client();
@@ -135,39 +136,29 @@ class ApiService {
 
   //add debugging
 
-  static Future<Map<String, dynamic>> getEventCount(int id) async {
-    final response = await http.get(
-      Uri.parse("$baseUrl/event/$id/count/"),
-      headers: headers,
-    );
-    return jsonDecode(response.body);
-  }
+  static Future<Map<String, dynamic>> getEventCount(int id, {http.Client? client}) async {
+  client ??= http.Client();
+  final response = await client.get(
+    Uri.parse("$baseUrl/event/$id/count/"),
+    headers: headers,
+  );
+  return jsonDecode(response.body);
+}
 
   // -------- JOIN / LEAVE --------
 
-  static Future<http.Response> joinSociety(int id) {
-    return http.post(Uri.parse("$baseUrl/society/$id/join/"), headers: headers);
-  }
-
-  static Future<http.Response> leaveSociety(int id) {
-    return http.post(
-      Uri.parse("$baseUrl/society/$id/leave/"),
-      headers: headers,
-    );
-  }
-
-  // -------- PASSWORD RESET --------
-
-static Future<http.Response> checkUser(String email, String role) async {
-  return http.post(
+static Future<http.Response> checkUser(String email, String role, {http.Client? client}) async {
+  client ??= http.Client();
+  return client.post(
     Uri.parse("$baseUrl/check-user/"),
     headers: {"Content-Type": "application/json"},
     body: jsonEncode({"email": email, "role": role}),
   );
 }
 
-static Future<http.Response> verifyUpNumber(String userId, String upNumber) async {
-  return http.post(
+static Future<http.Response> verifyUpNumber(String userId, String upNumber, {http.Client? client}) async {
+  client ??= http.Client();
+  return client.post(
     Uri.parse("$baseUrl/verify-up-number/"),
     headers: {"Content-Type": "application/json"},
     body: jsonEncode({
@@ -177,8 +168,9 @@ static Future<http.Response> verifyUpNumber(String userId, String upNumber) asyn
   );
 }
 
-static Future<http.Response> resetPassword(String userId, String newPassword) async {
-  return http.post(
+static Future<http.Response> resetPassword(String userId, String newPassword, {http.Client? client}) async {
+  client ??= http.Client();
+  return client.post(
     Uri.parse("$baseUrl/reset-password/"),
     headers: {"Content-Type": "application/json"},
     body: jsonEncode({
