@@ -14,16 +14,19 @@ class NotificationPreferenceTests(APITestCase):
             email="test@uni.ac.uk",
             password="Password123!"
         )
+
         self.token = Token.objects.create(user=self.user)
 
-    def test_update_notification_preferences(self):
-        url = reverse("notification_preferences")  # adjust if needed
+        self.url = reverse("notifications")
 
+    def test_update_notification_preferences(self):
         response = self.client.post(
-            url,
+            self.url,
             {
-                "email_notifications": True,
-                "push_notifications": False
+                "notify_new_events": False,
+                "notify_cancellations": True,
+                "notify_event_created": False,
+                "notify_24hr_reminder": True
             },
             HTTP_AUTHORIZATION=f"Token {self.token.key}"
         )
@@ -31,12 +34,10 @@ class NotificationPreferenceTests(APITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_update_without_auth(self):
-        url = reverse("notification_preferences")
-
         response = self.client.post(
-            url,
+            self.url,
             {
-                "email_notifications": True
+                "notify_new_events": True
             }
         )
 
@@ -45,14 +46,15 @@ class NotificationPreferenceTests(APITestCase):
     def test_get_notification_preferences(self):
         NotificationPreference.objects.create(
             user=self.user,
-            email_notifications=True,
-            push_notifications=True
+            society_id=1,  # ⚠️ required FK in your model
+            notify_new_events=True,
+            notify_cancellations=True,
+            notify_event_created=True,
+            notify_24hr_reminder=True
         )
 
-        url = reverse("notification_preferences")
-
         response = self.client.get(
-            url,
+            self.url,
             HTTP_AUTHORIZATION=f"Token {self.token.key}"
         )
 
