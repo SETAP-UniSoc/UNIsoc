@@ -36,4 +36,7 @@ def send_join_event_email(user_email, event_title, society_name, start_time, loc
         from_email="no-reply@yoursite.com",
         recipient_list=[user_email],
         fail_silently=False,
+    
     )
+
+    print("✅ EMAIL SENT")
