@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 void main() {
 
-  const String baseUrl = "http://10.128.4.122:8000/api/user/register/";
+  const String baseUrl = "http://10.128.4.160:8000/api/user/register/";
 
 
   //Signup successful
