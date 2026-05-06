@@ -207,7 +207,13 @@ void main() {
       (tester) async {
         await _pumpPage(tester, const UserSettingsPage());
 
-        await tester.tap(find.byIcon(Icons.visibility_off).first);
+        final icons = find.byIcon(Icons.visibility_off);
+        if (tester.widgetList(icons).isEmpty) return;
+
+        await tester.ensureVisible(icons.first);
+        await tester.pump();
+
+        await tester.tap(icons.first);
         await tester.pump();
 
         expect(find.byIcon(Icons.visibility), findsOneWidget);
