@@ -43,5 +43,5 @@ class SearchSocietyTests(APITestCase):
         if isinstance(data, dict) and "results" in data:
             data = data["results"]
 
-        # 🔥 matches your backend behavior
+        # backend returns all societies when query is empty
         self.assertEqual(len(data), 3)
