@@ -211,17 +211,40 @@ class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        
+
         user = request.user
+
         old_password = request.data.get("old_password")
         new_password = request.data.get("new_password")
 
+        # check required fields
+        if not old_password or not new_password:
+            return Response(
+                {"error": "Both old and new passwords are required"},
+                status=400
+            )
+
+        # check old password
         if not user.check_password(old_password):
-            return Response({"error": "Old password is incorrect"}, status=400)
+            return Response(
+                {"error": "Old password is incorrect"},
+                status=400
+            )
+
+        # optional password validation
+        if len(new_password) < 8:
+            return Response(
+                {"error": "Password must be at least 8 characters long"},
+                status=400
+            )
 
         user.set_password(new_password)
         user.save()
-        return Response({"message": "Password changed successfully"})
+
+        return Response(
+            {"message": "Password changed successfully"},
+            status=200
+        )
 
 
 class ChangeEmailView(APIView):
