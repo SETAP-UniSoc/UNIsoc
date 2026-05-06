@@ -201,3 +201,86 @@ class AnalyticsViewTests(APITestCase):
 
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.data["error"], "Society not found")
+
+    def test_week_period_works(self):
+
+        url = reverse("analytics")
+
+        response = self.client.get(
+            url,
+            {"period": "week"},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+
+    def test_year_period_works(self):
+
+        url = reverse("analytics")
+
+        response = self.client.get(
+            url,
+            {"period": "year"},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+
+    def test_six_month_period_works(self):
+
+        url = reverse("analytics")
+
+        response = self.client.get(
+            url,
+            {"period": "6months"},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+
+    def test_analytics_returns_event_attendance_key(self):
+
+        url = reverse("analytics")
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn("event_attendance", response.data)
+
+
+    def test_analytics_returns_events_stats_key(self):
+
+        url = reverse("analytics")
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn("events_stats", response.data)
+
+
+    def test_analytics_most_popular_event_title_correct(self):
+
+        url = reverse("analytics")
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            response.data["most_popular"]["title"],
+            "Test Event"
+        )
