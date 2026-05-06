@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
-//import 'login_screen.user.dart';
-//import 'login_screen.admin.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:unisoc/services/api_services.dart';
 
-//for now ser will enter their up number and if it mathces they can reset thier password
-//user enters email and backend checks if it belongs to user or admin
-// if admin it shon new password directly 
-// if user then user enters their up number then shows the new password field
-
-//forgotten password screen for both admin and user login screens 
 class ForgottenPasswordScreen extends StatefulWidget {
   const ForgottenPasswordScreen({super.key});
 
@@ -17,52 +12,423 @@ class ForgottenPasswordScreen extends StatefulWidget {
 
 class _ForgottenPasswordScreenState extends State<ForgottenPasswordScreen> {
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController upNumberController = TextEditingController();
+  final TextEditingController newPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
+  
+  bool isLoading = false;
+  bool isVerified = false;
+  String? selectedRole = "user"; // "admin" or "user"
+  String? userId;
 
-  void resetPassword() {
-  }
-
-//email input field only with a verify button
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Reset Password"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
         ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              "Enter your email",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 30),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(
-                labelText: "email",
-                border: UnderlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: resetPassword,
-              child: const Text("Verify"),
-            ),
-            //back arrow to go to prevoius screen
-            // Align(
-            //   alignment: Alignment.bottomLeft,
-            //   child: IconButton(
-            //     icon: const Icon(Icons.arrow_back),
-            //     onPressed: () {
-            //       Navigator.pop(context);
-            //     },
-            //   ),
-            // ),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Step 0: Role Selection
+              if (!isVerified)
+                Column(
+                  children: [
+                    const Text(
+                      "Select your role",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(value: "user", label: Text("👤 User")),
+                        ButtonSegment(value: "admin", label: Text("👑 Admin")),
+                      ],
+                      selected: {selectedRole!},
+                      onSelectionChanged: (Set<String> newSelection) {
+                        setState(() {
+                          selectedRole = newSelection.first;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 30),
+                    const Divider(),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+
+              // Step 1: Email (only for users, admins skip to password)
+              if (!isVerified && selectedRole == "user")
+                Column(
+                  children: [
+                    const Text(
+                      "Enter your email address",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: emailController,
+                      decoration: const InputDecoration(
+                        labelText: "Email",
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.email),
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: isLoading ? null : verifyUser,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF8B5CF6),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text("Verify Email"),
+                    ),
+                  ],
+                ),
+
+              // Step 1 for Admin: Direct to password reset
+              if (!isVerified && selectedRole == "admin")
+                Column(
+                  children: [
+                    const Text(
+                      "Admin Password Reset",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "As an admin, you can reset your password directly.\n"
+                      "Make sure you have access to your registered email.",
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: emailController,
+                      decoration: const InputDecoration(
+                        labelText: "Registered Email",
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.email),
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: isLoading ? null : verifyAdmin,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF8B5CF6),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text("Continue to Password Reset"),
+                    ),
+                  ],
+                ),
+
+              // Step 2: UP Number (only for users)
+              if (isVerified && selectedRole == "user")
+                Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Verify your UP number",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: upNumberController,
+                      decoration: const InputDecoration(
+                        labelText: "UP Number",
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.numbers),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: isLoading ? null : verifyUpNumber,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF8B5CF6),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text("Verify UP Number"),
+                    ),
+                  ],
+                ),
+
+              // Step 3: New Password (for both admin and user)
+              if (isVerified)
+                Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Set New Password",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: newPasswordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: "New Password",
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.lock),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    TextField(
+                      controller: confirmPasswordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: "Confirm Password",
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.lock_outline),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: isLoading ? null : resetPassword,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text("Reset Password"),
+                    ),
+                  ],
+                ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  // Verify user email (for regular users)
+  Future<void> verifyUser() async {
+    final email = emailController.text.trim();
+    
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter your email")),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiService.baseUrl}/check-user/"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": email, "role": "user"}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          isVerified = true;
+          userId = data["user_id"];
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Email verified! Please enter your UP number")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Email not found")),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Connection error")),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  // Verify admin (skip UP number)
+  Future<void> verifyAdmin() async {
+    final email = emailController.text.trim();
+    
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter your registered email")),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiService.baseUrl}/check-user/"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": email, "role": "admin"}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          isVerified = true;
+          userId = data["user_id"];
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Admin verified! Please set new password")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Admin email not found")),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Connection error")),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  // Verify UP number (for regular users)
+  Future<void> verifyUpNumber() async {
+    final upNumber = upNumberController.text.trim();
+    
+    if (upNumber.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter your UP number")),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiService.baseUrl}/verify-up-number/"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "user_id": userId,
+          "up_number": upNumber,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("UP number verified! Enter new password")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Invalid UP number")),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Connection error")),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  // Reset password (for both admin and user)
+  Future<void> resetPassword() async {
+    final newPassword = newPasswordController.text;
+    final confirmPassword = confirmPasswordController.text;
+
+    if (newPassword.isEmpty || confirmPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill in all fields")),
+      );
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Password must be at least 8 characters")),
+      );
+      return;
+    }
+
+    if (newPassword != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Passwords do not match")),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiService.baseUrl}/reset-password/"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "user_id": userId,
+          "new_password": newPassword,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Password reset successfully! Please login")),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to reset password")),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Connection error")),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
   }
 }
