@@ -7,7 +7,6 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:unisoc/services/api_services.dart';
 import 'package:unisoc/screens/admin/admin_bottom_nav.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class AdminAnalyticsPage extends StatefulWidget {
   const AdminAnalyticsPage({super.key});
@@ -47,9 +46,6 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
       fetchAnalytics(selectedPeriod);
     });
   }
-
-
-
 
   Future<void> fetchAnalytics(String period) async {
     setState(() => isLoading = true);
@@ -93,59 +89,46 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
   }
 
   Future<void> exportPdf() async {
-  try {
-    // Request storage permission (only needed for Android 12 and below)
-    if (await Permission.storage.request().isGranted) {
-      await _generatePdf();
-    } else {
+    try {
+      final pdf = pw.Document();
+
+      pdf.addPage(
+        pw.Page(
+          build: (pw.Context context) => pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text("Society Analytics", style: pw.TextStyle(fontSize: 22)),
+              pw.SizedBox(height: 10),
+              pw.Text("Live Members: $liveCount"),
+              pw.SizedBox(height: 20),
+              pw.Text("Membership Trend:"),
+              ...List.generate(
+                labels.length,
+                (i) => pw.Text("${labels[i]}: ${values[i]}"),
+              ),
+              pw.SizedBox(height: 20),
+              pw.Text("Event Attendance:"),
+              ...List.generate(
+                eventNames.length,
+                (i) => pw.Text("${eventNames[i]}: ${eventValues[i].toInt()} attendees"),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      await Printing.layoutPdf(
+        onLayout: (format) async => pdf.save(),
+      );
+      
+      print("✅ PDF exported successfully");
+    } catch (e) {
+      print("❌ PDF export error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Storage permission required to save PDF")),
+        SnackBar(content: Text("PDF export failed: $e")),
       );
     }
-  } catch (e) {
-    // If permission handler isn't available, just try to generate PDF
-    print("Permission error: $e");
-    await _generatePdf();
   }
-}
-
-Future<void> _generatePdf() async {
-  final pdf = pw.Document();
-
-  pdf.addPage(
-    pw.Page(
-      build: (pw.Context context) => pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Text("Society Analytics", style: pw.TextStyle(fontSize: 22)),
-          pw.SizedBox(height: 10),
-          pw.Text("Live Members: $liveCount"),
-          pw.SizedBox(height: 20),
-          pw.Text("Membership Trend:"),
-          ...List.generate(
-            labels.length,
-            (i) => pw.Text("${labels[i]}: ${values[i]}"),
-          ),
-          pw.SizedBox(height: 20),
-          pw.Text("Event Attendance:"),
-          ...List.generate(
-            eventNames.length,
-            (i) => pw.Text("${eventNames[i]}: ${eventValues[i].toInt()} attendees"),
-          ),
-        ],
-      ),
-    ),
-  );
-
-  await Printing.layoutPdf(
-    onLayout: (format) async {
-      print("📄 PDF layout requested, format: $format");
-      return pdf.save();
-    },
-  );
-  
-  print("✅ PDF exported successfully");
-}
 
   @override
   Widget build(BuildContext context) {
