@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
-from authentication.models import Society
+from authentication.models import Society, Membership
 
 User = get_user_model()
 
@@ -30,10 +30,20 @@ class JoinSocietyTests(APITestCase):
             HTTP_AUTHORIZATION=f"Token {self.token.key}"
         )
 
-        self.assertEqual(response.status_code, 200)
+        # ✔ backend returns CREATED when membership is made
+        self.assertEqual(response.status_code, 201)
+
+        # optional: verify DB side effect
+        self.assertTrue(
+            Membership.objects.filter(
+                user=self.user,
+                society=self.society
+            ).exists()
+        )
 
     def test_join_society_without_auth_fails(self):
         response = self.client.post(self.url)
+
         self.assertEqual(response.status_code, 401)
 
     def test_join_nonexistent_society(self):
