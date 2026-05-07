@@ -10,7 +10,7 @@ void main() {
   group('Admin Events Widget Tests', () {
 
     // Test 1: Events page loads with calendar
-    testWidgets('Events page loads and displays calendar', (WidgetTester tester) async {
+    testWidgets('Events page loads and displays title', (WidgetTester tester) async {
       final mockClient = MockClient((request) async {
         return http.Response(
           jsonEncode([
@@ -42,9 +42,20 @@ void main() {
     // Test 2: Loading indicator appears while fetching events
     testWidgets('Shows loading indicator while loading events', (WidgetTester tester) async {
       final mockClient = MockClient((request) async {
-        await Future.delayed(const Duration(seconds: 1));
+        // Add delay to ensure loading indicator is visible
+        await Future.delayed(const Duration(milliseconds: 500));
         return http.Response(
-          jsonEncode([]),
+          jsonEncode([
+            {
+              "id": 1,
+              "title": "Test Event",
+              "description": "Test",
+              "location": "Test Location",
+              "start_time": DateTime.now().add(Duration(days: 1)).toIso8601String(),
+              "end_time": DateTime.now().add(Duration(days: 1, hours: 2)).toIso8601String(),
+              "capacity_limit": 100
+            }
+          ]),
           200,
         );
       });
@@ -55,9 +66,18 @@ void main() {
         ),
       );
 
+      // Pump once to start loading
       await tester.pump();
 
+      // Loading indicator should be visible
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      // Wait for the delayed response
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pumpAndSettle();
+
+      // Loading indicator should be gone
+      expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
     // Test 3: Loading indicator disappears after data loads
@@ -85,8 +105,14 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      // Initial frame shows loading indicator
+      await tester.pump();
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
+      // Wait for data to load
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+
+      // Loading indicator should be gone
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
