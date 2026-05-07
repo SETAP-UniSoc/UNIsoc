@@ -52,10 +52,12 @@ class _AdminAnalyticsPageState extends State<AdminAnalyticsPage> {
     setState(() => isLoading = true);
 
     try {
-      final response = await http.get(
-        Uri.parse("${ApiService.baseUrl}/my-analytics/?period=$period"),
-        headers: ApiService.headers,
-      );
+      final client = widget.httpClient ?? http.Client();
+
+final response = await client.get(
+  Uri.parse("${ApiService.baseUrl}/my-analytics/?period=$period"),
+  headers: ApiService.headers,
+);
 
       print("📡 Status: ${response.statusCode}");
 
