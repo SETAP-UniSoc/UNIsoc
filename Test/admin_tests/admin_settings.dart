@@ -5,10 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:unisoc/screens/admin/admin_settings_page.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Mock client helper
-// Handles all routes the AdminSettingsPage hits on load and on user actions.
-// ─────────────────────────────────────────────────────────────────────────────
+// Mock client helper: handles routes for AdminSettingsPage
 http.Client _mockSettingsClient({
   String name = 'AdminName',
   String email = 'admin@ex.com',
@@ -79,11 +76,7 @@ Widget _buildApp(http.Client client) =>
     MaterialApp(home: AdminSettingsPage(httpClient: client));
 
 void main() {
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TEST PLAN ROW 67 — Load Profile Successfully
-  // "Authenticated admin goes to settings → current profile data displayed"
-  // ═══════════════════════════════════════════════════════════════════════════
-
+  // Test Plan Row 67 — Load Profile Successfully
   group('Load Profile (Test Plan Row 67)', () {
     testWidgets(
       'TC-W-LP-01 | Shows loading indicator on first frame before data arrives',
@@ -170,11 +163,7 @@ void main() {
     );
   });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TEST PLAN ROW 68 — Update Name
-  // "Admin enters 'Marissa' → taps save → msg 'Name updated successfully'"
-  // ═══════════════════════════════════════════════════════════════════════════
-
+  // Test Plan Row 68 — Update Name
   group('Update Name (Test Plan Row 68)', () {
     testWidgets(
       'TC-W-UN-01 | Tapping edit icon switches to save icon (edit mode)',
@@ -249,11 +238,7 @@ void main() {
     );
   });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TEST PLAN ROW 69 — Empty Name Field
-  // "Empty name → msg 'Name cannot be empty'"
-  // ═══════════════════════════════════════════════════════════════════════════
-
+  // Test Plan Row 69 — Empty Name Field
   group('Empty Name Field (Test Plan Row 69)', () {
     testWidgets(
       'TC-W-EN-01 | Saving an empty name shows "Name cannot be empty" snackbar',
@@ -311,11 +296,7 @@ void main() {
     );
   });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TEST PLAN ROW 70 — Update Email
-  // "Valid new email 'marissa@gmail.com' → msg 'Email updated successfully'"
-  // ═══════════════════════════════════════════════════════════════════════════
-
+  // Test Plan Row 70 — Update Email
   group('Update Email (Test Plan Row 70)', () {
     testWidgets(
       'TC-W-UE-01 | Current Email and New Email fields are present',
@@ -381,19 +362,19 @@ void main() {
         await tester.pumpAndSettle();
 
         await tester.enterText(
-            find.byType(TextField).at(0), 'admin@ex.com');
+            find.byType(TextField).at(0), 'newemail@test.com');
         await tester.pump();
 
-        expect(find.text('admin@ex.com'), findsOneWidget);
+        expect(find.byType(TextField).at(0), findsOneWidget);
+        expect(
+          (tester.widget<TextField>(find.byType(TextField).at(0)).controller?.text ?? ''),
+          'newemail@test.com',
+        );
       },
     );
   });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TEST PLAN ROW 71 — Missing New Email Field
-  // "Empty new email → msg 'Please fill in both email fields'"
-  // ═══════════════════════════════════════════════════════════════════════════
-
+  // Test Plan Row 71 — Missing New Email Field
   group('Missing New Email (Test Plan Row 71)', () {
     testWidgets(
       'TC-W-ME-01 | Tapping Update Email with both fields empty shows validation message',
@@ -433,11 +414,7 @@ void main() {
     );
   });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TEST PLAN ROW 72 — Missing Confirm Password Fields
-  // "Empty password fields → msg 'Please fill in both password fields'"
-  // ═══════════════════════════════════════════════════════════════════════════
-
+  // Test Plan Row 72 — Missing Confirm Password Fields
   group('Missing Password Fields (Test Plan Row 72)', () {
     testWidgets(
       'TC-W-MP-01 | All password fields blank → "Please fill in both password fields"',
@@ -514,11 +491,7 @@ void main() {
     );
   });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TEST PLAN ROW 73 — Password Mismatch
-  // "New ≠ confirm password → msg 'New passwords don't match'"
-  // ═══════════════════════════════════════════════════════════════════════════
-
+  // Test Plan Row 73 — Password Mismatch
   group('Password Mismatch (Test Plan Row 73)', () {
     testWidgets(
       'TC-W-PM-01 | Mismatched new and confirm passwords → "New passwords don\'t match"',
@@ -608,11 +581,7 @@ void main() {
     );
   });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TEST PLAN ROWS 43–46 — Notification Preferences
-  // Opt-in, not a member, unauthenticated, opt-out
-  // ═══════════════════════════════════════════════════════════════════════════
-
+  // Test Plan Rows 43–46 — Notification Preferences
   group('Notification Toggle (Test Plan Rows 43–46)', () {
     testWidgets(
       'TC-W-NT-01 | Notifications toggle is present on the page',
@@ -753,10 +722,7 @@ void main() {
     );
   });
 
-  // ═══════════════════════════════════════════════════════════════════════════
   // Password visibility toggles
-  // ═══════════════════════════════════════════════════════════════════════════
-
   group('Password Visibility Toggles', () {
     testWidgets(
       'TC-W-PV-01 | Three visibility_off icons shown by default (all fields obscured)',
