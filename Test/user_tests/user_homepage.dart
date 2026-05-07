@@ -182,17 +182,15 @@ void main() {
     testWidgets(
       'TC-H-02a | CircularProgressIndicator shown on first frame before data arrives',
       (tester) async {
+        _suppressOverflowErrors(); // needed because _pump() is not used here
         final completer = Completer<List<dynamic>>();
 
-        // pumpWidget triggers initState which calls _loadData() which
-        // calls our customSocietiesFn. Because the future hasn't completed
-        // yet, _loading remains true and the spinner is shown.
         await tester.pumpWidget(
           _homePage(customSocietiesFn: () => completer.future),
         );
 
-        // Do NOT pump or settle — check the very first frame immediately
-        // after the widget tree is built, before the event loop runs.
+        // Do NOT pump or settle — check immediately after widget tree is
+        // built, before the event loop runs and the future resolves.
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
         // Resolve and drain so the test ends cleanly with no pending work
