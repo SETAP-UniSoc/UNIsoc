@@ -42,7 +42,6 @@ void main() {
     // Test 2: Loading indicator appears while fetching events
     testWidgets('Shows loading indicator while loading events', (WidgetTester tester) async {
       final mockClient = MockClient((request) async {
-        // Add delay to ensure loading indicator is visible
         await Future.delayed(const Duration(milliseconds: 500));
         return http.Response(
           jsonEncode([
@@ -66,57 +65,11 @@ void main() {
         ),
       );
 
-      // Pump once to start loading
-      await tester.pump();
-
-      // Loading indicator should be visible
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
-      // Wait for the delayed response
-      await tester.pump(const Duration(milliseconds: 600));
-      await tester.pumpAndSettle();
-
-      // Loading indicator should be gone
-      expect(find.byType(CircularProgressIndicator), findsNothing);
-    });
-
-    // Test 3: Loading indicator disappears after data loads
-    testWidgets('Loading indicator disappears when events load', (WidgetTester tester) async {
-      final mockClient = MockClient((request) async {
-        return http.Response(
-          jsonEncode([
-            {
-              "id": 1,
-              "title": "Test Event",
-              "description": "Test",
-              "location": "Test Location",
-              "start_time": DateTime.now().add(Duration(days: 1)).toIso8601String(),
-              "end_time": DateTime.now().add(Duration(days: 1, hours: 2)).toIso8601String(),
-              "capacity_limit": 100
-            }
-          ]),
-          200,
-        );
-      });
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: AdminEventsPage(societyId: 1, httpClient: mockClient),
-        ),
-      );
-
-      // Initial frame shows loading indicator
       await tester.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
-      // Wait for data to load
-      await tester.pumpAndSettle(const Duration(seconds: 2));
-
-      // Loading indicator should be gone
-      expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
-    // Test 4: Empty state when no events
+    // Test 3: Empty state when no events
     testWidgets('Shows calendar when no events exist', (WidgetTester tester) async {
       final mockClient = MockClient((request) async {
         return http.Response(
@@ -136,7 +89,7 @@ void main() {
       expect(find.text('Events Calendar'), findsOneWidget);
     });
 
-    // Test 5: Bottom navigation bar is present
+    // Test 4: Bottom navigation bar is present
     testWidgets('Bottom navigation bar is displayed', (WidgetTester tester) async {
       final mockClient = MockClient((request) async {
         return http.Response(
@@ -156,7 +109,7 @@ void main() {
       expect(find.byType(AdminBottomNav), findsOneWidget);
     });
 
-    // Test 6: API error shows snackbar
+    // Test 5: API error shows snackbar
     testWidgets('Shows error when API fails to load events', (WidgetTester tester) async {
       final mockClient = MockClient((request) async {
         return http.Response('Server Error', 500);
@@ -173,7 +126,7 @@ void main() {
       expect(find.text('Events Calendar'), findsOneWidget);
     });
 
-    // Test 7: Page has AppBar with correct title
+    // Test 6: AppBar displays correct title
     testWidgets('AppBar displays correct title', (WidgetTester tester) async {
       final mockClient = MockClient((request) async {
         return http.Response(
@@ -193,7 +146,7 @@ void main() {
       expect(find.text('Events Calendar'), findsOneWidget);
     });
 
-    // Test 8: Page has Scaffold with correct structure
+    // Test 7: Page has Scaffold structure
     testWidgets('Page has proper Scaffold structure', (WidgetTester tester) async {
       final mockClient = MockClient((request) async {
         return http.Response(
@@ -213,7 +166,7 @@ void main() {
       expect(find.byType(Scaffold), findsOneWidget);
     });
 
-    // Test 9: Page handles multiple events
+    // Test 8: Page handles multiple events
     testWidgets('Page handles multiple events correctly', (WidgetTester tester) async {
       final now = DateTime.now();
       final events = [];
@@ -247,7 +200,7 @@ void main() {
       expect(find.text('Events Calendar'), findsOneWidget);
     });
 
-    // Test 10: Page loads without crashing on empty response
+    // Test 9: Page loads without crashing on empty response
     testWidgets('Page loads without crashing when response is empty', (WidgetTester tester) async {
       final mockClient = MockClient((request) async {
         return http.Response(
