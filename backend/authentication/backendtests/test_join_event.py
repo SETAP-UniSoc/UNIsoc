@@ -37,8 +37,8 @@ class JoinEventTests(APITestCase):
         self.event = Event.objects.create(
             society=self.society,
             title="Test Event",
-            start_time=timezone.now(),
-            end_time=timezone.now() + timedelta(hours=2),
+            start_time=timezone.now() + timedelta(hours=1),
+            end_time=timezone.now() + timedelta(hours=3),
             created_by=self.user,
             status="upcoming"
         )
