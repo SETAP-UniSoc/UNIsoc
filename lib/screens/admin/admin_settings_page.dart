@@ -111,7 +111,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print("📊 Notification data: $data");
+        print(" Notification data: $data");
 
         if (data.isNotEmpty) {
           setState(() {
@@ -141,8 +141,8 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
         }),
       );
 
-      print("📊 Update notification response: ${response.statusCode}");
-      print("📊 Response body: ${response.body}");
+      print(" Update notification response: ${response.statusCode}");
+      print(" Response body: ${response.body}");
 
       if (response.statusCode == 200) {
         setState(() {
@@ -165,7 +165,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
         );
       }
     } catch (e) {
-      print("❌ Error updating notification: $e");
+      print(" Error updating notification: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error updating notification settings")),
       );
