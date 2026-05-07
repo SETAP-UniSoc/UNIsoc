@@ -186,7 +186,9 @@ void main() {
         await _pumpLoginPage(tester);
 
         await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
-        await tester.pumpAndSettle();
+        // pump twice: first to process the tap, second to render the snackbar
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
 
         expect(find.text('Email and Password are required'), findsOneWidget);
       },
@@ -206,7 +208,8 @@ void main() {
           'AdminPass1!',
         );
         await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
 
         expect(find.text('Enter a valid email address'), findsOneWidget);
       },
@@ -226,7 +229,8 @@ void main() {
           'AdminPass1!',
         );
         await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
 
         expect(find.text('Please select a society'), findsOneWidget);
       },
