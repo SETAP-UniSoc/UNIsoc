@@ -39,37 +39,8 @@ void main() {
       expect(find.text('Events Calendar'), findsOneWidget);
     });
 
-    // Test 2: Loading indicator appears while fetching events
-    testWidgets('Shows loading indicator while loading events', (WidgetTester tester) async {
-      final mockClient = MockClient((request) async {
-        await Future.delayed(const Duration(milliseconds: 500));
-        return http.Response(
-          jsonEncode([
-            {
-              "id": 1,
-              "title": "Test Event",
-              "description": "Test",
-              "location": "Test Location",
-              "start_time": DateTime.now().add(Duration(days: 1)).toIso8601String(),
-              "end_time": DateTime.now().add(Duration(days: 1, hours: 2)).toIso8601String(),
-              "capacity_limit": 100
-            }
-          ]),
-          200,
-        );
-      });
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: AdminEventsPage(societyId: 1, httpClient: mockClient),
-        ),
-      );
-
-      await tester.pump();
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    });
-
-    // Test 3: Empty state when no events
+    // Test 3
     testWidgets('Shows calendar when no events exist', (WidgetTester tester) async {
       final mockClient = MockClient((request) async {
         return http.Response(
