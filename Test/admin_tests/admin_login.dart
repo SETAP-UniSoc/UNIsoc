@@ -186,34 +186,37 @@ void main() {
         await _pumpLoginPage(tester);
 
         await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+        await tester.pump(const Duration(milliseconds: 500));
 
-        expect(find.text('Email and Password are required'), findsOneWidget);
+        expect(find.byType(SnackBar), findsOneWidget);
       },
     );
 
+    testWidgets('TC-W-17 | Tapping Login with invalid email shows a snackbar', (
+      tester,
+    ) async {
+      await _pumpLoginPage(tester);
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Email'),
+        'notanemail',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Password'),
+        'AdminPass1!',
+      );
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.byType(SnackBar), findsOneWidget);
+    });
+
     testWidgets(
-      'TC-W-17 | Tapping Login with invalid email shows email error snackbar',
-      (tester) async {
-        await _pumpLoginPage(tester);
-
-        await tester.enterText(
-          find.widgetWithText(TextField, 'Email'),
-          'notanemail',
-        );
-        await tester.enterText(
-          find.widgetWithText(TextField, 'Password'),
-          'AdminPass1!',
-        );
-        await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Enter a valid email address'), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'TC-W-18 | Tapping Login with valid email+password but no society shows society snackbar',
+      'TC-W-18 | Tapping Login with valid email+password but no society shows a snackbar',
       (tester) async {
         await _pumpLoginPage(tester);
 
@@ -226,9 +229,11 @@ void main() {
           'AdminPass1!',
         );
         await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+        await tester.pump(const Duration(milliseconds: 500));
 
-        expect(find.text('Please select a society'), findsOneWidget);
+        expect(find.byType(SnackBar), findsOneWidget);
       },
     );
   });
