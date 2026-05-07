@@ -19,25 +19,35 @@ class SearchSocietyTests(APITestCase):
         return data
 
     def test_search_returns_matching_results(self):
-        response = self.client.get(self.url, {"query": "Club"})
+
+        response = self.client.get(
+            self.url,
+            {"q": "Club"}
+        )
+
         self.assertEqual(response.status_code, 200)
 
         data = self._extract_data(response)
 
-        # backend returns ALL (not filtered properly)
-        self.assertGreaterEqual(len(data), 2)
+        self.assertEqual(len(data), 2)
 
     def test_search_no_results(self):
-        response = self.client.get(self.url, {"query": "Nonexistent"})
+
+        response = self.client.get(
+            self.url,
+            {"q": "Nonexistent"}
+        )
+
         self.assertEqual(response.status_code, 200)
 
         data = self._extract_data(response)
 
-        # 🔥 FIX: backend does NOT filter → still returns all
-        self.assertEqual(len(data), 3)
+        self.assertEqual(len(data), 0)
 
     def test_search_empty_query_returns_all(self):
+
         response = self.client.get(self.url)
+
         self.assertEqual(response.status_code, 200)
 
         data = self._extract_data(response)
