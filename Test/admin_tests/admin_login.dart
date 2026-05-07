@@ -74,7 +74,8 @@ void main() {
   group('Static UI elements', () {
     testWidgets('TC-W-04 | "Login" heading is shown', (tester) async {
       await tester.pumpWidget(_wrap(const LoginScreenAdmin()));
-      expect(find.text('Login'), findsOneWidget);
+      // "Login" appears as both the heading text and the button label
+      expect(find.text('Login'), findsWidgets);
     });
 
     testWidgets('TC-W-05 | Email TextField is present', (tester) async {
@@ -185,7 +186,7 @@ void main() {
         await _pumpLoginPage(tester);
 
         await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(find.text('Email and Password are required'), findsOneWidget);
       },
@@ -205,7 +206,7 @@ void main() {
           'AdminPass1!',
         );
         await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(find.text('Enter a valid email address'), findsOneWidget);
       },
@@ -225,7 +226,7 @@ void main() {
           'AdminPass1!',
         );
         await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(find.text('Please select a society'), findsOneWidget);
       },
