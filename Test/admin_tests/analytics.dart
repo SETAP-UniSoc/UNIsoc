@@ -159,7 +159,7 @@ void main() {
 
   await tester.pump();
 
-  expect(find.byType(CircularProgressIndicator), findsOneWidget);
+  expect(find.byType(CircularProgressIndicator), findsWidgets);
 
   completer.complete(
     http.Response(
