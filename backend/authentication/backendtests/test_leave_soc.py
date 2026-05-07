@@ -57,3 +57,15 @@ class LeaveSocietyTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, 400)
+
+    def test_leave_nonexistent_society(self):
+
+        url = reverse("leave-society", args=[999])
+
+        response = self.client.post(
+            url,
+            {},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 404)
