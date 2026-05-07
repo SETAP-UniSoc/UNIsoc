@@ -332,78 +332,93 @@ void main() {
     });
 
     // Test 14: Bar chart with multiple events (3+ events)
-    testWidgets('Bar chart displays multiple event names', (WidgetTester tester) async {
-      final mockClient = MockClient((request) async {
-        return http.Response(
-          jsonEncode({
-            "labels": ["Week 1", "Week 2"],
-            "totals": [10, 20],
-            "live_count": 20,
-            "events_stats": [
-              {"title": "Football Match", "attendee_count": 10},
-              {"title": "Chess Tournament", "attendee_count": 5},
-              {"title": "Music Concert", "attendee_count": 8},
-              {"title": "Art Workshop", "attendee_count": 3}
-            ]
-          }),
-          200,
-        );
-      });
+    testWidgets('Bar chart displays multiple event names',
+    (WidgetTester tester) async {
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: AdminAnalyticsPage(httpClient: mockClient),
-        ),
-      );
+  final mockClient = MockClient((request) async {
+    return http.Response(
+      jsonEncode({
+        "labels": ["Week 1", "Week 2"],
+        "totals": [10, 20],
+        "live_count": 20,
+        "events_stats": [
+          {"title": "Football Match", "attendee_count": 10},
+          {"title": "Chess Tournament", "attendee_count": 5},
+          {"title": "Music Concert", "attendee_count": 8},
+          {"title": "Art Workshop", "attendee_count": 3}
+        ]
+      }),
+      200,
+    );
+  });
 
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+  await tester.pumpWidget(
+    MaterialApp(
+      home: AdminAnalyticsPage(httpClient: mockClient),
+    ),
+  );
 
-      expect(find.text('Football Match'), findsOneWidget);
-      expect(find.text('Chess Tournament'), findsOneWidget);
-      expect(find.text('Music Concert'), findsOneWidget);
-      expect(find.text('Art Workshop'), findsOneWidget);
-    });
+  await tester.pumpAndSettle();
+
+  expect(find.text('Football Match'), findsOneWidget);
+  expect(find.text('Chess Tournament'), findsOneWidget);
+
+  await tester.drag(
+    find.byType(ListView).last,
+    const Offset(-300, 0),
+  );
+
+  await tester.pumpAndSettle();
+
+  expect(find.text('Music Concert'), findsOneWidget);
+  expect(find.text('Art Workshop'), findsOneWidget);
+});
 
     // Test 15: Scrollable event list (simplified - just verify events load)
-    testWidgets('Event list loads multiple events', (WidgetTester tester) async {
-      final mockClient = MockClient((request) async {
-        final events = [];
-        for (int i = 1; i <= 10; i++) {
-          events.add({
-            "title": "Test Event $i",
-            "attendee_count": i * 2
-          });
-        }
-        
-        return http.Response(
-          jsonEncode({
-            "labels": ["Week 1", "Week 2"],
-            "totals": [10, 20],
-            "live_count": 20,
-            "events_stats": events
-          }),
-          200,
-        );
-      });
+   testWidgets('Event list loads multiple events',
+    (WidgetTester tester) async {
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: AdminAnalyticsPage(httpClient: mockClient),
-        ),
-      );
+  final mockClient = MockClient((request) async {
+    final events = List.generate(
+      10,
+      (i) => {
+        "title": "Test Event ${i + 1}",
+        "attendee_count": (i + 1) * 2
+      },
+    );
 
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+    return http.Response(
+      jsonEncode({
+        "labels": ["Week 1", "Week 2"],
+        "totals": [10, 20],
+        "live_count": 20,
+        "events_stats": events
+      }),
+      200,
+    );
+  });
 
-      // Verify that multiple events are displayed
-      expect(find.text('Test Event 1'), findsOneWidget);
-      expect(find.text('Test Event 2'), findsOneWidget);
-      expect(find.text('Test Event 3'), findsOneWidget);
-      expect(find.text('Test Event 4'), findsOneWidget);
-      expect(find.text('Test Event 5'), findsOneWidget);
-      
-      // Verify the page loaded successfully
-      expect(find.text('My Analytics'), findsOneWidget);
-    });
+  await tester.pumpWidget(
+    MaterialApp(
+      home: AdminAnalyticsPage(httpClient: mockClient),
+    ),
+  );
 
+  await tester.pumpAndSettle();
+
+  expect(find.text('My Analytics'), findsOneWidget);
+
+  expect(find.text('Test Event 1'), findsOneWidget);
+  expect(find.text('Test Event 2'), findsOneWidget);
+
+  await tester.drag(
+    find.byType(ListView).last,
+    const Offset(-1000, 0),
+  );
+
+  await tester.pumpAndSettle();
+
+  expect(find.text('Test Event 10'), findsOneWidget);
+});
   });
 }
