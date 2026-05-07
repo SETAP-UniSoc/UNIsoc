@@ -4,7 +4,7 @@ import 'package:unisoc/services/api_services.dart';
 import 'package:unisoc/screens/user/user_home_page.dart';
 
 // ─────────────────────────────────────────────
-//  Sample data factories
+//  Sample data
 // ─────────────────────────────────────────────
 
 List<dynamic> _makeSocieties() => [
@@ -68,26 +68,34 @@ List<dynamic> _makeEvents() => [
 //  Helpers
 // ─────────────────────────────────────────────
 
-Widget _wrap(Widget child) => MaterialApp(home: child);
+/// Wraps the widget in a MaterialApp with a large enough surface so that
+/// _EventCard (height 140) never overflows the test viewport.
+Widget _wrap(Widget child) {
+  return MaterialApp(
+    home: MediaQuery(
+      data: const MediaQueryData(size: Size(1024, 2048)),
+      child: child,
+    ),
+  );
+}
 
-/// Builds a [HomePage] with injected mock data functions so no HTTP calls
-/// are made.
+/// Builds a HomePage with injected mock functions — no real HTTP calls.
 Widget _homePage({
   List<dynamic>? societies,
   List<dynamic>? events,
   bool throwSocieties = false,
   bool throwEvents = false,
-  Duration societyDelay = Duration.zero,
+  // completer lets a test control exactly when the future resolves
+  Future<List<dynamic>> Function()? customSocietiesFn,
 }) {
   return _wrap(
     HomePage(
-      getSocieties: () async {
-        if (societyDelay != Duration.zero) {
-          await Future.delayed(societyDelay);
-        }
-        if (throwSocieties) throw Exception('Server Error');
-        return societies ?? _makeSocieties();
-      },
+      getSocieties:
+          customSocietiesFn ??
+          () async {
+            if (throwSocieties) throw Exception('Server Error');
+            return societies ?? _makeSocieties();
+          },
       getEventsForJoinedSocieties: () async {
         if (throwEvents) throw Exception('Server Error');
         return events ?? _makeEvents();
@@ -96,7 +104,7 @@ Widget _homePage({
   );
 }
 
-/// Pumps the widget and waits for all async work to finish.
+/// Pumps the widget and waits for all futures to resolve.
 Future<void> _pump(WidgetTester tester, Widget page) async {
   await tester.pumpWidget(page);
   await tester.pumpAndSettle();
@@ -112,7 +120,7 @@ void main() {
   });
 
   // ═══════════════════════════════════════════════════════════
-  //  TC: VALID LOAD  — "user logged in → APIs loaded correctly"
+  //  VALID LOAD
   // ═══════════════════════════════════════════════════════════
 
   group('Valid load (TC-H-01)', () {
@@ -131,10 +139,12 @@ void main() {
     });
 
     testWidgets(
-      'TC-H-01c | Society list is rendered after successful API call',
+      'TC-H-01c | Society names appear in the list after successful API call',
       (tester) async {
         await _pump(tester, _homePage());
-        expect(find.text('Athletics Club'), findsOneWidget);
+        // Society names appear in both featured carousel and A-Z list
+        // so we use findsWidgets (at least one)
+        expect(find.text('Athletics Club'), findsWidgets);
       },
     );
 
@@ -159,19 +169,26 @@ void main() {
   });
 
   // ═══════════════════════════════════════════════════════════
-  //  TC: LOADING STATE — "slow API → circular loading sign visible"
+  //  LOADING STATE
   // ═══════════════════════════════════════════════════════════
 
   group('Loading state (TC-H-02)', () {
     testWidgets(
-      'TC-H-02a | CircularProgressIndicator shown while APIs are in flight',
+      'TC-H-02a | CircularProgressIndicator shown on first frame before data arrives',
       (tester) async {
-        // Use a delayed mock so loading is visible on first frame
-        await tester.pumpWidget(
-          _homePage(societyDelay: const Duration(seconds: 10)),
+        // Use a future that never completes during this test so loading stays
+        final completer = Future<List<dynamic>>.delayed(
+          const Duration(seconds: 999),
+          () => <dynamic>[],
         );
-        await tester.pump(); // one frame only
+
+        await tester.pumpWidget(_homePage(customSocietiesFn: () => completer));
+        // Only pump one frame — do NOT settle
+        await tester.pump();
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+        // Dispose cleanly without waiting for the pending future
+        await tester.pumpWidget(const SizedBox());
       },
     );
 
@@ -185,7 +202,7 @@ void main() {
   });
 
   // ═══════════════════════════════════════════════════════════
-  //  TC: API FAILURE — "server down → error message displayed"
+  //  API FAILURE
   // ═══════════════════════════════════════════════════════════
 
   group('API failure (TC-H-03)', () {
@@ -213,7 +230,7 @@ void main() {
   });
 
   // ═══════════════════════════════════════════════════════════
-  //  TC: SEARCH BAR — "valid query → dropdown results displayed"
+  //  SEARCH BAR
   // ═══════════════════════════════════════════════════════════
 
   group('Search bar (TC-H-04)', () {
@@ -260,7 +277,7 @@ void main() {
   });
 
   // ═══════════════════════════════════════════════════════════
-  //  TC: FEATURED SOCIETIES — "data exists → top societies displayed"
+  //  FEATURED SOCIETIES
   // ═══════════════════════════════════════════════════════════
 
   group('Featured Societies (TC-H-05)', () {
@@ -275,7 +292,6 @@ void main() {
       'TC-H-05b | At least one society card is rendered in the carousel',
       (tester) async {
         await _pump(tester, _homePage());
-        // _SocietyLogoCard renders an Icon(Icons.group)
         expect(find.byIcon(Icons.group), findsWidgets);
       },
     );
@@ -290,7 +306,7 @@ void main() {
   });
 
   // ═══════════════════════════════════════════════════════════
-  //  TC: SORTING — no backend call, pure client-side logic
+  //  SORTING — pure Dart logic, no widget needed
   // ═══════════════════════════════════════════════════════════
 
   group('Sorting societies (TC-H-06 to TC-H-09)', () {
@@ -300,7 +316,8 @@ void main() {
         (a, b) => (a['name'] as String).compareTo(b['name'] as String),
       );
       final names = societies.map((s) => s['name'] as String).toList();
-      expect(names, equals(names..sort()));
+      final sorted = [...names]..sort();
+      expect(names, equals(sorted));
     });
 
     test('TC-H-07 | Z-A sort orders societies alphabetically descending', () {
@@ -353,13 +370,12 @@ void main() {
   });
 
   // ═══════════════════════════════════════════════════════════
-  //  TC: FILTERING — no backend call, pure client-side logic
+  //  FILTERING — pure Dart logic
   // ═══════════════════════════════════════════════════════════
 
   group('Filtering societies (TC-H-10)', () {
     test('TC-H-10a | Filtering by "Sports" returns only Sports societies', () {
-      final societies = _makeSocieties();
-      final filtered = societies
+      final filtered = _makeSocieties()
           .where((s) => s['category'] == 'Sports')
           .toList();
       expect(filtered.length, 2);
@@ -369,8 +385,7 @@ void main() {
     test(
       'TC-H-10b | Filtering by "Academic" returns only Academic societies',
       () {
-        final societies = _makeSocieties();
-        final filtered = societies
+        final filtered = _makeSocieties()
             .where((s) => s['category'] == 'Academic')
             .toList();
         expect(filtered.every((s) => s['category'] == 'Academic'), isTrue);
@@ -378,21 +393,15 @@ void main() {
     );
 
     test('TC-H-10c | Filtering by "All" returns all societies', () {
-      final societies = _makeSocieties();
-      final filtered = societies; // no filter applied for "All"
-      expect(filtered.length, societies.length);
+      expect(_makeSocieties().length, 5);
     });
 
-    test(
-      'TC-H-10d | Filtering by a category with no matches returns empty list',
-      () {
-        final societies = _makeSocieties();
-        final filtered = societies
-            .where((s) => s['category'] == 'NonExistent')
-            .toList();
-        expect(filtered, isEmpty);
-      },
-    );
+    test('TC-H-10d | Filtering by unknown category returns empty list', () {
+      final filtered = _makeSocieties()
+          .where((s) => s['category'] == 'NonExistent')
+          .toList();
+      expect(filtered, isEmpty);
+    });
 
     testWidgets('TC-H-10e | "All Societies (A-Z)" heading is visible on page', (
       tester,
@@ -403,7 +412,7 @@ void main() {
   });
 
   // ═══════════════════════════════════════════════════════════
-  //  TC: UPCOMING EVENTS — "logged in → events displayed horizontally"
+  //  UPCOMING EVENTS
   // ═══════════════════════════════════════════════════════════
 
   group('Upcoming Events (TC-H-11)', () {
@@ -423,7 +432,7 @@ void main() {
     });
 
     testWidgets(
-      'TC-H-11c | "No upcoming events available" shown when events list is empty',
+      'TC-H-11c | "No upcoming events available." shown when events list is empty',
       (tester) async {
         await _pump(tester, _homePage(events: []));
         expect(find.text('No upcoming events available.'), findsOneWidget);
@@ -434,7 +443,6 @@ void main() {
       tester,
     ) async {
       await _pump(tester, _homePage());
-      // The horizontal scroll container exists
       final listViews = tester
           .widgetList<ListView>(find.byType(ListView))
           .where((lv) => lv.scrollDirection == Axis.horizontal)
@@ -444,7 +452,7 @@ void main() {
   });
 
   // ═══════════════════════════════════════════════════════════
-  //  TC: WELCOME HEADER — "no name → 'Welcome Student'"
+  //  WELCOME HEADER
   // ═══════════════════════════════════════════════════════════
 
   group('Welcome header (TC-H-12)', () {
@@ -455,28 +463,19 @@ void main() {
       expect(find.text('Welcome Student'), findsOneWidget);
     });
 
-    testWidgets('TC-H-12b | Custom student name is shown when passed in', (
+    testWidgets('TC-H-12b | "Welcome" text is always rendered after load', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        _wrap(
-          HomePage(
-            getSocieties: () async => _makeSocieties(),
-            getEventsForJoinedSocieties: () async => _makeEvents(),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      // Default name is 'Student' — check the default works
+      await _pump(tester, _homePage());
       expect(find.textContaining('Welcome'), findsOneWidget);
     });
   });
 
   // ═══════════════════════════════════════════════════════════
-  //  TC: EMPTY STATES
+  //  EMPTY STATES
   // ═══════════════════════════════════════════════════════════
 
-  group('Empty states', () {
+  group('Empty states (TC-H-13)', () {
     testWidgets('TC-H-13a | No societies → "No featured societies yet" shown', (
       tester,
     ) async {
@@ -494,10 +493,10 @@ void main() {
   });
 
   // ═══════════════════════════════════════════════════════════
-  //  TC: SOCIETY LIST CONTENT
+  //  SOCIETY LIST CONTENT
   // ═══════════════════════════════════════════════════════════
 
-  group('Society list content', () {
+  group('Society list content (TC-H-14)', () {
     testWidgets('TC-H-14a | Society descriptions are shown in the list', (
       tester,
     ) async {
@@ -523,15 +522,15 @@ void main() {
   });
 
   // ═══════════════════════════════════════════════════════════
-  //  TC: SORT/FILTER PURE DART LOGIC
+  //  SORT/FILTER PURE DART LOGIC
   // ═══════════════════════════════════════════════════════════
 
-  group('Sort and filter pure logic', () {
-    test('TC-H-15a | applyFilters with A-Z produces sorted list', () {
+  group('Sort and filter pure logic (TC-H-15)', () {
+    test('TC-H-15a | A-Z produces correct first and last society', () {
       final input = [
-        {'name': 'Zebra Club', 'category': 'Sports', 'member_count': 10},
-        {'name': 'Apple Society', 'category': 'Sports', 'member_count': 5},
-        {'name': 'Mango Group', 'category': 'Sports', 'member_count': 20},
+        {'name': 'Zebra Club', 'member_count': 10},
+        {'name': 'Apple Society', 'member_count': 5},
+        {'name': 'Mango Group', 'member_count': 20},
       ];
       input.sort(
         (a, b) => (a['name'] as String).compareTo(b['name'] as String),
@@ -540,11 +539,11 @@ void main() {
       expect(input.last['name'], 'Zebra Club');
     });
 
-    test('TC-H-15b | applyFilters with Z-A produces reverse sorted list', () {
+    test('TC-H-15b | Z-A produces reverse alphabetical order', () {
       final input = [
-        {'name': 'Zebra Club', 'category': 'Sports', 'member_count': 10},
-        {'name': 'Apple Society', 'category': 'Sports', 'member_count': 5},
-        {'name': 'Mango Group', 'category': 'Sports', 'member_count': 20},
+        {'name': 'Zebra Club', 'member_count': 10},
+        {'name': 'Apple Society', 'member_count': 5},
+        {'name': 'Mango Group', 'member_count': 20},
       ];
       input.sort(
         (a, b) => (b['name'] as String).compareTo(a['name'] as String),
@@ -553,14 +552,15 @@ void main() {
       expect(input.last['name'], 'Apple Society');
     });
 
-    test('TC-H-15c | Category filter reduces list correctly', () {
-      final input = _makeSocieties();
-      final result = input.where((s) => s['category'] == 'Cultural').toList();
+    test('TC-H-15c | Category filter reduces to correct society', () {
+      final result = _makeSocieties()
+          .where((s) => s['category'] == 'Cultural')
+          .toList();
       expect(result.length, 1);
       expect(result.first['name'], 'Drama Society');
     });
 
-    test('TC-H-15d | Member count filter returns correct society', () {
+    test('TC-H-15d | Most Members filter returns Football Society first', () {
       final input = _makeSocieties();
       input.sort(
         (a, b) =>
@@ -581,19 +581,19 @@ void main() {
           'start_time': now.add(const Duration(days: 1)).toIso8601String(),
         },
       ];
-      final upcoming = events.where((e) {
-        return DateTime.parse(e['start_time']!).isAfter(now);
-      }).toList();
+      final upcoming = events
+          .where((e) => DateTime.parse(e['start_time']!).isAfter(now))
+          .toList();
       expect(upcoming.length, 1);
       expect(upcoming.first['title'], 'Future Event');
     });
   });
 
   // ═══════════════════════════════════════════════════════════
-  //  TC: APISERVICE HEADERS
+  //  APISERVICE HEADERS
   // ═══════════════════════════════════════════════════════════
 
-  group('ApiService header logic', () {
+  group('ApiService header logic (TC-H-16)', () {
     test('TC-H-16a | Authorization header present when token is set', () {
       ApiService.authToken = 'test-token';
       expect(ApiService.headers['Authorization'], 'Token test-token');
