@@ -157,3 +157,64 @@ class LoginTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["role"], "admin")
         self.assertEqual(response.data["society_name"], "Chess Society")
+
+    
+    def test_login_email_case_insensitive(self):
+
+        response = self.client.post(reverse("login"), {
+            "email": "TEST@UNI.AC.UK",
+            "password": "Password123!"
+        })
+
+        self.assertEqual(response.status_code, 200)
+
+
+    def test_login_up_number_auto_adds_prefix(self):
+
+        self.user.up_number = "up1234567"
+        self.user.save()
+
+        response = self.client.post(reverse("login"), {
+            "up_number": "1234567",
+            "password": "Password123!"
+        })
+
+        self.assertEqual(response.status_code, 200)
+
+
+    def test_admin_without_society_cannot_login(self):
+
+        admin_user = User.objects.create_user(
+            email="nosociety@uni.ac.uk",
+            password="Password123!",
+            role="admin"
+        )
+
+        response = self.client.post(reverse("login"), {
+            "email": "nosociety@uni.ac.uk",
+            "password": "Password123!",
+            "society_id": 1
+        })
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data["error"],
+            "Admin has no assigned society"
+        )
+
+
+    def test_login_returns_user_details(self):
+
+        self.user.up_number = "up1234567"
+        self.user.save()
+
+        response = self.client.post(reverse("login"), {
+            "email": "test@uni.ac.uk",
+            "password": "Password123!"
+        })
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn("email", response.data)
+        self.assertIn("role", response.data)
+        self.assertIn("up_number", response.data)
