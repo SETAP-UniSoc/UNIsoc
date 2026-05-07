@@ -59,7 +59,7 @@ final response = await client.get(
   headers: ApiService.headers,
 );
 
-      print("📡 Status: ${response.statusCode}");
+      print(" Status: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -76,8 +76,8 @@ final response = await client.get(
           eventValues = eventsStats.map<double>((e) => (e["attendee_count"] as num).toDouble()).toList();
           eventNames = eventsStats.map<String>((e) => e["title"].toString()).toList();
           
-          print("✅ eventValues (${eventValues.length}): $eventValues");
-          print("✅ eventNames (${eventNames.length}): $eventNames");
+          print(" eventValues (${eventValues.length}): $eventValues");
+          print(" eventNames (${eventNames.length}): $eventNames");
           
           if (values.isNotEmpty) {
             values[values.length - 1] = liveCount.toDouble();
@@ -85,7 +85,7 @@ final response = await client.get(
         });
       }
     } catch (e) {
-      print("❌ Analytics error: $e");
+      print(" Analytics error: $e");
     } finally {
       setState(() => isLoading = false);
     }
@@ -124,9 +124,9 @@ final response = await client.get(
         onLayout: (format) async => pdf.save(),
       );
       
-      print("✅ PDF exported successfully");
+      print(" Analytics PDF exported successfully");
     } catch (e) {
-      print("❌ PDF export error: $e");
+      print(" Analytics PDF export error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("PDF export failed: $e")),
       );
