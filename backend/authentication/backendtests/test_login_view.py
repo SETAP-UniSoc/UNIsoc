@@ -218,3 +218,4 @@ class LoginTests(APITestCase):
         self.assertIn("email", response.data)
         self.assertIn("role", response.data)
         self.assertIn("up_number", response.data)
+
