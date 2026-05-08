@@ -31,15 +31,15 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
               case _MenuAction.mySocs:
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => MySocietyPage(mySocietiesFetcher: () async => [],),
-                  ),
+                  MaterialPageRoute(builder: (context) => MySocietyPage()),
                 );
                 break;
               case _MenuAction.settings:
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const UserSettingsPage()),
+                  MaterialPageRoute(
+                    builder: (context) => const UserSettingsPage(),
+                  ),
                 );
                 break;
               case _MenuAction.myAccount:
