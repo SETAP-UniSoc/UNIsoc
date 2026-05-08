@@ -237,6 +237,9 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
                 final utcStartDT = localStartDT.toUtc();
                 final utcEndDT = localEndDT.toUtc();
 
+                  Navigator.pop(context);
+                
+
                 await _createEvent(
                   title: title.text,
                   description: desc.text,
@@ -245,8 +248,6 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
                   endTime: utcEndDT.toIso8601String(),
                   capacity: cap.text.isEmpty ? null : int.tryParse(cap.text),
                 );
-
-                Navigator.pop(context);
               },
               child: const Text("Create"),
             ),
@@ -324,11 +325,11 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     );
 
     if (res.statusCode == 201) {
-      loadEvents();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Event created successfully!")),
-      );
-    } else {
+  await loadEvents();
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text("Event created successfully!")),
+  );
+} else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Failed to create event: ${res.statusCode}")),
       );
@@ -344,7 +345,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     );
 
     if (res.statusCode == 200) {
-      loadEvents();
+      await loadEvents();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Event updated successfully!")),
       );
@@ -359,7 +360,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     );
 
     if (res.statusCode == 204) {
-      loadEvents();
+      await loadEvents();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Event deleted successfully!")),
       );
