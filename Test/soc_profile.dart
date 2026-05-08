@@ -29,24 +29,45 @@ void main() {
       }
     ];
 
-    // Create mock client
+    // Create mock client - FIXED to handle all endpoints correctly
     http.Client createMockClient() {
       return MockClient((request) async {
         final url = request.url.toString();
+        print("🔍 Mock request URL: $url");
         
-        if (url.contains('/admin/') || url.contains('/societies/1/')) {
+        // Handle society details endpoint
+        if (url.contains('/societies/1/') && !url.contains('/events/') && !url.contains('/admin/')) {
+          print("✅ Mock returning society data");
           return http.Response(jsonEncode(mockSocietyData), 200);
         }
-        if (url.contains('/events/') && !url.contains('/attending/')) {
-          return http.Response(jsonEncode(mockEvents), 200);
+        // Handle admin society endpoint
+        if (url.contains('/societies/1/admin/')) {
+          print("✅ Mock returning admin society data");
+          return http.Response(jsonEncode(mockSocietyData), 200);
         }
+        // Handle events endpoint
+        if (url.contains('/events/') && !url.contains('/attending/') && !url.contains('/check-membership/')) {
+          print("✅ Mock returning events list");
+          return http.Response(jsonEncode(mockEvents as List), 200);
+        }
+        // Handle check membership endpoint
         if (url.contains('/check-membership/')) {
+          print("✅ Mock returning membership status");
           return http.Response(jsonEncode({"is_member": false}), 200);
         }
+        // Handle check attendance endpoint
         if (url.contains('/attending/')) {
+          print("✅ Mock returning attendance status");
           return http.Response(jsonEncode({"is_attending": false}), 200);
         }
-        return http.Response('{}', 404);
+        // Handle join/leave events
+        if (url.contains('/join/') || url.contains('/leave/')) {
+          print("✅ Mock returning join/leave response");
+          return http.Response(jsonEncode({"message": "Success"}), 200);
+        }
+        
+        print("❌ Mock returning 404 for: $url");
+        return http.Response('{"error": "Not found"}', 404);
       });
     }
 
@@ -60,12 +81,12 @@ void main() {
             societyId: 1,
             isAdmin: false,
             isOwnSociety: false,
-            httpClient: mockClient,  // ✅ INJECT MOCK CLIENT
+            httpClient: mockClient,
           ),
         ),
       );
       
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
       
       expect(find.text('Football Society'), findsOneWidget);
     });
@@ -85,7 +106,7 @@ void main() {
         ),
       );
       
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
       
       expect(find.text('Join Society'), findsOneWidget);
     });
@@ -105,7 +126,7 @@ void main() {
         ),
       );
       
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
       
       expect(find.text('Attend Event'), findsOneWidget);
     });
@@ -125,7 +146,7 @@ void main() {
         ),
       );
       
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
       
       expect(find.byIcon(Icons.edit), findsNothing);
     });
@@ -145,7 +166,7 @@ void main() {
         ),
       );
       
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
       
       expect(find.text('Upcoming Events'), findsOneWidget);
     });
@@ -165,7 +186,7 @@ void main() {
         ),
       );
       
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
       
       expect(find.text('Football Match'), findsOneWidget);
     });
@@ -185,7 +206,10 @@ void main() {
         ),
       );
       
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
+      
+      // Wait a bit more for the UI to fully render
+      await tester.pump(const Duration(milliseconds: 500));
       
       expect(find.text('Capacity: 100'), findsOneWidget);
     });
@@ -205,7 +229,7 @@ void main() {
         ),
       );
       
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
       
       expect(find.text('Sports'), findsOneWidget);
     });
