@@ -588,32 +588,35 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                                                 ],
                                               ),
                                               if (event["capacity_limit"] != null) ...[
-                                                const SizedBox(height: 8),
-                                                Row(
-                                                  children: [
-                                                    const Icon(Icons.people, size: 16, color: Color(0xFF9CA3AF)),
-                                                    const SizedBox(width: 6),
-                                                    Text(
-                                                      "Capacity: ${event["capacity_limit"]}",
-                                                      style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
-                                                    ),
-                                                    const Spacer(),
-                                                    Text(
-                                                      "${event["attendee_count"] ?? 0} / ${event["capacity_limit"]}",
-                                                      style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 4),
-                                                LinearProgressIndicator(
-                                                  value: (event["attendee_count"] ?? 0) / event["capacity_limit"],
-                                                  backgroundColor: Colors.grey.shade200,
-                                                  color: (event["attendee_count"] ?? 0) >= event["capacity_limit"] 
-                                                      ? Colors.red : const Color(0xFF10B981),
-                                                  minHeight: 4,
-                                                  borderRadius: BorderRadius.circular(2),
-                                                ),
-                                              ],
+  const SizedBox(height: 8),
+  Row(
+    children: [
+      const Icon(Icons.people, size: 16, color: Color(0xFF9CA3AF)),
+      const SizedBox(width: 6),
+      Expanded(
+        child: Text(
+          "Capacity: ${event["capacity_limit"]}",
+          style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      const SizedBox(width: 8),
+      Text(
+        "${event["attendee_count"] ?? 0} / ${event["capacity_limit"]}",
+        style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+      ),
+    ],
+  ),
+  const SizedBox(height: 4),
+  LinearProgressIndicator(
+    value: (event["attendee_count"] ?? 0) / event["capacity_limit"],
+    backgroundColor: Colors.grey.shade200,
+    color: (event["attendee_count"] ?? 0) >= event["capacity_limit"] 
+        ? Colors.red : const Color(0xFF10B981),
+    minHeight: 4,
+    borderRadius: BorderRadius.circular(2),
+  ),
+],
                                               const SizedBox(height: 16),
                                               if (!widget.isAdmin && !isPast)
                                                 SizedBox(
