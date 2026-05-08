@@ -6,7 +6,6 @@ import 'user_society_page.dart'; //importing user society page to be used as a b
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:carousel_slider/carousel_slider.dart';
 
 class HomePage extends StatelessWidget {
   final Future<List<dynamic>> Function()? getSocieties;
