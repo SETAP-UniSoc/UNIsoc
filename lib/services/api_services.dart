@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = "http://10.128.4.160:8000/api";
+  static const String baseUrl = "http://10.128.4.63:8000/api";
   static ApiService instance = ApiService();
 
   static String? authToken;
-  static int? societyId; // Admin's society ID
+  static int? societyId; 
   static String? societyName; // Admin's society name
   static String? adminName; // Admin's personal name
   static Set<int> joinedSocieties = {};

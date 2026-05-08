@@ -747,19 +747,19 @@ Widget _buildEventsSection() {
                 items: events.map((event) {
                   final startTime = DateTime.parse(event["start_time"]).toLocal();
                   
-                  // ✅ SAFE NULL CHECK - Get society_id safely
+                  // Get society_id safely
                   final int? societyIdFromEvent = event["society_id"] as int?;
                   
-                  // ✅ Check if this event belongs to admin's own society
+                  // Check if this event belongs to admin's own society
                   final bool isOwnSociety = ApiService.societyId != null && 
                       societyIdFromEvent != null &&
                       societyIdFromEvent == ApiService.societyId;
 
                   return GestureDetector(
                     onTap: () {
-                      // Guard against null society_id
+                      
                       if (societyIdFromEvent == null) {
-                        print("⚠️ Event has no society_id: ${event["title"]}");
+                        print("Event has no society_id: ${event["title"]}");
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text("Cannot open: missing society information")),
                         );
@@ -771,8 +771,8 @@ Widget _buildEventsSection() {
                         MaterialPageRoute(
                           builder: (_) => SocietyProfilePage(
                             societyId: societyIdFromEvent,
-                            isAdmin: true,  // ✅ Always true for admin homepage
-                            isOwnSociety: isOwnSociety,  // ✅ Pass the flag
+                            isAdmin: true,  //  Always true for admin homepage
+                            isOwnSociety: isOwnSociety,  //  Pass the flag for admin's own event
                           ),
                         ),
                       );

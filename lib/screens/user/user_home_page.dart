@@ -45,7 +45,7 @@ class HomeHeader extends StatefulWidget {
 
   const HomeHeader({
     super.key,
-    this.studentName = 'Student', // later pass the real name
+    this.studentName = 'Student', 
     this.getSocieties,
     this.getEventsForJoinedSocieties,
   });
@@ -411,7 +411,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.only(left: 30),
+                                    padding: const EdgeInsets.only(left: 20),
                                     child: Row(
                                       children: [
                                         // Sort by dropdown

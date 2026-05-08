@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_services.dart';
-import 'user/user_society_page.dart'; // Correct import for UserSocietyPage
+import 'user/user_society_page.dart'; // 
 
 class MySocietyPage extends StatefulWidget {
   final Future<List> Function()? mySocietiesFetcher;

@@ -16,7 +16,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
   List<Map<String, dynamic>> _myEvents = [];
   bool _isLoading = true;
   String? _errorMessage;
-  bool _isMounted = true; // ✅ ADDED: Track if widget is mounted
+  bool _isMounted = true; 
 
   @override
   void initState() {
@@ -26,12 +26,12 @@ class _MyEventsPageState extends State<MyEventsPage> {
 
   @override
   void dispose() {
-    _isMounted = false; // ✅ ADDED: Set to false when disposed
+    _isMounted = false; // 
     super.dispose();
   }
 
   Future<void> _loadMyAttendingEvents() async {
-    // ✅ ADDED: Check if widget is still mounted
+    
     if (!_isMounted) return;
 
     setState(() {
@@ -49,7 +49,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
           headers: ApiService.headers,
         );
 
-        // ✅ ADDED: Check if widget is still mounted
+
         if (!_isMounted) return;
 
         if (eventsResponse.statusCode == 200) {
@@ -63,7 +63,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
               headers: ApiService.headers,
             );
 
-            // ✅ ADDED: Check if widget is still mounted
+            
             if (!_isMounted) return;
 
             if (attendanceResponse.statusCode == 200) {
@@ -82,7 +82,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
             }
           }
 
-          // ✅ ADDED: Check if widget is still mounted
+         
           if (!_isMounted) return;
 
           setState(() {
@@ -90,7 +90,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
             _isLoading = false;
           });
         } else {
-          // ✅ ADDED: Check if widget is still mounted
+         
           if (!_isMounted) return;
 
           setState(() {
@@ -99,13 +99,13 @@ class _MyEventsPageState extends State<MyEventsPage> {
           });
         }
       } else {
-        // Load all attending events from all societies (original logic)
+        
         final societiesResponse = await http.get(
           Uri.parse("${ApiService.baseUrl}/societies/"),
           headers: ApiService.headers,
         );
 
-        // ✅ ADDED: Check if widget is still mounted
+        
         if (!_isMounted) return;
 
         if (societiesResponse.statusCode != 200) {
@@ -124,7 +124,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
             headers: ApiService.headers,
           );
 
-          // ✅ ADDED: Check if widget is still mounted
+          
           if (!_isMounted) return;
 
           if (eventsResponse.statusCode == 200) {
@@ -137,7 +137,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
                 headers: ApiService.headers,
               );
 
-              // ✅ ADDED: Check if widget is still mounted
+              
               if (!_isMounted) return;
 
               if (attendanceResponse.statusCode == 200) {
@@ -166,7 +166,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
           return aTime.compareTo(bTime);
         });
 
-        // ✅ ADDED: Check if widget is still mounted
+        
         if (!_isMounted) return;
 
         setState(() {
@@ -175,7 +175,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
         });
       }
     } catch (e) {
-      // ✅ ADDED: Check if widget is still mounted
+      
       if (!_isMounted) return;
 
       setState(() {
@@ -212,7 +212,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
         headers: ApiService.headers,
       );
 
-      // ✅ ADDED: Check if widget is still mounted
+      
       if (!_isMounted) return;
 
       if (response.statusCode == 200) {
@@ -228,7 +228,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
         );
       } else {
         final error = jsonDecode(response.body);
-        // ✅ ADDED: Check if widget is still mounted
+        
         if (!_isMounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -239,7 +239,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
         );
       }
     } catch (e) {
-      // ✅ ADDED: Check if widget is still mounted
+      
       if (!_isMounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -363,7 +363,7 @@ class _MyEventsPageState extends State<MyEventsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Society Header (if showing from all societies)
+                      // Society Header 
                       if (event.containsKey("society_name"))
                         Container(
                           padding: const EdgeInsets.all(16),

@@ -11,12 +11,14 @@ class SocietyProfilePage extends StatefulWidget {
   final int societyId;
   final bool isAdmin;
   final bool isOwnSociety;
+  final http.Client? httpClient;  // ✅ ADDED
 
   const SocietyProfilePage({
     super.key,
     required this.societyId,
     required this.isAdmin,
     this.isOwnSociety = false,
+    this.httpClient,  // ✅ ADDED
   });
 
   @override
@@ -69,7 +71,8 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         : "${ApiService.baseUrl}/societies/${widget.societyId}/";
 
     try {
-      final response = await http.get(
+      final client = widget.httpClient ?? http.Client();  // ✅ UPDATED
+      final response = await client.get(
         Uri.parse(endpoint),
         headers: ApiService.headers,
       );
@@ -87,7 +90,8 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
 
   Future<void> loadEvents() async {
     try {
-      final response = await http.get(
+      final client = widget.httpClient ?? http.Client();  // ✅ UPDATED
+      final response = await client.get(
         Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
         headers: ApiService.headers,
       );
@@ -115,7 +119,8 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
 
   Future<void> checkEventAttendance(int eventId) async {
     try {
-      final response = await http.get(
+      final client = widget.httpClient ?? http.Client();  // ✅ UPDATED
+      final response = await client.get(
         Uri.parse("${ApiService.baseUrl}/events/$eventId/attending/"),
         headers: ApiService.headers,
       );
@@ -137,7 +142,8 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         : "/events/$eventId/join/";
 
     try {
-      final response = await http.post(
+      final client = widget.httpClient ?? http.Client();  // ✅ UPDATED
+      final response = await client.post(
         Uri.parse("${ApiService.baseUrl}$endpoint"),
         headers: ApiService.headers,
       );
@@ -178,7 +184,8 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   Future<void> saveDescription() async {
     try {
       if (descController.text != societyData["description"]) {
-        final response = await http.patch(
+        final client = widget.httpClient ?? http.Client();  // ✅ UPDATED
+        final response = await client.patch(
           Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/admin/"),
           headers: ApiService.headers,
           body: jsonEncode({"description": descController.text}),
@@ -209,7 +216,8 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
 
   Future<void> checkMembership() async {
     try {
-      final response = await http.get(
+      final client = widget.httpClient ?? http.Client();  // ✅ UPDATED
+      final response = await client.get(
         Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/check-membership/"),
         headers: ApiService.headers,
       );
@@ -228,7 +236,8 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         : "/society/${widget.societyId}/join/";
 
     try {
-      final response = await http.post(
+      final client = widget.httpClient ?? http.Client();  // ✅ UPDATED
+      final response = await client.post(
         Uri.parse("${ApiService.baseUrl}$endpoint"),
         headers: ApiService.headers,
       );
@@ -584,27 +593,30 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
                                                   children: [
                                                     const Icon(Icons.people, size: 16, color: Color(0xFF9CA3AF)),
                                                     const SizedBox(width: 6),
-                                                    Text(
-                                                      "Capacity: ${event["capacity_limit"]}",
-                                                      style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
-                                                    ),
-                                                    const Spacer(),
-                                                    Text(
-                                                      "${event["attendee_count"] ?? 0} / ${event["capacity_limit"]}",
-                                                      style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 4),
-                                                LinearProgressIndicator(
-                                                  value: (event["attendee_count"] ?? 0) / event["capacity_limit"],
-                                                  backgroundColor: Colors.grey.shade200,
-                                                  color: (event["attendee_count"] ?? 0) >= event["capacity_limit"] 
-                                                      ? Colors.red : const Color(0xFF10B981),
-                                                  minHeight: 4,
-                                                  borderRadius: BorderRadius.circular(2),
-                                                ),
-                                              ],
+                                                    Expanded(
+                                                      child: Text(
+                                                        "Capacity: ${event["capacity_limit"]}",
+                                                        style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                                                        overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                        ),
+                                                        const SizedBox(width: 8),
+                                                        Text(
+                                                          "${event["attendee_count"] ?? 0} / ${event["capacity_limit"]}",
+                                                          style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                                                          )
+                                                          ],
+                                                          ),
+                                                          const SizedBox(height: 4),
+                                                          LinearProgressIndicator(
+                                                            value: (event["attendee_count"] ?? 0) / event["capacity_limit"],
+                                                            backgroundColor: Colors.grey.shade200,
+                                                            color: (event["attendee_count"] ?? 0) >= event["capacity_limit"] 
+                                                            ? Colors.red : const Color(0xFF10B981),
+                                                            minHeight: 4,
+                                                            borderRadius: BorderRadius.circular(2),
+                                                            ),
+                                                            ],
                                               const SizedBox(height: 16),
                                               if (!widget.isAdmin && !isPast)
                                                 SizedBox(

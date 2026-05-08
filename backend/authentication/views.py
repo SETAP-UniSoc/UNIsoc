@@ -96,6 +96,8 @@ class DeleteEventView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = EventSerializer
     lookup_field = 'id'
+    lookup_url_kwarg = 'event_id'
+
 
     def get_queryset(self):
         
