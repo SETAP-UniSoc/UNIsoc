@@ -30,4 +30,4 @@ def send_join_event_email(user_email, event_title, society_name, start_time, loc
     
     )
 
-    print("✅ EMAIL SENT")
+    print(" EMAIL SENT")
