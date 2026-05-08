@@ -11,6 +11,8 @@ class MyAccountPage extends StatefulWidget {
 
 class _MyAccountPageState extends State<MyAccountPage> {
   late final TextEditingController _firstNameController;
+  late final TextEditingController _upNumberController;
+  late final TextEditingController _passwordController;
 
   @override
   void initState() {
@@ -18,11 +20,15 @@ class _MyAccountPageState extends State<MyAccountPage> {
     _firstNameController = TextEditingController(
       text: UserProfileState.firstName.value,
     );
+    _upNumberController = TextEditingController(text: UserProfileState.upNumber);
+    _passwordController = TextEditingController(text: UserProfileState.password);
   }
 
   @override
   void dispose() {
     _firstNameController.dispose();
+    _upNumberController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -56,6 +62,70 @@ class _MyAccountPageState extends State<MyAccountPage> {
             TextField(
               controller: _firstNameController,
               onChanged: UserProfileState.setFirstName,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.grey[100],
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+              ),
+            ),
+            // UP Number (from last login)
+            Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 8),
+              child: Text(
+                'UP Number (from login)',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ),
+            TextField(
+              controller: _upNumberController,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.grey[100],
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+              ),
+            ),
+
+            // Password (from last login) - shown as plain text to match exactly what was typed
+            Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 8),
+              child: Text(
+                'Password (from login)',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ),
+            TextField(
+              controller: _passwordController,
+              obscureText: false,
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.grey[100],
