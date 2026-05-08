@@ -11,14 +11,14 @@ class SocietyProfilePage extends StatefulWidget {
   final int societyId;
   final bool isAdmin;
   final bool isOwnSociety;
-  final http.Client? httpClient;  // ✅ ADDED
+  final http.Client? httpClient;  
 
   const SocietyProfilePage({
     super.key,
     required this.societyId,
     required this.isAdmin,
     this.isOwnSociety = false,
-    this.httpClient,  // ✅ ADDED
+    this.httpClient,  // for testing
   });
 
   @override
@@ -71,7 +71,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         : "${ApiService.baseUrl}/societies/${widget.societyId}/";
 
     try {
-      final client = widget.httpClient ?? http.Client();  // ✅ UPDATED
+      final client = widget.httpClient ?? http.Client();  
       final response = await client.get(
         Uri.parse(endpoint),
         headers: ApiService.headers,
@@ -87,10 +87,10 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
       print("Error loading society: $e");
     }
   }
-
+// Loads events and checks attendance status for each event if user is not admin
   Future<void> loadEvents() async {
     try {
-      final client = widget.httpClient ?? http.Client();  // ✅ UPDATED
+      final client = widget.httpClient ?? http.Client(); 
       final response = await client.get(
         Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/events/"),
         headers: ApiService.headers,
@@ -117,9 +117,10 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
     }
   }
 
+//checks if the user is attending the event and updates the attendingStatus map
   Future<void> checkEventAttendance(int eventId) async {
     try {
-      final client = widget.httpClient ?? http.Client();  // ✅ UPDATED
+      final client = widget.httpClient ?? http.Client();  
       final response = await client.get(
         Uri.parse("${ApiService.baseUrl}/events/$eventId/attending/"),
         headers: ApiService.headers,
@@ -142,7 +143,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         : "/events/$eventId/join/";
 
     try {
-      final client = widget.httpClient ?? http.Client();  // ✅ UPDATED
+      final client = widget.httpClient ?? http.Client();  
       final response = await client.post(
         Uri.parse("${ApiService.baseUrl}$endpoint"),
         headers: ApiService.headers,

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'user/login_screen.user.dart';
+import 'package:unisoc/screens/login_screen.user.dart';
 
 class SignupUserPage extends StatefulWidget {
   const SignupUserPage({super.key});

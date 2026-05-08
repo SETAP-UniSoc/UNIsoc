@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'screens/settings_user_page.dart';
-import 'screens/my_events_page.dart';
-import 'screens/user_mysoc_page.dart';
-import 'screens/user/login_screen.user.dart';
-import 'services/api_services.dart';
+import 'package:unisoc/screens/settings_user_page.dart';
+import 'package:unisoc/screens/my_events_page.dart';
+import 'package:unisoc/screens/user_mysoc_page.dart';
+import 'package:unisoc/screens/login_screen.user.dart';
+import 'package:unisoc/services/api_services.dart';
 
 // A reusable navbar for the logged-in home page
 class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
@@ -30,7 +30,7 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
               case _MenuAction.mySocs:
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MySocietyPage()),
+                  MaterialPageRoute(builder: (context) => const MySocietyPage()),
                 );
                 break;
               case _MenuAction.settings:

@@ -228,7 +228,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
         );
       }
     } catch (e) {
-      print("❌ Error updating notification: $e");
+      print(" Error updating notification: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error updating notification settings")),
       );
@@ -276,7 +276,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
         );
       }
     } catch (e) {
-      print("❌ Error updating notification: $e");
+      print(" Error updating notification: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error updating notification settings")),
       );
