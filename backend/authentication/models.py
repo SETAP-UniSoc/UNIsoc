@@ -82,32 +82,6 @@ class Society(models.Model):
     def __str__(self):
         return self.name
     
-# class SocietyAdmin(models.Model):
-#     ROLE_CHOICES = [
-#         ('president', 'President'),
-#         ('vice_president', 'Vice President'),
-#         ('treasurer', 'Treasurer'),
-#         ('moderator', 'Moderator'),
-#     ]
-
-#     society = models.ForeignKey(
-#         Society,
-#         on_delete=models.CASCADE,
-#         related_name='admins'
-#     )
-
-#     user = models.ForeignKey(
-#         settings.AUTH_USER_MODEL,
-#         on_delete=models.CASCADE,
-#         related_name='admin_societies'
-#     )
-
-    # class Meta:
-    #     unique_together = ('society', 'user')
-
-    # def __str__(self):
-    #     return f"{self.user.email} - {self.role}"
-
 
 class Membership(models.Model):
     ROLE_CHOICES = [
@@ -226,11 +200,11 @@ class NotificationPreference(models.Model):
 
     society = models.ForeignKey(Society, on_delete=models.CASCADE)
 
-    # 👤 USER EMAIL SETTINGS
+    # USER EMAIL SETTINGS
     notify_new_events = models.BooleanField(default=True)
     notify_cancellations = models.BooleanField(default=True)
 
-    # 👑 ADMIN EMAIL SETTINGS
+    # ADMIN EMAIL SETTINGS
     notify_event_created = models.BooleanField(default=True)
     notify_24hr_reminder = models.BooleanField(default=True)
 
