@@ -411,7 +411,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.only(left: 30),
+                                    padding: const EdgeInsets.only(left: 20),
                                     child: Row(
                                       children: [
                                         // Sort by dropdown
