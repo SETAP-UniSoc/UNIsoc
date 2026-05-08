@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'screens/settings_user_page.dart';
-import 'screens/my_account_page.dart';
 import 'screens/my_events_page.dart';
 import 'screens/user_mysoc_page.dart';
 import 'screens/user/login_screen.user.dart';
@@ -42,14 +41,6 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
                   MaterialPageRoute(builder: (context) => const UserSettingsPage()),
                 );
                 break;
-              case _MenuAction.myAccount:
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const MyAccountPage(),
-                  ),
-                );
-                break;
               case _MenuAction.logout:
                 // Clear token then go back to login screen
                 ApiService.authToken = null;
@@ -71,11 +62,6 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
             PopupMenuItem(value: _MenuAction.mySocs, child: Text('MySocs')),
             PopupMenuItem(value: _MenuAction.settings, child: Text('Settings')),
             PopupMenuItem(
-              value: _MenuAction.myAccount,
-              child: Text('My Account'),
-            ),
-            PopupMenuDivider(),
-            PopupMenuItem(
               value: _MenuAction.logout,
               child: Text('Log Out', style: TextStyle(color: Colors.red)),
             ),
@@ -86,7 +72,7 @@ class HomeNavbar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-enum _MenuAction { myEvents, mySocs, settings, myAccount, logout }
+enum _MenuAction { myEvents, mySocs, settings, logout }
 
 /// Header section that shows the navbar and a greeting.
 /// [studentName] will later be replaced with the actual logged-in user's name.

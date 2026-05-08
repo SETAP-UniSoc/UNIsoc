@@ -139,7 +139,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
           }).toList();
         });
       } else {
-        // No notification preferences exist, use joined societies with default true
+        // if No notification preferences exist, use joined societies with default true
         setState(() {
           _notificationPrefs = joinedSocieties;
         });
@@ -157,7 +157,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
   } catch (e) {
     print("Error loading notification settings: ${e.toString()}");
     
-    // On error, still try to load joined societies
+   
     try {
       final societiesResponse = await http.get(
         Uri.parse("${ApiService.baseUrl}/my-societies/"),
@@ -237,7 +237,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     }
   }
 
-  // NEW METHOD - For individual society toggles
+ 
   Future<void> _updateSingleNotification(int societyId, bool enabled, String societyName) async {
     setState(() => _isLoading = true);
 
@@ -251,11 +251,11 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
         }),
       );
 
-      print("📡 Update response: ${response.statusCode}");
-      print("📡 Response body: ${response.body}");
+      print(" Update response: ${response.statusCode}");
+      print(" Response body: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Update the local list
+       
         setState(() {
           for (var i = 0; i < _notificationPrefs.length; i++) {
             if (_notificationPrefs[i]["society_id"] == societyId) {

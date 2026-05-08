@@ -45,7 +45,7 @@ class HomeHeader extends StatefulWidget {
 
   const HomeHeader({
     super.key,
-    this.studentName = 'Student', // later pass the real name
+    this.studentName = 'Student', 
     this.getSocieties,
     this.getEventsForJoinedSocieties,
   });

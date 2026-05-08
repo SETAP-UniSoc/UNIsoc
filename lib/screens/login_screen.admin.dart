@@ -35,7 +35,7 @@ class _LoginScreenAdminState extends State<LoginScreenAdmin> {
       // No authentication needed now
       final response = await http.get(
         Uri.parse("${ApiService.baseUrl}/societies/"),
-        headers: {"Content-Type": "application/json"}, // No token needed
+        headers: {"Content-Type": "application/json"}, 
       );
       
       print("📡 Societies response: ${response.statusCode}");

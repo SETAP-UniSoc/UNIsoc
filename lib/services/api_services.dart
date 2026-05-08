@@ -6,7 +6,7 @@ class ApiService {
   static ApiService instance = ApiService();
 
   static String? authToken;
-  static int? societyId; // Admin's society ID
+  static int? societyId; 
   static String? societyName; // Admin's society name
   static String? adminName; // Admin's personal name
   static Set<int> joinedSocieties = {};

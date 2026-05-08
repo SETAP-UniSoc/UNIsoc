@@ -22,7 +22,6 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
 
   bool isLoading = false;
 
-  // Minimal error display
   void _showError(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(
@@ -136,7 +135,7 @@ class _LoginScreenUserState extends State<LoginScreenUser> {
             ),
             const SizedBox(height: 10),
 
-            // Login as ElevatedButton
+            // Login as an ElevatedButton
             isLoading
                 ? const CircularProgressIndicator()
                 : SizedBox(
