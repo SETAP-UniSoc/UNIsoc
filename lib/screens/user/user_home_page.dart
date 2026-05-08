@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../navbar.dart';
-import '../../models/event_model.dart';
 import '../../services/api_services.dart';
-import 'user_society_page.dart'; //importing user society page to be used as a button in the home page
+import 'user_society_page.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:carousel_slider/carousel_slider.dart';
 
 class HomePage extends StatelessWidget {
   final Future<List<dynamic>> Function()? getSocieties;
@@ -23,7 +23,6 @@ class HomePage extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Header with navbar + "UniSoc" + "Welcome Student"
               HomeHeader(
                 getSocieties: getSocieties,
                 getEventsForJoinedSocieties: getEventsForJoinedSocieties,
@@ -83,12 +82,10 @@ class _HomeHeaderState extends State<HomeHeader> {
   void applyFilters() {
     List result = [..._societies];
 
-    // Apply filtering
     if (selectedCategory != "All") {
       result = result.where((s) => s["category"] == selectedCategory).toList();
     }
 
-    // Apply sorting
     if (sortBy == "A-Z") {
       result.sort((a, b) => a["name"].compareTo(b["name"]));
     } else if (sortBy == "Z-A") {
@@ -116,7 +113,6 @@ class _HomeHeaderState extends State<HomeHeader> {
 
     _loadData();
 
-    // Auto-advance every 5 seconds
     _societyTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (!mounted || _societies.isEmpty) return;
 
@@ -370,8 +366,6 @@ class _HomeHeaderState extends State<HomeHeader> {
                             ),
                     ),
                     const SizedBox(height: 24),
-
-                    // Box around A–Z section
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -388,7 +382,6 @@ class _HomeHeaderState extends State<HomeHeader> {
                       ),
                       child: Column(
                         children: [
-                          // ── FIXED: flat single Row, no nested Row wrapping ──
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -405,7 +398,6 @@ class _HomeHeaderState extends State<HomeHeader> {
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  // Sort by dropdown
                                   PopupMenuButton<String>(
                                     child: const Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -449,8 +441,6 @@ class _HomeHeaderState extends State<HomeHeader> {
                                     ],
                                   ),
                                   const SizedBox(width: 8),
-
-                                  // Filter by dropdown
                                   PopupMenuButton<String>(
                                     child: const Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -488,8 +478,6 @@ class _HomeHeaderState extends State<HomeHeader> {
                             ],
                           ),
                           const SizedBox(height: 12),
-
-                          // Scrollable list of societies A–Z
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
@@ -532,10 +520,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
-                    // Upcoming events carousel
                     const Text(
                       'Upcoming Events',
                       style: TextStyle(
@@ -544,47 +529,109 @@ class _HomeHeaderState extends State<HomeHeader> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    SizedBox(
-                      height: 140,
-                      child: _events.isEmpty
-                          ? const Center(
-                              child: Text('No upcoming events available.'),
-                            )
-                          : ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _events.length,
-                              itemBuilder: (context, index) {
-                                final event = _events[index];
-                                final int? societyId =
-                                    event['society_id'] as int?;
-
-                                return GestureDetector(
-                                  onTap: () {
-                                    if (societyId == null) return;
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => UserSocietyPage(
-                                          societyId: societyId,
-                                          societyName:
-                                              event['society_name'] ?? '',
-                                          description: '',
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: _EventCard(
-                                    event: Event(
-                                      title: event['title'],
-                                      date: event['start_time'],
-                                      location: event['location'],
-                                      color: Colors.deepPurple,
-                                    ),
-                                  ),
-                                );
-                              },
+                    if (_events.isEmpty)
+                      const Center(child: Text('No upcoming events available.'))
+                    else
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          CarouselSlider(
+                            options: CarouselOptions(
+                              height: 160,
+                              autoPlay: true,
+                              autoPlayInterval: const Duration(seconds: 4),
+                              autoPlayAnimationDuration:
+                                  const Duration(milliseconds: 800),
+                              autoPlayCurve: Curves.fastOutSlowIn,
+                              enlargeCenterPage: false,
+                              viewportFraction: 0.75,
+                              pauseAutoPlayOnTouch: true,
                             ),
-                    ),
+                            items: _events.map((event) {
+                              final startTime =
+                                  DateTime.parse(event['start_time']).toLocal();
+                              final int? societyId =
+                                  event['society_id'] as int?;
+
+                              return GestureDetector(
+                                onTap: () {
+                                  if (societyId == null) return;
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => UserSocietyPage(
+                                        societyId: societyId,
+                                        societyName:
+                                            event['society_name'] ?? '',
+                                        description: '',
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  width: 200,
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                  ),
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFF6A1B9A),
+                                        Color(0xFF4A148C),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        event['title'] ?? 'Untitled',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${startTime.day}/${startTime.month}/${startTime.year}',
+                                            style: const TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            event['location'] ?? '',
+                                            style: const TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 12,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
         ),
@@ -645,45 +692,3 @@ class _SocietyLogoCard extends StatelessWidget {
   }
 }
 
-class _EventCard extends StatelessWidget {
-  final Event event;
-
-  const _EventCard({required this.event});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 220,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: event.color,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            event.title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            event.date,
-            style: const TextStyle(color: Colors.white70, fontSize: 14),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            event.location,
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
-          ),
-        ],
-      ),
-    );
-  }
-}
