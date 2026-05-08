@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_services.dart';
-import 'user/user_society_page.dart'; // 
+import 'user/user_society_page.dart'; //
 
 class MySocietyPage extends StatefulWidget {
   final Future<List> Function()? mySocietiesFetcher;
@@ -16,7 +16,8 @@ class _MySocietyPageState extends State<MySocietyPage> {
   @override
   void initState() {
     super.initState();
-    _futureMySocieties = (widget.mySocietiesFetcher ?? ApiService.getMySocieties)();
+    _futureMySocieties =
+        (widget.mySocietiesFetcher ?? ApiService.getMySocieties)();
   }
 
   @override
@@ -63,19 +64,11 @@ class _MySocietyPageState extends State<MySocietyPage> {
               final id = soc['id'] as int? ?? 0;
               final name = soc['name'] as String? ?? '';
               final description = soc['description'] as String? ?? '';
-              final memberCount = (soc['member_count'] as int?) ?? 0;
 
               return ListTile(
                 leading: const CircleAvatar(
                   backgroundColor: Color(0xFF4A235A),
                   child: Icon(Icons.group, color: Colors.white),
-                ),
-                title: Text(
-                  name,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                subtitle: Text(
-                  '$description\n$memberCount member${memberCount == 1 ? '' : 's'}',
                 ),
                 isThreeLine: true,
                 onTap: () {
