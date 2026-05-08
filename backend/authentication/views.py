@@ -23,9 +23,6 @@ from .tasks import send_join_event_email
 from .models import NotificationPreference, Society, Membership, Event
 
 
-
-
-
 class UserListView(generics.ListAPIView):
 
     serializer_class = UserSerializer
@@ -44,7 +41,7 @@ class UserListView(generics.ListAPIView):
 
         return queryset
 
-
+# SOCIETY & EVENT VIEWS
 class SocietyListSearchView(APIView):
     permission_classes = [AllowAny]  
 
@@ -72,7 +69,8 @@ class SocietyListSearchView(APIView):
         } for s in societies]
 
         return Response(data)
-
+    
+# ADMIN SOCIETY & EVENT MANAGEMENT VIEWS
 class AddEventView(generics.CreateAPIView):
     
     serializer_class = EventSerializer
@@ -90,7 +88,7 @@ class AddEventView(generics.CreateAPIView):
             society=society
         )
 
-
+# Admin can only delete events they created
 class DeleteEventView(generics.DestroyAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -103,7 +101,7 @@ class DeleteEventView(generics.DestroyAPIView):
         
         return Event.objects.filter(created_by=self.request.user)
 
-
+# Admin can only update events they created
 class SocietyEventView(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -148,7 +146,6 @@ class SocietyEventView(APIView):
 
         return Response(serializer.errors, status=400)
 
-
 class EventDetailView(generics.RetrieveAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -156,7 +153,7 @@ class EventDetailView(generics.RetrieveAPIView):
     serializer_class = EventSerializer
     lookup_field = 'id'
 
-
+# Admin can only update events they created
 class UpdateEventView(generics.UpdateAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -186,7 +183,7 @@ class MyEventsView(APIView):
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data)
 
-
+# This view is used to show the 5 most recent events on the home page for both users and admins
 class AllEventsView(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -291,7 +288,7 @@ class User_ProfileView(APIView):
         user.save()
         return Response({"message": "Name changed successfully"})
 
-
+# notification preferences view
 class NotificationView(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -339,7 +336,7 @@ class NotificationView(APIView):
             "notify_new_events": pref.notify_new_events
         })
 
-
+# This function is used to send email notifications to users when a new event is created in a society they are a member of and have notifications enabled for that society. It is called from the AddEventView after an event is successfully created. The function retrieves all users who have notification preferences set to true for the society of the new event, and sends them an email with the event details.
 def send_event_confirmation(admin_user, event):
     
     prefs = NotificationPreference.objects.filter(
@@ -452,7 +449,7 @@ class SocietyAdminDetailView(APIView):
             "message": "Society updated successfully"
         })
 
-
+# This view is used to check if a user is an active member of a society. It is called from the frontend when a user tries to access a society's page, to determine if they should be allowed in and what actions they can take (e.g. join event, see members-only content). The view checks if there is an active membership record for the user and society (i.e. joined_at is set and left_at is null) and returns a boolean result.
 class SocietyMembershipCheckView(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -661,7 +658,7 @@ class LeaveSocietyView(APIView):
             {"message": "Successfully left society"},
             status=status.HTTP_200_OK,
         )
-    
+
 class LeaveEventView(APIView):
     
     permission_classes = [IsAuthenticated]
@@ -684,7 +681,8 @@ class LeaveEventView(APIView):
             left_at__isnull=True).count()
 
         return Response({"message": "Left event successfully"})
-    
+
+
 class JoinSocietyView(APIView):
    
     permission_classes = [IsAuthenticated]
@@ -721,7 +719,7 @@ class JoinSocietyView(APIView):
 
         return Response({"message": "Rejoined successfully"}, status=200)
             
-from .tasks import send_join_event_email   # 👈 ADD THIS
+from .tasks import send_join_event_email   # import the task function to send email asynchronously when a user joins an event
 
 class JoinEventView(APIView):
 
@@ -899,7 +897,7 @@ class CheckEventAttendanceView(APIView):
             "left_attendees": left_attendees
         })
         
-class UserProfileView(APIView):
+class UserProfileView(APIView): 
     
     permission_classes = [IsAuthenticated]
 
@@ -974,7 +972,7 @@ class CheckUserView(APIView):
         except User.DoesNotExist:
             return Response({"error": "Email not found"}, status=404)
 
-class VerifyUpNumberView(APIView):
+class VerifyUpNumberView(APIView): 
     permission_classes = [AllowAny]
 
     def post(self, request):
