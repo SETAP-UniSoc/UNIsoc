@@ -10,9 +10,11 @@ import 'package:http/http.dart' as http;
 class HomePage extends StatelessWidget {
   final Future<List<dynamic>> Function()? getSocieties;
   final Future<List<dynamic>> Function()? getEventsForJoinedSocieties;
-  const HomePage({super.key,
-   this.getSocieties,
-    this.getEventsForJoinedSocieties,});
+  const HomePage({
+    super.key,
+    this.getSocieties,
+    this.getEventsForJoinedSocieties,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,16 +22,12 @@ class HomePage extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
-            children:  [
+            children: [
               // Header with navbar + "UniSoc" + "Welcome Student"
               HomeHeader(
-                getSocieties: getSocieties, 
+                getSocieties: getSocieties,
                 getEventsForJoinedSocieties: getEventsForJoinedSocieties,
               ),
-
-              // Main content placeholder (will be replaced by A–Z list section)
-              // For now we can leave it or remove it:
-              // SizedBox(height: 400, child: Center(child: Text('Home content here'))),
             ],
           ),
         ),
@@ -45,7 +43,7 @@ class HomeHeader extends StatefulWidget {
 
   const HomeHeader({
     super.key,
-    this.studentName = 'Student', 
+    this.studentName = 'Student',
     this.getSocieties,
     this.getEventsForJoinedSocieties,
   });
@@ -116,7 +114,7 @@ class _HomeHeaderState extends State<HomeHeader> {
     super.initState();
     _societyPageController = PageController(viewportFraction: 0.35);
 
-    _loadData(); // ← new
+    _loadData();
 
     // Auto-advance every 5 seconds
     _societyTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
@@ -136,11 +134,12 @@ class _HomeHeaderState extends State<HomeHeader> {
 
   Future<void> _loadData() async {
     try {
-      final societies = await (widget.getSocieties ?? ApiService.getSocieties)();
+      final societies =
+          await (widget.getSocieties ?? ApiService.getSocieties)();
       final events =
-          await (widget.getEventsForJoinedSocieties ?? ApiService.getEventsForJoinedSocieties)();
+          await (widget.getEventsForJoinedSocieties ??
+              ApiService.getEventsForJoinedSocieties)();
 
-      // if you later add a "getHomeEvents", call it here too
       if (!mounted) return;
       final topSocieties = [...societies];
 
@@ -149,7 +148,7 @@ class _HomeHeaderState extends State<HomeHeader> {
         _filteredSocieties = societies;
         _topSocieties = topSocieties.take(3).toList();
         _events.clear();
-        _events.addAll(events); // Add the fetched events to the list.
+        _events.addAll(events);
         _loading = false;
         _error = null;
       });
@@ -207,8 +206,6 @@ class _HomeHeaderState extends State<HomeHeader> {
                   ),
                 ),
               );
-              // you can later handle events similarly
-
               setState(() {
                 _searchResults = [];
               });
@@ -283,7 +280,6 @@ class _HomeHeaderState extends State<HomeHeader> {
                         ),
                       ),
                       onChanged: (query) {
-                        // debounce (prevents spam requests)
                         if (_debounce?.isActive ?? false) _debounce!.cancel();
 
                         _debounce = Timer(
@@ -319,7 +315,6 @@ class _HomeHeaderState extends State<HomeHeader> {
                                   _isSearching = false;
                                 });
                               } else {
-                                // non‑200 (401/403/500 etc.)
                                 setState(() => _isSearching = false);
                               }
                             } catch (e) {
@@ -349,7 +344,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                           : PageView.builder(
                               controller: _societyPageController,
                               scrollDirection: Axis.horizontal,
-                              itemCount: _topSocieties.length, // use top 3
+                              itemCount: _topSocieties.length,
                               itemBuilder: (context, index) {
                                 final soc =
                                     _topSocieties[index]
@@ -358,8 +353,6 @@ class _HomeHeaderState extends State<HomeHeader> {
                                 final description =
                                     soc['description'] as String? ?? '';
                                 final id = soc['id'] as int? ?? 0;
-                                final memberCount =
-                                    (soc['member_count'] as int?) ?? 0;
 
                                 return _SocietyLogoCard(
                                   label: name,
@@ -395,103 +388,100 @@ class _HomeHeaderState extends State<HomeHeader> {
                       ),
                       child: Column(
                         children: [
-                          // A–Z list header with sort/filter labels
+                          // ── FIXED: flat single Row, no nested Row wrapping ──
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text(
-                                    'All Societies (A-Z)',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                              const Flexible(
+                                child: Text(
+                                  'All Societies (A-Z)',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 20),
-                                    child: Row(
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Sort by dropdown
+                                  PopupMenuButton<String>(
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        // Sort by dropdown
-                                        PopupMenuButton<String>(
-                                          child: Row(
-                                            children: [
-                                              const Text(
-                                                "Sort by",
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Color(0xFF9C27B0),
-                                                ),
-                                              ),
-                                              const Icon(
-                                                Icons.arrow_drop_down,
-                                                color: Color(0xFF9C27B0),
-                                              ),
-                                            ],
+                                        Text(
+                                          "Sort by",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Color(0xFF9C27B0),
                                           ),
-                                          onSelected: (value) {
-                                            setState(() {
-                                              sortBy = value;
-                                              applyFilters();
-                                            });
-                                          },
-                                          itemBuilder: (_) => const [
-                                            PopupMenuItem(
-                                              value: "A-Z",
-                                              child: Text("A-Z"),
-                                            ),
-                                            PopupMenuItem(
-                                              value: "Z-A",
-                                              child: Text("Z-A"),
-                                            ),
-                                            PopupMenuItem(
-                                              value: "Most Members",
-                                              child: Text("Most Members"),
-                                            ),
-                                            PopupMenuItem(
-                                              value: "Least Members",
-                                              child: Text("Least Members"),
-                                            ),
-                                          ],
                                         ),
-                                        const SizedBox(width: 16),
-
-                                        // Filter by dropdown
-                                        PopupMenuButton<String>(
-                                          child: Row(
-                                            children: [
-                                              const Text(
-                                                "Filter by",
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Color(0xFF9C27B0),
-                                                ),
-                                              ),
-                                              const Icon(
-                                                Icons.arrow_drop_down,
-                                                color: Color(0xFF9C27B0),
-                                              ),
-                                            ],
-                                          ),
-                                          onSelected: (value) {
-                                            setState(() {
-                                              selectedCategory = value;
-                                              applyFilters();
-                                            });
-                                          },
-                                          itemBuilder: (_) => categories
-                                              .map(
-                                                (category) => PopupMenuItem(
-                                                  value: category,
-                                                  child: Text(category),
-                                                ),
-                                              )
-                                              .toList(),
+                                        Icon(
+                                          Icons.arrow_drop_down,
+                                          color: Color(0xFF9C27B0),
                                         ),
                                       ],
                                     ),
+                                    onSelected: (value) {
+                                      setState(() {
+                                        sortBy = value;
+                                        applyFilters();
+                                      });
+                                    },
+                                    itemBuilder: (_) => const [
+                                      PopupMenuItem(
+                                        value: "A-Z",
+                                        child: Text("A-Z"),
+                                      ),
+                                      PopupMenuItem(
+                                        value: "Z-A",
+                                        child: Text("Z-A"),
+                                      ),
+                                      PopupMenuItem(
+                                        value: "Most Members",
+                                        child: Text("Most Members"),
+                                      ),
+                                      PopupMenuItem(
+                                        value: "Least Members",
+                                        child: Text("Least Members"),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 8),
+
+                                  // Filter by dropdown
+                                  PopupMenuButton<String>(
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          "Filter by",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Color(0xFF9C27B0),
+                                          ),
+                                        ),
+                                        Icon(
+                                          Icons.arrow_drop_down,
+                                          color: Color(0xFF9C27B0),
+                                        ),
+                                      ],
+                                    ),
+                                    onSelected: (value) {
+                                      setState(() {
+                                        selectedCategory = value;
+                                        applyFilters();
+                                      });
+                                    },
+                                    itemBuilder: (_) => categories
+                                        .map(
+                                          (category) => PopupMenuItem(
+                                            value: category,
+                                            child: Text(category),
+                                          ),
+                                        )
+                                        .toList(),
                                   ),
                                 ],
                               ),
