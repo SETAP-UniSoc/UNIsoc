@@ -212,6 +212,108 @@ class _HomeHeaderState extends State<HomeHeader> {
     );
   }
 
+  Widget _buildEventsCarousel() {
+    if (_events.isEmpty) {
+      return const Center(child: Text('No upcoming events available.'));
+    }
+
+    return SizedBox(
+      height: 160,
+      child: CarouselSlider(
+        options: CarouselOptions(
+          height: 160,
+          autoPlay: _events.length > 1,
+          enableInfiniteScroll: _events.length > 1,
+          autoPlayInterval: const Duration(seconds: 4),
+          autoPlayAnimationDuration: const Duration(milliseconds: 800),
+          autoPlayCurve: Curves.fastOutSlowIn,
+          enlargeCenterPage: false,
+          viewportFraction: 0.75,
+          pauseAutoPlayOnTouch: true,
+        ),
+        items: _events.map((event) {
+          DateTime? startTime;
+          try {
+            startTime = DateTime.parse(event['start_time']).toLocal();
+          } catch (_) {
+            startTime = null;
+          }
+
+          final int? societyId = event['society_id'] as int?;
+
+          return GestureDetector(
+            onTap: () {
+              if (societyId == null) return;
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => UserSocietyPage(
+                    societyId: societyId,
+                    societyName: event['society_name'] ?? '',
+                    description: '',
+                  ),
+                ),
+              );
+            },
+            child: Container(
+              width: 200,
+              margin: const EdgeInsets.symmetric(horizontal: 6),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    event['title'] ?? 'Untitled',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        startTime != null
+                            ? '${startTime.day}/${startTime.month}/${startTime.year}'
+                            : '',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        event['location'] ?? '',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -529,109 +631,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    if (_events.isEmpty)
-                      const Center(child: Text('No upcoming events available.'))
-                    else
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          CarouselSlider(
-                            options: CarouselOptions(
-                              height: 160,
-                              autoPlay: true,
-                              autoPlayInterval: const Duration(seconds: 4),
-                              autoPlayAnimationDuration:
-                                  const Duration(milliseconds: 800),
-                              autoPlayCurve: Curves.fastOutSlowIn,
-                              enlargeCenterPage: false,
-                              viewportFraction: 0.75,
-                              pauseAutoPlayOnTouch: true,
-                            ),
-                            items: _events.map((event) {
-                              final startTime =
-                                  DateTime.parse(event['start_time']).toLocal();
-                              final int? societyId =
-                                  event['society_id'] as int?;
-
-                              return GestureDetector(
-                                onTap: () {
-                                  if (societyId == null) return;
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => UserSocietyPage(
-                                        societyId: societyId,
-                                        societyName:
-                                            event['society_name'] ?? '',
-                                        description: '',
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Container(
-                                  width: 200,
-                                  margin: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                  ),
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        Color(0xFF6A1B9A),
-                                        Color(0xFF4A148C),
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        event['title'] ?? 'Untitled',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            '${startTime.day}/${startTime.month}/${startTime.year}',
-                                            style: const TextStyle(
-                                              color: Colors.white70,
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            event['location'] ?? '',
-                                            style: const TextStyle(
-                                              color: Colors.white70,
-                                              fontSize: 12,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ],
-                      ),
+                    _buildEventsCarousel(),
                   ],
                 ),
         ),
@@ -691,4 +691,3 @@ class _SocietyLogoCard extends StatelessWidget {
     );
   }
 }
-
