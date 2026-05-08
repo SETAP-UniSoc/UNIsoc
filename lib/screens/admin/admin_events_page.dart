@@ -372,6 +372,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
       appBar: AppBar(
         title: const Text("Events Calendar"),
         automaticallyImplyLeading: false,
+        leading: null,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
