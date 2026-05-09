@@ -248,6 +248,8 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
                   endTime: utcEndDT.toIso8601String(),
                   capacity: cap.text.isEmpty ? null : int.tryParse(cap.text),
                 );
+
+                await loadEvents();
               },
               child: const Text("Create"),
             ),
@@ -329,8 +331,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     const SnackBar(content: Text("Event created successfully!")),
   );
   
-  await loadEvents();
-  
+
 } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Failed to create event: ${res.statusCode}")),
