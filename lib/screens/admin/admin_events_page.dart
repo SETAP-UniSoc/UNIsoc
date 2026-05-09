@@ -249,7 +249,6 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
                   capacity: cap.text.isEmpty ? null : int.tryParse(cap.text),
                 );
 
-                await loadEvents();
               },
               child: const Text("Create"),
             ),
@@ -327,6 +326,7 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     );
 
     if (res.statusCode == 201) {
+      await loadEvents();
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(content: Text("Event created successfully!")),
   );
