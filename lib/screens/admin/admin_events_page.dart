@@ -325,10 +325,12 @@ class _AdminEventsPageState extends State<AdminEventsPage> {
     );
 
     if (res.statusCode == 201) {
-  await loadEvents();
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(content: Text("Event created successfully!")),
   );
+  
+  await loadEvents();
+  
 } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Failed to create event: ${res.statusCode}")),
