@@ -70,6 +70,8 @@ class _MySocietyPageState extends State<MySocietyPage> {
                   backgroundColor: Color(0xFF4A235A),
                   child: Icon(Icons.group, color: Colors.white),
                 ),
+                title: Text(name),
+                subtitle: Text(description),
                 isThreeLine: true,
                 onTap: () {
                   Navigator.push(
