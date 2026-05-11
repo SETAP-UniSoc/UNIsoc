@@ -41,7 +41,7 @@ void main() {
       expect(result.isEmpty, true);
     });
 
-    // 🔵 API FAILURE
+    //  API FAILURE
     test('Throws exception on server error', () async {
       final client = MockClient((request) async {
         return http.Response('Server Error', 500);
