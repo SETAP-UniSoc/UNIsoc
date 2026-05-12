@@ -1,6 +1,6 @@
 
 from asyncio import events
-
+from .tasks import send_join_event_email   # import the task function to send email asynchronously when a user joins an event
 from rest_framework.authtoken.models import Token
 from rest_framework import generics
 from urllib3 import request
@@ -719,7 +719,6 @@ class JoinSocietyView(APIView):
 
         return Response({"message": "Rejoined successfully"}, status=200)
             
-from .tasks import send_join_event_email   # import the task function to send email asynchronously when a user joins an event
 
 class JoinEventView(APIView):
 
