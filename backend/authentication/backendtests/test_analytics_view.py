@@ -284,3 +284,153 @@ class AnalyticsViewTests(APITestCase):
             response.data["most_popular"]["title"],
             "Test Event"
         )
+    
+        def test_week_period_returns_7_labels(self):
+
+        url = reverse("analytics")
+
+        response = self.client.get(
+            url,
+            {"period": "week"},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data["labels"]), 7)
+        self.assertEqual(len(response.data["totals"]), 7)
+
+
+    def test_month_period_returns_30_labels(self):
+
+        url = reverse("analytics")
+
+        response = self.client.get(
+            url,
+            {"period": "month"},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data["labels"]), 30)
+        self.assertEqual(len(response.data["totals"]), 30)
+
+
+    def test_six_month_period_returns_26_labels(self):
+
+        url = reverse("analytics")
+
+        response = self.client.get(
+            url,
+            {"period": "6months"},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data["labels"]), 26)
+        self.assertEqual(len(response.data["totals"]), 26)
+
+
+    def test_year_period_returns_12_labels(self):
+
+        url = reverse("analytics")
+
+        response = self.client.get(
+            url,
+            {"period": "year"},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data["labels"]), 12)
+        self.assertEqual(len(response.data["totals"]), 12)
+
+
+    def test_most_popular_event_attendance_count_correct(self):
+
+        url = reverse("analytics")
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            response.data["most_popular"]["attendee_count"],
+            1
+        )
+
+
+    def test_live_count_excludes_left_members(self):
+
+        second_user = User.objects.create_user(
+            email="leftmember@uni.ac.uk",
+            password="Password123!",
+            role="student"
+        )
+
+        Membership.objects.create(
+            user=second_user,
+            society=self.society,
+            left_at=timezone.now()
+        )
+
+        url = reverse("analytics")
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # only active admin membership counted
+        self.assertEqual(response.data["live_count"], 1)
+
+
+    def test_event_attendance_excludes_left_attendees(self):
+
+        second_user = User.objects.create_user(
+            email="leftattendee@uni.ac.uk",
+            password="Password123!",
+            role="student"
+        )
+
+        EventAttendance.objects.create(
+            user=second_user,
+            event=self.event,
+            left_at=timezone.now()
+        )
+
+        url = reverse("analytics")
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # only active attendee counted
+        self.assertEqual(
+            response.data["events_stats"][0]["attendee_count"],
+            1
+        )
+
+
+    def test_analytics_with_no_events(self):
+
+        Event.objects.all().delete()
+
+        url = reverse("analytics")
+
+        response = self.client.get(
+            url,
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["total_events"], 0)
+        self.assertEqual(response.data["events_stats"], [])
+        self.assertIsNone(response.data["most_popular"])
