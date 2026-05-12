@@ -115,3 +115,117 @@ class ChangePasswordTests(APITestCase):
         self.assertTrue(
             self.user.check_password("SecurePass456!")
         )
+
+    def test_change_password_too_short(self):
+
+        response = self.client.post(
+            self.url,
+            {
+                "old_password": "OldPassword123!",
+                "new_password": "short"
+            },
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        self.assertEqual(
+            response.data["error"],
+            "Password must be at least 8 characters long"
+        )
+
+
+    def test_password_not_changed_when_old_password_wrong(self):
+
+        self.client.post(
+            self.url,
+            {
+                "old_password": "WrongPassword",
+                "new_password": "NewPassword123!"
+            },
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.user.refresh_from_db()
+
+        self.assertTrue(
+            self.user.check_password("OldPassword123!")
+        )
+
+
+    def test_password_not_changed_when_new_password_too_short(self):
+
+        self.client.post(
+            self.url,
+            {
+                "old_password": "OldPassword123!",
+                "new_password": "123"
+            },
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.user.refresh_from_db()
+
+        self.assertTrue(
+            self.user.check_password("OldPassword123!")
+        )
+
+
+    def test_change_password_returns_success_message(self):
+
+        response = self.client.post(
+            self.url,
+            {
+                "old_password": "OldPassword123!",
+                "new_password": "NewPassword123!"
+            },
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            response.data["message"],
+            "Password changed successfully"
+        )
+
+
+    def test_change_password_missing_both_fields(self):
+
+        response = self.client.post(
+            self.url,
+            {},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        self.assertEqual(
+            response.data["error"],
+            "Both old and new passwords are required"
+        )
+
+
+    def test_user_can_login_with_new_password_after_change(self):
+
+        self.client.post(
+            self.url,
+            {
+                "old_password": "OldPassword123!",
+                "new_password": "BrandNewPassword123!"
+            },
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        login_url = reverse("login")
+
+        response = self.client.post(
+            login_url,
+            {
+                "email": "test@uni.ac.uk",
+                "password": "BrandNewPassword123!"
+            }
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("token", response.data)
