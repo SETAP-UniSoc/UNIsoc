@@ -114,3 +114,142 @@ class JoinSocietyTests(APITestCase):
         )
 
         self.assertEqual(membership.role, "member")
+
+    def test_join_society_returns_success_message(self):
+
+        response = self.client.post(
+            self.url,
+            {},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+        self.assertEqual(
+            response.data["message"],
+            "Joined successfully"
+        )
+
+
+    def test_join_nonexistent_society_returns_correct_error(self):
+
+        url = reverse("join-society", args=[999])
+
+        response = self.client.post(
+            url,
+            {},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+        self.assertEqual(
+            response.data["error"],
+            "Society not found"
+        )
+
+
+    def test_rejoin_society_restores_active_membership(self):
+
+        membership = Membership.objects.create(
+            user=self.user,
+            society=self.society,
+            left_at=timezone.now()
+        )
+
+        self.client.post(
+            self.url,
+            {},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        membership.refresh_from_db()
+
+        self.assertIsNone(membership.left_at)
+
+
+    def test_rejoin_society_updates_joined_at(self):
+
+        membership = Membership.objects.create(
+            user=self.user,
+            society=self.society,
+            left_at=timezone.now()
+        )
+
+        old_joined_at = membership.joined_at
+
+        self.client.post(
+            self.url,
+            {},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        membership.refresh_from_db()
+
+        self.assertNotEqual(
+            membership.joined_at,
+            old_joined_at
+        )
+
+
+    def test_only_one_active_membership_exists(self):
+
+        self.client.post(
+            self.url,
+            {},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        response = self.client.post(
+            self.url,
+            {},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        active_memberships = Membership.objects.filter(
+            user=self.user,
+            society=self.society,
+            left_at__isnull=True
+        ).count()
+
+        self.assertEqual(active_memberships, 1)
+
+
+    def test_rejoin_does_not_create_new_membership(self):
+
+        membership = Membership.objects.create(
+            user=self.user,
+            society=self.society,
+            left_at=timezone.now()
+        )
+
+        self.client.post(
+            self.url,
+            {},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        total_memberships = Membership.objects.filter(
+            user=self.user,
+            society=self.society
+        ).count()
+
+        self.assertEqual(total_memberships, 1)
+
+
+    def test_membership_is_active_after_join(self):
+
+        self.client.post(
+            self.url,
+            {},
+            HTTP_AUTHORIZATION=f"Token {self.token.key}"
+        )
+
+        membership = Membership.objects.get(
+            user=self.user,
+            society=self.society
+        )
+
+        self.assertIsNone(membership.left_at)
