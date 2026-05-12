@@ -567,7 +567,7 @@ class LoginView(APIView):
         email = request.data.get("email")
         up_number = request.data.get("up_number")
         password = request.data.get("password")
-        selected_society_id = request.data.get("society_id")  # 👈 NEW
+        selected_society_id = request.data.get("society_id") # for admin society selection during login
 
         if not password:
             return Response({"error": "Password required"}, status=400)
