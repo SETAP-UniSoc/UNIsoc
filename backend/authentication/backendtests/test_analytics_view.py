@@ -285,7 +285,7 @@ class AnalyticsViewTests(APITestCase):
             "Test Event"
         )
     
-        def test_week_period_returns_7_labels(self):
+    def test_week_period_returns_7_labels(self):
 
         url = reverse("analytics")
 
