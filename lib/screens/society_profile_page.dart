@@ -185,7 +185,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
   Future<void> saveDescription() async {
     try {
       if (descController.text != societyData["description"]) {
-        final client = widget.httpClient ?? http.Client();  // ✅ UPDATED
+        final client = widget.httpClient ?? http.Client();  
         final response = await client.patch(
           Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/admin/"),
           headers: ApiService.headers,
@@ -217,7 +217,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
 
   Future<void> checkMembership() async {
     try {
-      final client = widget.httpClient ?? http.Client();  // ✅ UPDATED
+      final client = widget.httpClient ?? http.Client();  
       final response = await client.get(
         Uri.parse("${ApiService.baseUrl}/societies/${widget.societyId}/check-membership/"),
         headers: ApiService.headers,
@@ -237,7 +237,7 @@ class _SocietyProfilePageState extends State<SocietyProfilePage> {
         : "/society/${widget.societyId}/join/";
 
     try {
-      final client = widget.httpClient ?? http.Client();  // ✅ UPDATED
+      final client = widget.httpClient ?? http.Client();  
       final response = await client.post(
         Uri.parse("${ApiService.baseUrl}$endpoint"),
         headers: ApiService.headers,
