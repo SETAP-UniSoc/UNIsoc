@@ -567,7 +567,7 @@ class LoginView(APIView):
         email = request.data.get("email")
         up_number = request.data.get("up_number")
         password = request.data.get("password")
-        selected_society_id = request.data.get("society_id")  # 👈 NEW
+        selected_society_id = request.data.get("society_id") # for admin society selection during login
 
         if not password:
             return Response({"error": "Password required"}, status=400)
@@ -770,15 +770,16 @@ class JoinEventView(APIView):
     
 class AnalyticsView(APIView):
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated] # requirs authentication
 
     def get(self, request):
 
-        if request.user.role != "admin":
+        if request.user.role != "admin": # checks role is admin
             return Response({"error": "Admins only"}, status=403)
 
         period = request.query_params.get("period", "week")
 
+        # Get the society associated with the admin user
         try:
             society = Society.objects.get(admin=request.user)
         except Society.DoesNotExist:
@@ -786,6 +787,7 @@ class AnalyticsView(APIView):
 
         now = timezone.now()
 
+        # count active members over time for the selected period (mmembership)
         # Decide grouping & range
         if period == "week":
             days_range = 7
@@ -827,9 +829,9 @@ class AnalyticsView(APIView):
 
             current_date += delta
 
-        society = Society.objects.get(admin=request.user) # gets admis society
+        society = Society.objects.get(admin=request.user) # gets admin society
         total_events = society.events.count() # total events in that society
-        events_stats = society.events.annotate(
+        events_stats = society.events.annotate( # each event title with attendee count (only active attendees)
             attendee_count = Count(
                 "eventattendance",
                 filter = Q(eventattendance__left_at__isnull=True)
@@ -837,19 +839,19 @@ class AnalyticsView(APIView):
         ).values("title", "attendee_count")
 
         #most popular event
-        most_popular = society.events.annotate(
+        most_popular = society.events.annotate( # higherst attendee count for each event
             attendee_count = Count(
                 "eventattendance",
                 filter = Q(eventattendance__left_at__isnull=True)
             )
         ).order_by("-attendee_count").values("title", "attendee_count").first()
 
-        live_count = Membership.objects.filter(
+        live_count = Membership.objects.filter( # current active members
             society=society,
             left_at__isnull=True
         ).count()
 
-        return Response({
+        return Response({ # returns all the analytics data in a single response for the frontend to display in charts and stats
             "labels": labels,
             "totals": totals,
             "live_count": live_count,
@@ -917,7 +919,7 @@ class UserProfileView(APIView):
         if "email" in data:
             if User.objects.filter(email=data["email"]).exclude(id=user.id).exists():
                 return Response({"error": "Email already in use"}, status=400)
-            user.email = data["email"]
+            user.email = data["email"] 
 
         if "up_number" in data:
             user.up_number = data["up_number"]
